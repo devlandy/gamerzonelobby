@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby Zone — Panel</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- USUARIO -->
+    <div class="usuario-box">
+        <div class="avatar">👤</div>
+        <div>
+            <h3 id="usuarioNombre">Cargando...</h3>
+            <p id="usuarioRol">...</p>
+        </div>
+    </div>
+
+    <!-- NAV -->
+    <nav class="sidebar">
+        <h2>🎮 LOBBY ZONE</h2>
+        <button onclick="mostrar('dashboard')">Dashboard</button>
+        <button onclick="mostrar('ventas')">Ventas</button>
+        <button onclick="mostrar('clientes')">Clientes</button>
+        <button id="inventarioBtn" onclick="mostrar('inventario')">Inventario</button>
+        <button id="productosBtn" onclick="mostrar('productos')">Productos</button>
+        <button id="reportesBtn" onclick="mostrar('reportes')">Reportes</button>
+        <button onclick="mostrar('torneos')">Torneos</button>
+        <button onclick="mostrar('cierre')">Cierre Día</button>
+        <button onclick="logout()">Cerrar Sesión</button>
+    </nav>
+
+    <div class="main">
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="seccion">
+            <h2>📊 Dashboard</h2>
+
+            <div id="dashboardData" class="dashboard-cards"></div>
+
+            <hr>
+
+            <div class="dashboard-header">
+                <h3>📦 Inventario rápido</h3>
+            </div>
+
+            <div class="dashboard-cards">
+                <div class="card">
+                    <h4>➕ Agregar stock</h4>
+                    <input id="productoRapido" placeholder="ID Producto">
+                    <input id="cantidadRapida" type="number" placeholder="Cantidad">
+                    <button class="btn" onclick="agregarStockRapido()">Agregar</button>
+                </div>
+
+                <div class="card">
+                    <h4>📋 Inventario</h4>
+                    <p>Revisa existencias y movimientos.</p>
+                    <button class="btn" onclick="mostrar('inventario')">Ver inventario</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="dashboard-header">
+                <h3>🏆 Rankings y gestión</h3>
+            </div>
+
+            <div class="dashboard-cards">
+                <div class="card text-center">
+                    <h4>👑 Clientes frecuentes</h4>
+                    <p>Ranking de clientes.</p>
+                    <button class="btn" onclick="abrirModal('modalClientes')">Entrar</button>
+                </div>
+
+                <div class="card text-center">
+                    <h4>🎮 Top gamers</h4>
+                    <p>Ranking de jugadores.</p>
+                    <button class="btn" onclick="abrirModal('modalGamers')">Entrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VENTAS / POS -->
+        <div id="ventas" class="seccion" style="display:none;">
+            <h2>💰 POS Ventas</h2>
+
+            <div class="ventas-layout">
+                <div class="ventas-columna">
+                    <h3>🎮 Consolas</h3>
+                    <div id="listaConsolas" class="dashboard-cards"></div>
+                </div>
+
+                <div class="ventas-columna">
+                    <h3>🍔 Productos</h3>
+                    <div id="categoriasPOS" class="filtros-pos"></div>
+                    <hr>
+                    <div id="subcategoriasPOS" class="filtros-pos"></div>
+                    <hr>
+                    <div id="productosPOS" class="dashboard-cards"></div>
+                </div>
+            </div>
+
+            <hr>
+
+            <h3>🛒 Carrito general</h3>
+            <div id="carrito" class="dashboard-cards"></div>
+
+            <hr>
+
+            <h3>📋 Pagos pendientes</h3>
+            <div id="pendientes" class="dashboard-cards"></div>
+        </div>
+
+        <!-- CLIENTES -->
+        <div id="clientes" class="seccion" style="display:none;">
+            <h2>👤 Clientes</h2>
+
+            <div class="card">
+                <h3>➕ Nuevo cliente</h3>
+                <input id="nombre" placeholder="Nombre">
+                <input id="telefono" placeholder="Teléfono">
+                <input id="apodo" placeholder="Apodo">
+                <button class="btn" onclick="crearCliente()">Crear</button>
+            </div>
+
+            <hr>
+
+            <div class="card">
+                <h3>🔍 Buscar</h3>
+                <input id="buscar" placeholder="Nombre, teléfono o apodo">
+                <button class="btn" onclick="buscarClientes()">Buscar</button>
+            </div>
+
+            <div id="lista" class="dashboard-cards"></div>
+        </div>
+
+        <!-- INVENTARIO -->
+        <div id="inventario" class="seccion" style="display:none;">
+            <h2>📦 Inventario</h2>
+
+            <div class="dashboard-header">
+                <button class="btn" onclick="cargarAlertas()">Ver alertas</button>
+                <button class="btn" onclick="cargarHistorial()">Ver historial</button>
+            </div>
+
+            <div id="alertas" class="dashboard-cards"></div>
+            <div id="historial" class="dashboard-cards" style="margin-top:18px;"></div>
+        </div>
+
+        <!-- PRODUCTOS -->
+        <div id="productos" class="seccion" style="display:none;">
+            <h2>📦 Productos</h2>
+
+            <div class="card">
+                <h3>➕ Nuevo producto</h3>
+                <input id="nombreProducto" placeholder="Nombre">
+
+                <label>Categoría</label>
+                <select id="categoriaProducto"></select>
+
+                <label>Subcategoría</label>
+                <select id="subcategoriaProducto"></select>
+
+                <input id="precioCompraProducto" placeholder="Precio de compra">
+                <input id="precioProducto" placeholder="Precio de venta">
+                <input id="stockProducto" placeholder="Stock inicial">
+
+                <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--text-dim);">
+                    <input type="checkbox" id="controlaStockProducto" checked style="width:auto;margin:0;">
+                    Controla stock (desmárcalo para comida hecha al momento: crepas, lasaña…)
+                </label>
+
+                <button class="btn" onclick="crearProducto()">Crear producto</button>
+            </div>
+
+            <hr>
+
+            <div id="productosLista" class="dashboard-cards"></div>
+        </div>
+
+        <!-- REPORTES -->
+        <div id="reportes" class="seccion" style="display:none;">
+            <h2>📈 Reportes y estadísticas</h2>
+
+            <div class="card">
+                <h3>📊 Exportar</h3>
+                <p>Descarga el detalle de ventas en formato Excel.</p>
+                <button class="btn" onclick="exportarExcel()">Exportar ventas a Excel</button>
+            </div>
+        </div>
+
+        <!-- TORNEOS -->
+        <div id="torneos" class="seccion" style="display:none;">
+            <h2>🏆 Torneos</h2>
+
+            <div class="card">
+                <h3>➕ Crear torneo</h3>
+                <input id="torneoNombre" placeholder="Nombre del torneo">
+                <input id="torneoJuego" placeholder="Juego">
+                <input id="torneoPremio" placeholder="Premio">
+                <input id="torneoInscripcion" placeholder="Inscripción">
+                <input id="torneoCupos" placeholder="Cupos">
+                <button class="btn" onclick="crearTorneo()">Crear torneo</button>
+            </div>
+
+            <hr>
+
+            <div id="listaTorneos" class="dashboard-cards"></div>
+        </div>
+
+        <!-- CIERRE -->
+        <div id="cierre" class="seccion" style="display:none;">
+            <h2>🔒 Cierre de caja / día</h2>
+
+            <div class="dashboard-cards">
+                <div class="card">
+                    <h3>💰 Ventas del día</h3>
+                    <h1 id="ventasDia">Q0</h1>
+                </div>
+
+                <div class="card">
+                    <h3>💸 Gastos del día</h3>
+                    <h1 id="gastosDia">Q0</h1>
+                </div>
+
+                <div class="card">
+                    <h3>📈 Balance</h3>
+                    <h1 id="balanceDia">Q0</h1>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="card">
+                <h3>📝 Registrar cierre</h3>
+                <input id="observacionCierre" placeholder="Observación">
+                <button class="btn" onclick="registrarCierre()">Registrar cierre</button>
+            </div>
+
+            <hr>
+
+            <h3>📋 Historial</h3>
+            <div id="historialCierres" class="dashboard-cards"></div>
+        </div>
+
+    </div>
+
+    <!-- MODAL CLIENTES -->
+    <div id="modalClientes" class="modal-dashboard" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👑 Clientes frecuentes</h3>
+                <span class="close-btn" onclick="cerrarModal('modalClientes')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <button class="btn" onclick="cargarTopClientes()">Actualizar ranking</button>
+                <div id="topClientes" class="dashboard-cards"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GAMERS -->
+    <div id="modalGamers" class="modal-dashboard" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🎮 Top gamers</h3>
+                <span class="close-btn" onclick="cerrarModal('modalGamers')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <button class="btn" onclick="cargarTopGamers()">Actualizar ranking</button>
+                <div id="topGamers" class="dashboard-cards"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PAGO -->
+    <div id="modalPago" class="modal">
+        <div class="modal-content">
+            <h2>💳 Finalizar venta</h2>
+
+            <label>Método de pago</label>
+            <select id="metodoPago">
+                <option>EFECTIVO</option>
+                <option>TARJETA</option>
+                <option>TRANSFERENCIA</option>
+                <option>PENDIENTE</option>
+            </select>
+
+            <label>Factura / Observación</label>
+            <textarea id="observacionVenta" placeholder="Factura, NIT o comentario"></textarea>
+
+            <hr>
+
+            <button class="btn" onclick="confirmarVenta()">Confirmar venta</button>
+            <button class="btn cancelar" onclick="cerrarModalPago()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PENDIENTE -->
+    <div id="modalPendiente" class="modal">
+        <div class="modal-content">
+            <h2>💳 Cuenta pendiente</h2>
+
+            <input id="metodoPendiente" placeholder="Método de pago">
+            <input id="nitFactura" placeholder="NIT">
+            <input id="nombreFactura" placeholder="Nombre de factura">
+            <input id="direccionFactura" placeholder="Dirección">
+
+            <button class="btn" onclick="guardarPendiente()">Guardar pago</button>
+            <button class="btn cancelar" onclick="cerrarPendiente()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>
