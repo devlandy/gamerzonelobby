@@ -1,163 +1,243 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-using GamerZoneAPI.Data;
-
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
-
+using GamerZoneAPI.Data;
 using QuestPDF.Fluent;
-
-using QuestPDF.Helpers;
-
 using QuestPDF.Infrastructure;
+using QuestPDF.Helpers;
 
 namespace GamerZoneAPI.Controllers
 {
+    [Authorize]
     [ApiController]
-
     [Route("api/pdf")]
-
     public class PDFController : ControllerBase
     {
-        private Conexion conexion =
-        new Conexion();
+        private readonly DbManager _db;
+
+        public PDFController(DbManager db) => _db = db;
+
+        [HttpGet("venta/{id}")]
+        public IActionResult GenerarTicketVenta(int id)
+        {
+            var ventas = _db.ExecuteQuery(@"
+                SELECT v.id_venta, v.total, v.metodo_pago, v.fecha, v.tipo,
+                       COALESCE(c.nombre, 'Consumidor Final') AS cliente
+                FROM ventas v
+                LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+                WHERE v.id_venta = @id",
+                new MySqlParameter("@id", id));
+
+            if (ventas.Count == 0)
+                return NotFound();
+
+            var v = ventas[0];
+
+            var detalles = _db.ExecuteQuery(@"
+                SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio, d.subtotal
+                FROM detalle_ventas d
+                LEFT JOIN productos p ON d.id_producto = p.id_producto
+                WHERE d.id_venta = @id",
+                new MySqlParameter("@id", id));
+
+            var pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(40);
+
+                    page.Header().Column(h =>
+                    {
+                        h.Item().Text("LOBBY ZONE").FontSize(28).Bold();
+                        h.Item().Text("Comprobante de venta").FontSize(12).FontColor(Colors.Grey.Medium);
+                        h.Item().PaddingTop(4).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                    });
+
+                    page.Content().PaddingTop(20).Column(col =>
+                    {
+                        col.Item().Text($"Venta #{v["id_venta"]}").FontSize(16).Bold();
+                        col.Item().PaddingTop(8).Table(t =>
+                        {
+                            t.ColumnsDefinition(c => { c.RelativeColumn(); c.RelativeColumn(); });
+                            t.Cell().Text("Cliente:").Bold();
+                            t.Cell().Text(v["cliente"].ToString());
+                            t.Cell().Text("Tipo:").Bold();
+                            t.Cell().Text(v["tipo"].ToString());
+                            t.Cell().Text("Fecha:").Bold();
+                            t.Cell().Text(v["fecha"].ToString());
+                            t.Cell().Text("Método de pago:").Bold();
+                            t.Cell().Text(v["metodo_pago"].ToString());
+                        });
+
+                        col.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                        col.Item().PaddingTop(12).Text("Detalle de consumo").FontSize(14).Bold();
+
+                        if (detalles.Count > 0)
+                        {
+                            col.Item().PaddingTop(8).Table(t =>
+                            {
+                                t.ColumnsDefinition(c =>
+                                {
+                                    c.RelativeColumn(4);
+                                    c.RelativeColumn(1);
+                                    c.RelativeColumn(2);
+                                    c.RelativeColumn(2);
+                                });
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Producto").Bold();
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Cant.").Bold();
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Precio").Bold();
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Subtotal").Bold();
+
+                                foreach (var d in detalles)
+                                {
+                                    t.Cell().Padding(4).Text(d["nombre"].ToString());
+                                    t.Cell().Padding(4).Text(d["cantidad"].ToString());
+                                    t.Cell().Padding(4).Text($"Q{d["precio"]}");
+                                    t.Cell().Padding(4).Text($"Q{d["subtotal"]}");
+                                }
+                            });
+                        }
+
+                        col.Item().PaddingTop(20).LineHorizontal(2).LineColor(Colors.Black);
+
+                        decimal subtotalBruto = detalles.Sum(d => Convert.ToDecimal(d["subtotal"]));
+                        decimal totalFinal = Convert.ToDecimal(v["total"]);
+                        decimal descuento = subtotalBruto - totalFinal;
+
+                        col.Item().PaddingTop(8).AlignRight()
+                            .Text($"Subtotal: Q{subtotalBruto:F2}").FontSize(13);
+                        if (descuento > 0)
+                            col.Item().PaddingTop(4).AlignRight()
+                                .Text($"Descuento: -Q{descuento:F2}").FontSize(13).FontColor(Colors.Orange.Medium);
+                        col.Item().PaddingTop(4).AlignRight()
+                            .Text($"TOTAL: Q{totalFinal:F2}").FontSize(20).Bold();
+                    });
+
+                    page.Footer().AlignCenter()
+                        .Text($"Lobby Zone — {DateTime.Now:dd/MM/yyyy HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                });
+            }).GeneratePdf();
+
+            return File(pdf, "application/pdf", $"Venta_{v["id_venta"]}.pdf");
+        }
 
         [HttpGet("factura/{id}")]
         public IActionResult GenerarFactura(int id)
         {
-            using (var conn =
-            conexion.GetConnection())
+            var rows = _db.ExecuteQuery(@"
+                SELECT f.id_factura, f.nombre, f.nit, f.direccion, f.fecha, v.total, v.metodo_pago, v.id_venta
+                FROM facturas f
+                JOIN ventas v ON f.id_venta = v.id_venta
+                WHERE f.id_factura = @id",
+                new MySqlParameter("@id", id));
+
+            if (rows.Count == 0)
+                return NotFound();
+
+            var f = rows[0];
+            int idVenta = Convert.ToInt32(f["id_venta"]);
+
+            var detalles = _db.ExecuteQuery(@"
+                SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio, d.subtotal
+                FROM detalle_ventas d
+                LEFT JOIN productos p ON d.id_producto = p.id_producto
+                WHERE d.id_venta = @id",
+                new MySqlParameter("@id", idVenta));
+
+            var pdf = Document.Create(container =>
             {
-                conn.Open();
-
-                // ======================
-                // FACTURA
-                // ======================
-
-                string query = @"
-
-SELECT
-f.id_factura,
-f.nombre,
-f.nit,
-f.direccion,
-f.fecha,
-
-v.total,
-v.metodo_pago
-
-FROM facturas f
-
-JOIN ventas v
-ON f.id_venta = v.id_venta
-
-WHERE f.id_factura = @id
-
-";
-
-                MySqlCommand cmd =
-                new MySqlCommand(query, conn);
-
-                cmd.Parameters.AddWithValue(
-                "@id", id);
-
-                var reader =
-                cmd.ExecuteReader();
-
-                if (!reader.Read())
+                container.Page(page =>
                 {
-                    return NotFound();
-                }
+                    page.Size(PageSizes.A4);
+                    page.Margin(40);
 
-                var factura = new
-                {
-                    id =
-                    reader["id_factura"],
-
-                    cliente =
-                    reader["nombre"],
-
-                    nit =
-                    reader["nit"],
-
-                    direccion =
-                    reader["direccion"],
-
-                    fecha =
-                    reader["fecha"],
-
-                    total =
-                    reader["total"],
-
-                    metodo =
-                    reader["metodo_pago"]
-                };
-
-                reader.Close();
-
-                // ======================
-                // PDF
-                // ======================
-
-                var pdf =
-                Document.Create(container =>
-                {
-                    container.Page(page =>
+                    page.Header().Column(h =>
                     {
-                        page.Margin(30);
-
-                        page.Header()
-
-                        .Text("LOBBY ZONE")
-
-                        .FontSize(28)
-
-                        .Bold();
-
-                        page.Content()
-
-                        .Column(col =>
-                        {
-                            col.Item().Text(
-                            $"Factura #{factura.id}");
-
-                            col.Item().Text(
-                            $"Cliente: {factura.cliente}");
-
-                            col.Item().Text(
-                            $"NIT: {factura.nit}");
-
-                            col.Item().Text(
-                            $"Dirección: {factura.direccion}");
-
-                            col.Item().Text(
-                            $"Fecha: {factura.fecha}");
-
-                            col.Item().Text(
-                            $"Método Pago: {factura.metodo}");
-
-                            col.Item().PaddingTop(20);
-
-                            col.Item().Text(
-                            $"TOTAL: Q{factura.total}")
-
-                            .FontSize(22)
-
-                            .Bold();
-                        });
+                        h.Item().Text("LOBBY ZONE").FontSize(28).Bold();
+                        h.Item().Text("Panel de Control").FontSize(12).FontColor(Colors.Grey.Medium);
+                        h.Item().PaddingTop(4).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                     });
-                })
 
-                .GeneratePdf();
+                    page.Content().PaddingTop(20).Column(col =>
+                    {
+                        // Info factura
+                        col.Item().Text($"Factura #{f["id_factura"]}").FontSize(16).Bold();
+                        col.Item().PaddingTop(8).Table(t =>
+                        {
+                            t.ColumnsDefinition(c => { c.RelativeColumn(); c.RelativeColumn(); });
+                            t.Cell().Text("Cliente:").Bold();
+                            t.Cell().Text(f["nombre"].ToString());
+                            t.Cell().Text("NIT:").Bold();
+                            t.Cell().Text(f["nit"].ToString());
+                            t.Cell().Text("Dirección:").Bold();
+                            t.Cell().Text(f["direccion"].ToString());
+                            t.Cell().Text("Fecha:").Bold();
+                            t.Cell().Text(f["fecha"].ToString());
+                            t.Cell().Text("Método de pago:").Bold();
+                            t.Cell().Text(f["metodo_pago"].ToString());
+                        });
 
-                return File(
+                        col.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
-                    pdf,
+                        // Detalle de consumo
+                        col.Item().PaddingTop(12).Text("Detalle de consumo").FontSize(14).Bold();
 
-                    "application/pdf",
+                        if (detalles.Count > 0)
+                        {
+                            col.Item().PaddingTop(8).Table(t =>
+                            {
+                                t.ColumnsDefinition(c =>
+                                {
+                                    c.RelativeColumn(4);
+                                    c.RelativeColumn(1);
+                                    c.RelativeColumn(2);
+                                    c.RelativeColumn(2);
+                                });
 
-                    $"Factura_{factura.id}.pdf"
-                );
-            }
+                                // Encabezados
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Producto").Bold();
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Cant.").Bold();
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Precio").Bold();
+                                t.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("Subtotal").Bold();
+
+                                foreach (var d in detalles)
+                                {
+                                    t.Cell().Padding(4).Text(d["nombre"].ToString());
+                                    t.Cell().Padding(4).Text(d["cantidad"].ToString());
+                                    t.Cell().Padding(4).Text($"Q{d["precio"]}");
+                                    t.Cell().Padding(4).Text($"Q{d["subtotal"]}");
+                                }
+                            });
+                        }
+                        else
+                        {
+                            col.Item().PaddingTop(8).Text("Sin detalle de productos registrado.").FontColor(Colors.Grey.Medium);
+                        }
+
+                        col.Item().PaddingTop(20).LineHorizontal(2).LineColor(Colors.Black);
+
+                        decimal subtotalBrutoF = detalles.Sum(d => Convert.ToDecimal(d["subtotal"]));
+                        decimal totalFinalF = Convert.ToDecimal(f["total"]);
+                        decimal descuentoF = subtotalBrutoF - totalFinalF;
+
+                        col.Item().PaddingTop(8).AlignRight()
+                            .Text($"Subtotal: Q{subtotalBrutoF:F2}").FontSize(13);
+                        if (descuentoF > 0)
+                            col.Item().PaddingTop(4).AlignRight()
+                                .Text($"Descuento: -Q{descuentoF:F2}").FontSize(13).FontColor(Colors.Orange.Medium);
+                        col.Item().PaddingTop(4).AlignRight()
+                            .Text($"TOTAL: Q{totalFinalF:F2}").FontSize(20).Bold();
+                    });
+
+                    page.Footer().AlignCenter()
+                        .Text($"Lobby Zone — Documento generado el {DateTime.Now:dd/MM/yyyy HH:mm}")
+                        .FontSize(9).FontColor(Colors.Grey.Medium);
+                });
+            }).GeneratePdf();
+
+            return File(pdf, "application/pdf", $"Factura_{f["id_factura"]}.pdf");
         }
     }
 }

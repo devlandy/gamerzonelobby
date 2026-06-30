@@ -1,5 +1,5 @@
 // 🔥 API URL
-const API = "https://localhost:7076/api";
+const API = "http://localhost:5069/api";
 
 // ======================
 // VARIABLES GLOBALES
@@ -7,6 +7,40 @@ const API = "https://localhost:7076/api";
 let carrito = [];
 let totalVenta = 0;
 let ventaPendienteActual = 0;
+
+// ======================
+// JWT - TOKEN
+// ======================
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function authHeaders(extra = {}) {
+    return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${getToken()}`,
+        ...extra
+    };
+}
+
+function authFetch(url, options = {}) {
+    const opts = {
+        ...options,
+        headers: {
+            ...authHeaders(),
+            ...(options.headers || {})
+        }
+    };
+    return fetch(url, opts).then(r => {
+        if (r.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("usuario");
+            window.location.href = "login.html";
+            throw new Error("Sesión expirada");
+        }
+        return r;
+    });
+}
 
 // ===========================
 // 🔄 CAMBIAR SECCIONES
@@ -61,6 +95,12 @@ function mostrar(seccion) {
         cargarTorneos();
     }
 
+    // REPORTES
+    if(seccion === "reportes"){
+        cargarFacturas();
+        cargarVentasReporte();
+    }
+
     //Consolas
 
     if(seccion === "ventas") {
@@ -78,7 +118,7 @@ function mostrar(seccion) {
 // ===========================
 function cargarDashboard() {
 
-    fetch(`${API}/dashboard`)
+    authFetch(`${API}/dashboard`)
     .then(r => r.json())
     .then(data => {
 
@@ -112,13 +152,9 @@ function cargarDashboard() {
 // ===========================
 function crearCliente() {
 
-    fetch(`${API}/clientes`, {
+    authFetch(`${API}/clientes`, {
 
         method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
 
@@ -156,7 +192,7 @@ function buscarClientes() {
     let texto =
     document.getElementById("buscar").value;
 
-    fetch(`${API}/clientes/buscar?texto=${texto}`)
+    authFetch(`${API}/clientes/buscar?texto=${texto}`)
 
     .then(r => r.json())
 
@@ -201,7 +237,7 @@ function ventaRapida() {
     let total =
     document.getElementById("totalVenta").value;
 
-    fetch(`${API}/dashboard/venta-rapida?id_cliente=${cliente}&total=${total}`, {
+    authFetch(`${API}/dashboard/venta-rapida?id_cliente=${cliente}&total=${total}`, {
 
         method: "POST"
     })
@@ -270,13 +306,9 @@ function guardarPendiente(){
     let direccion =
     document.getElementById("direccionFactura").value;
 
-    fetch(`${API}/ventas/${ventaPendienteActual}`, {
+    authFetch(`${API}/ventas/${ventaPendienteActual}`, {
 
         method: "PUT",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
 
@@ -292,13 +324,9 @@ function guardarPendiente(){
 
     .then(() => {
 
-        return fetch(`${API}/factura`, {
+        return authFetch(`${API}/factura`, {
 
             method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
 
             body: JSON.stringify({
 
@@ -332,7 +360,7 @@ function guardarPendiente(){
 // ======================
 function pagarVenta(id) {
 
-    fetch(`${API}/ventas/pagar/${id}`, {
+    authFetch(`${API}/ventas/pagar/${id}`, {
 
         method: "PUT"
     })
@@ -361,7 +389,7 @@ function pagarVenta(id) {
 // ===========================
 function cargarPendientes(){
 
-    fetch(`${API}/ventas/pendientes`)
+    authFetch(`${API}/ventas/pendientes`)
 
     .then(r => r.json())
 
@@ -371,34 +399,17 @@ function cargarPendientes(){
 
         data.forEach(v => {
 
+            const etiqueta = (v.nombre_orden && v.nombre_orden !== "POS")
+                ? v.nombre_orden
+                : v.cliente;
+
             html += `
-
             <div class="card">
-
-                <h3>${v.cliente}</h3>
-
-                <p>
-                Total: Q${v.total}
-                </p>
-
-                <p>
-                Estado: ${v.estado}
-                </p>
-
-                <button class="btn"
-                onclick="abrirPendiente(${v.id})">
-
-                    Abrir
-
-                </button>
-
-                <button class="btn"
-onclick="descargarFactura(${v.id})">
-
-    PDF
-
-</button>
-
+                <h3>${etiqueta}</h3>
+                <p>Total: Q${v.total}</p>
+                <p>Fecha: ${v.fecha}</p>
+                <button class="btn" onclick="abrirPendiente(${v.id})">Cobrar</button>
+                <button class="btn" onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}', '_blank')">PDF</button>
             </div>
             `;
         });
@@ -420,11 +431,61 @@ onclick="descargarFactura(${v.id})">
 // DESCARGAR FACTURA
 // ======================
 function descargarFactura(id){
+    window.open(`${API}/pdf/factura/${id}?token=${getToken()}`, "_blank");
+}
 
-    window.open(
-        `${API}/pdf/factura/${id}`,
-        "_blank"
-    );
+// ======================
+// HISTORIAL VENTAS REPORTE
+// ======================
+function cargarVentasReporte(){
+    authFetch(`${API}/reportes/ventas`)
+    .then(r => r.json())
+    .then(data => {
+        const cont = document.getElementById("listaVentasReporte");
+        if (!cont) return;
+        if (!data.length) {
+            cont.innerHTML = "<p>No hay ventas registradas.</p>";
+            return;
+        }
+        cont.innerHTML = data.map(v => `
+            <div class="card">
+                <h3>Venta #${v.id}</h3>
+                <p>Cliente: ${v.cliente ?? "—"}</p>
+                <p>Total: Q${v.total}</p>
+                <p>Estado: ${v.forma_cobro}</p>
+                <p>Método: ${v.metodo_pago}</p>
+                <p>Fecha: ${v.fecha}</p>
+                <button class="btn" onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}', '_blank')">🧾 Descargar PDF</button>
+            </div>
+        `).join("");
+    })
+    .catch(() => mostrarMensaje("❌ Error cargando ventas"));
+}
+
+// ======================
+// HISTORIAL FACTURAS
+// ======================
+function cargarFacturas(){
+    authFetch(`${API}/factura`)
+    .then(r => r.json())
+    .then(data => {
+        const cont = document.getElementById("listaFacturas");
+        if (!cont) return;
+        if (!data.length) {
+            cont.innerHTML = "<p>No hay facturas registradas.</p>";
+            return;
+        }
+        cont.innerHTML = data.map(f => `
+            <div class="card">
+                <h3>Factura #${f.id_factura}</h3>
+                <p>Cliente: ${f.nombre}</p>
+                <p>NIT: ${f.nit}</p>
+                <p>Fecha: ${f.fecha}</p>
+                <button class="btn" onclick="descargarFactura(${f.id_factura})">🧾 Descargar PDF</button>
+            </div>
+        `).join("");
+    })
+    .catch(() => mostrarMensaje("❌ Error cargando facturas"));
 }
 
 // ======================
@@ -432,7 +493,7 @@ function descargarFactura(id){
 // ======================
 function listarProductos(){
 
-    fetch(`${API}/productos`)
+    authFetch(`${API}/productos`)
 
     .then(r => r.json())
 
@@ -511,13 +572,9 @@ function editarProducto(id){
     let stock =
     document.getElementById(`stock${id}`).value;
 
-    fetch(`${API}/productos/${id}`, {
+    authFetch(`${API}/productos/${id}`, {
 
         method: "PUT",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
 
@@ -545,57 +602,31 @@ function editarProducto(id){
 // ======================
 function login(){
 
-    let usuario =
-    document.getElementById("usuario").value;
-
-    let password =
-    document.getElementById("password").value;
+    let usuario = document.getElementById("usuario").value;
+    let password = document.getElementById("password").value;
 
     fetch(`${API}/usuarios/login`, {
-
         method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-
-            usuario: usuario,
-
-            password: password
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario, password })
     })
-
-    .then(r => r.json())
-
+    .then(async r => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.mensaje || "Credenciales incorrectas");
+        return data;
+    })
     .then(data => {
-
-        localStorage.setItem(
-
-            "usuario",
-
-            JSON.stringify({
-
-                id_usuario:
-                data.id_usuario,
-
-                nombre:
-                data.nombre,
-
-                rol:
-                data.rol
-            })
-        );
-
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("usuario", JSON.stringify({
+            id_usuario: data.id_usuario,
+            nombre: data.nombre,
+            rol: data.rol
+        }));
         window.location = "panel.html";
     })
-
     .catch(error => {
-
         console.log(error);
-
-        alert("❌ Usuario incorrecto");
+        alert("❌ " + error.message);
     });
 }
 
@@ -614,34 +645,24 @@ function logout() {
 // ======================
 function cargarCategoriasPOS(){
 
-    fetch(`${API}/productos/categorias`)
+    authFetch(`${API}/productos/categorias`)
 
     .then(r => r.json())
 
     .then(data => {
 
-        console.log(data);
-
         let html = "";
 
         data.forEach(c => {
+            const esCombos = c.nombre.toLowerCase().includes("combo");
+            const accion = esCombos
+                ? `cargarCombos()`
+                : `cargarProductosCategoria(${c.id})`;
 
-            html += `
-
-            <button
-            class="btn"
-            onclick="cargarProductosCategoria(${c.id})">
-
-                ${c.nombre}
-
-            </button>
-
-            `;
+            html += `<button class="btn" onclick="${accion}">${c.nombre}</button>`;
         });
 
-        document.getElementById(
-        "categoriasPOS"
-        ).innerHTML = html;
+        document.getElementById("categoriasPOS").innerHTML = html;
     })
 
     .catch(error => {
@@ -655,6 +676,136 @@ function cargarCategoriasPOS(){
 }
 
 // ======================
+// COMBOS POS
+// ======================
+function cargarCombos(){
+    document.getElementById("subcategoriasPOS").innerHTML = "";
+
+    authFetch(`${API}/combos`)
+    .then(r => r.json())
+    .then(data => {
+        let html = "";
+        data.forEach(c => {
+            const itemsTexto = c.items.map(i => `${i.cantidad}x ${i.nombre_item}`).join(", ");
+            html += `
+            <div class="card">
+                <h3>${c.nombre}</h3>
+                <p style="font-size:12px; color:#aaa;">${itemsTexto}</p>
+                <p><strong>Q${c.precio}</strong></p>
+                <button class="btn" onclick="agregarComboAlCarrito(${c.id_combo})">AGREGAR</button>
+            </div>`;
+        });
+        document.getElementById("productosPOS").innerHTML = html;
+    })
+    .catch(() => mostrarMensaje("❌ Error cargando combos"));
+}
+
+// Estado temporal para el modal de bebidas
+let _comboPendiente = null;
+let _bebidasElegidas = {};  // { id_producto: { nombre, cantidad } }
+
+function agregarComboAlCarrito(idCombo){
+    authFetch(`${API}/combos`)
+    .then(r => r.json())
+    .then(data => {
+        const combo = data.find(c => c.id_combo === idCombo);
+        if (!combo) return;
+
+        const itemsSeleccionables = combo.items.filter(i => i.es_seleccionable);
+        if (itemsSeleccionables.length === 0) {
+            // Sin bebidas seleccionables, agregar directo
+            _finalizarAgregarCombo(combo, []);
+            return;
+        }
+
+        // Hay bebidas seleccionables → abrir modal
+        _comboPendiente = combo;
+        _bebidasElegidas = {};
+        const totalBebidas = itemsSeleccionables.reduce((s, i) => s + i.cantidad, 0);
+
+        document.getElementById("modalBebidasInstruccion").textContent =
+            `Elige ${totalBebidas} bebida(s) para tu ${combo.nombre}`;
+        document.getElementById("bebidasRequeridas").textContent = totalBebidas;
+        document.getElementById("bebidasSeleccionadas").textContent = "0";
+
+        // Cargar bebidas disponibles (categoria 1)
+        const idCat = itemsSeleccionables[0].id_categoria_seleccion;
+        authFetch(`${API}/productos/categoria/${idCat}`)
+        .then(r => r.json())
+        .then(bebidas => {
+            let html = "";
+            bebidas.forEach(b => {
+                html += `
+                <div class="card" style="text-align:center;">
+                    <strong>${b.nombre}</strong>
+                    <p style="color:#aaa; font-size:12px;">Stock: ${b.stock}</p>
+                    <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;">
+                        <button class="btn" style="padding:4px 10px;" onclick="cambiarBebida(${b.id}, '${b.nombre}', -1)">−</button>
+                        <span id="cnt_${b.id}">0</span>
+                        <button class="btn" style="padding:4px 10px;" onclick="cambiarBebida(${b.id}, '${b.nombre}', 1)">+</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById("listaBebidas").innerHTML = html;
+            abrirModal("modalBebidas");
+        });
+    });
+}
+
+function cambiarBebida(id, nombre, delta){
+    const requeridas = parseInt(document.getElementById("bebidasRequeridas").textContent);
+    const actuales = Object.values(_bebidasElegidas).reduce((s, b) => s + b.cantidad, 0);
+
+    if (delta > 0 && actuales >= requeridas) {
+        mostrarMensaje(`⚠️ Solo puedes elegir ${requeridas} bebida(s)`);
+        return;
+    }
+
+    if (!_bebidasElegidas[id]) _bebidasElegidas[id] = { nombre, cantidad: 0 };
+    _bebidasElegidas[id].cantidad += delta;
+    if (_bebidasElegidas[id].cantidad < 0) _bebidasElegidas[id].cantidad = 0;
+
+    document.getElementById(`cnt_${id}`).textContent = _bebidasElegidas[id].cantidad;
+
+    const total = Object.values(_bebidasElegidas).reduce((s, b) => s + b.cantidad, 0);
+    document.getElementById("bebidasSeleccionadas").textContent = total;
+}
+
+function confirmarBebidas(){
+    const requeridas = parseInt(document.getElementById("bebidasRequeridas").textContent);
+    const total = Object.values(_bebidasElegidas).reduce((s, b) => s + b.cantidad, 0);
+
+    if (total !== requeridas) {
+        mostrarMensaje(`⚠️ Debes elegir exactamente ${requeridas} bebida(s)`);
+        return;
+    }
+
+    // Construir ingredientes con las bebidas elegidas
+    const bebidasIngredientes = Object.entries(_bebidasElegidas)
+        .filter(([, v]) => v.cantidad > 0)
+        .map(([id, v]) => ({ id_producto: parseInt(id), nombre_item: v.nombre, cantidad: v.cantidad }));
+
+    // Los demás items del combo (no seleccionables)
+    const otrosItems = _comboPendiente.items.filter(i => !i.es_seleccionable);
+
+    cerrarModal("modalBebidas");
+    _finalizarAgregarCombo(_comboPendiente, [...bebidasIngredientes, ...otrosItems]);
+}
+
+function _finalizarAgregarCombo(combo, ingredientes){
+    carrito.push({
+        id_producto: 0,
+        nombre: `🎯 ${combo.nombre}`,
+        precio: Number(combo.precio),
+        cantidad: 1,
+        tipo: "COMBO",
+        ingredientes
+    });
+    renderCarrito();
+    mostrarMensaje(`✅ ${combo.nombre} agregado`);
+}
+
+// ======================
 // SUBCATEGORIAS
 // ======================
 // ======================
@@ -662,7 +813,7 @@ function cargarCategoriasPOS(){
 // ======================
 function cargarProductosCategoria(id){
 
-    fetch(`${API}/productos/subcategorias/${id}`)
+    authFetch(`${API}/productos/subcategorias/${id}`)
 
     .then(r => r.json())
 
@@ -711,7 +862,7 @@ function cargarProductosCategoria(id){
 
 function cargarSubcategoria(id){
 
-    fetch(`${API}/productos/subcategoria/${id}`)
+    authFetch(`${API}/productos/subcategoria/${id}`)
 
     .then(response => {
 
@@ -867,54 +1018,36 @@ precio
 function renderCarrito(){
 
     let html = "";
-
-    totalVenta = 0;
+    let subtotalBruto = 0;
 
     carrito.forEach((p,index) => {
-
-        let subtotal =
-        p.precio * p.cantidad;
-
-        totalVenta += subtotal;
+        let subtotal = p.precio * p.cantidad;
+        subtotalBruto += subtotal;
 
         html += `
-
         <div class="card">
-
             <h3>${p.nombre}</h3>
-
-            <p>
-            Cantidad: ${p.cantidad}
-            </p>
-
-            <p>
-            Subtotal: Q${subtotal}
-            </p>
-
-            <button class="btn"
-            onclick="eliminarCarrito(${index})">
-
-                Eliminar
-
-            </button>
-
+            <p>Cantidad: ${p.cantidad}</p>
+            <p>Subtotal: Q${subtotal.toFixed(2)}</p>
+            <button class="btn" onclick="eliminarCarrito(${index})">Eliminar</button>
         </div>
         `;
     });
 
+    const descPct = parseFloat(document.getElementById("descuentoPct")?.value) || 0;
+    const descuento = subtotalBruto * (descPct / 100);
+    totalVenta = subtotalBruto - descuento;
+
     html += `
-
-    <div class="card">
-
-        <h2>Total: Q${totalVenta}</h2>
-
-        <button class="btn"
-        onclick="abrirModalPago()">
-
-            Finalizar Venta
-
-        </button>
-
+    <div class="card" style="min-width:220px;">
+        <p style="color:#aaa; margin-bottom:6px;">Subtotal: Q${subtotalBruto.toFixed(2)}</p>
+        <label style="font-size:13px; color:#aaa;">Descuento (%)</label>
+        <input id="descuentoPct" type="number" min="0" max="100" value="${descPct}"
+            placeholder="0" style="width:80px; margin:4px 0 8px;"
+            oninput="renderCarrito()">
+        ${descuento > 0 ? `<p style="color:#f59e0b;">Descuento: -Q${descuento.toFixed(2)}</p>` : ""}
+        <h2>Total: Q${totalVenta.toFixed(2)}</h2>
+        <button class="btn" onclick="abrirModalPago()">Finalizar Venta</button>
     </div>
     `;
 
@@ -934,6 +1067,21 @@ function eliminarCarrito(index){
     carrito.splice(index,1);
 
     renderCarrito();
+}
+
+// ======================
+// TOGGLE CAMPOS FACTURA
+// ======================
+function toggleCamposFactura(){
+    const checkbox = document.getElementById("requiereFactura");
+    const campos = document.getElementById("camposFactura");
+    if (campos) campos.style.display = checkbox.checked ? "block" : "none";
+}
+
+function toggleCamposPendiente(){
+    const metodo = document.getElementById("metodoPago").value;
+    const campo = document.getElementById("campoNombrePendiente");
+    if (campo) campo.style.display = metodo === "PENDIENTE" ? "block" : "none";
 }
 
 // ======================
@@ -957,41 +1105,70 @@ function abrirModalPago(){
 }
 
 function cerrarModalPago(){
-
-    const modal =
-    document.getElementById("modalPago");
-
-    if(modal){
-        modal.style.display = "none";
-    }
+    const modal = document.getElementById("modalPago");
+    if (modal) modal.style.display = "none";
+    const checkbox = document.getElementById("requiereFactura");
+    if (checkbox) { checkbox.checked = false; toggleCamposFactura(); }
+    const nombrePend = document.getElementById("nombreClientePendiente");
+    if (nombrePend) nombrePend.value = "";
+    const select = document.getElementById("metodoPago");
+    if (select) { select.value = "EFECTIVO"; toggleCamposPendiente(); }
 }
 
 // ======================
 // CONFIRMAR VENTA
 // ======================
 function confirmarVenta(){
+    const metodo = document.getElementById("metodoPago").value;
+    const observacion = document.getElementById("observacionVenta").value;
+    const requiereFactura = document.getElementById("requiereFactura").checked;
 
-    let metodo =
-    document.getElementById("metodoPago").value;
+    if (metodo === "PENDIENTE") {
+        const nombreCliente = document.getElementById("nombreClientePendiente").value.trim();
+        if (!nombreCliente) {
+            alert("⚠️ Ingresa el nombre del cliente para la orden pendiente.");
+            return;
+        }
+    }
 
-    let observacion =
-    document.getElementById("observacionVenta").value;
+    const nombreOrden = metodo === "PENDIENTE"
+        ? document.getElementById("nombreClientePendiente").value.trim()
+        : "POS";
 
-    registrarVenta(
-        metodo,
-        observacion
-    );
+    const datosFactura = requiereFactura ? {
+        nit: document.getElementById("nitFacturaPOS").value || "CF",
+        nombre: document.getElementById("nombreFacturaPOS").value || "Consumidor Final",
+        direccion: document.getElementById("direccionFacturaPOS").value || "Ciudad"
+    } : null;
 
     cerrarModalPago();
+    registrarVenta(metodo, observacion, datosFactura, nombreOrden);
 }
 
 // ======================
 // REGISTRAR VENTA
 // ======================
-function registrarVenta(
-metodo,
-observacion
-){
+// Expande los combos en sus ingredientes para descontar inventario
+function expandirCarritoParaVenta(carrito){
+    const items = [];
+    carrito.forEach(item => {
+        if (item.tipo === "COMBO" && item.ingredientes) {
+            // El combo como línea de precio
+            items.push({ id_producto: 0, nombre: item.nombre, cantidad: 1, precio: item.precio });
+            // Los ingredientes para descontar inventario (precio 0, no suman al total)
+            item.ingredientes.forEach(ing => {
+                if (ing.id_producto) {
+                    items.push({ id_producto: ing.id_producto, nombre: ing.nombre_item, cantidad: ing.cantidad, precio: 0 });
+                }
+            });
+        } else {
+            items.push(item);
+        }
+    });
+    return items;
+}
+
+function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = "POS"){
 
     let usuario =
     JSON.parse(
@@ -1005,7 +1182,7 @@ observacion
         id_usuario:
         usuario.id_usuario,
 
-        nombre_orden: "POS",
+        nombre_orden: nombreOrden,
 
         numero_orden: "000",
 
@@ -1020,38 +1197,59 @@ observacion
 
         observacion: observacion,
 
-        productos: carrito
+        productos: expandirCarritoParaVenta(carrito)
     };
 
-    fetch(`${API}/ventas`, {
+    authFetch(`${API}/ventas`, {
 
         method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify(venta)
     })
 
     .then(r => r.json())
 
-    .then(() => {
+    .then(data => {
 
-        mostrarMensaje(
-        "✅ Venta registrada"
-        );
+        const mostrarBotonPDF = (url) => {
+            const ultimaVenta = document.getElementById("ultimaVenta");
+            const ultimaVentaPDF = document.getElementById("ultimaVentaPDF");
+            if (ultimaVenta && ultimaVentaPDF) {
+                ultimaVenta.style.display = "block";
+                ultimaVentaPDF.onclick = () => window.open(url, "_blank");
+            }
+        };
+
+        if (datosFactura && data.id_venta) {
+            authFetch(`${API}/factura`, {
+                method: "POST",
+                body: JSON.stringify({
+                    id_venta: data.id_venta,
+                    nit: datosFactura.nit,
+                    nombre: datosFactura.nombre,
+                    direccion: datosFactura.direccion
+                })
+            })
+            .then(r => r.json())
+            .then(fac => {
+                mostrarMensaje("✅ Venta registrada con factura");
+                const idFac = fac.id_factura ?? fac.id ?? fac.idFactura;
+                mostrarBotonPDF(`${API}/pdf/factura/${idFac}?token=${getToken()}`);
+            })
+            .catch(() => {
+                mostrarMensaje("✅ Venta registrada (error al crear factura)");
+                mostrarBotonPDF(`${API}/pdf/venta/${data.id_venta}?token=${getToken()}`);
+            });
+        } else {
+            mostrarMensaje("✅ Venta registrada");
+            mostrarBotonPDF(`${API}/pdf/venta/${data.id_venta}?token=${getToken()}`);
+        }
 
         carrito = [];
-
         totalVenta = 0;
-
         renderCarrito();
-
         cargarDashboard();
-
         cargarPendientes();
-
         listarProductos();
     })
 
@@ -1112,16 +1310,14 @@ window.onload = function(){
         }
     }
 
-    // 🔐 Permisos según el rol (admin vs cajero)
-    aplicarPermisos();
-
-    cargarDashboard();
-
-    listarProductos();
-
-    cargarCategoriasPOS();
-
-    cargarPendientes();
+    // Solo ejecutar en el panel, no en el login
+    if (window.location.pathname.includes("panel")) {
+        aplicarPermisos();
+        cargarDashboard();
+        listarProductos();
+        cargarCategoriasPOS();
+        cargarPendientes();
+    }
 };
 
 
@@ -1131,7 +1327,7 @@ window.onload = function(){
 
 function cargarConsolas() {
 
-    fetch(`${API}/consolas`)
+    authFetch(`${API}/consolas`)
     .then(r => r.json())
     .then(data => {
 
@@ -1207,13 +1403,9 @@ function cargarConsolas() {
 
 function iniciarConsola(id) {
 
-    fetch(`${API}/consolas/${id}/estado`, {
+    authFetch(`${API}/consolas/${id}/estado`, {
 
         method: "PUT",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
             estado: "OCUPADA"
@@ -1241,7 +1433,7 @@ function finalizarConsola(id){
 
     if(!minutos) return;
 
-    fetch(`${API}/consolas`)
+    authFetch(`${API}/consolas`)
     .then(r => r.json())
     .then(data => {
 
@@ -1274,16 +1466,10 @@ function finalizarConsola(id){
 
         renderCarrito();
 
-        return fetch(
+        return authFetch(
         `${API}/consolas/${id}/estado`,
         {
-
             method:"PUT",
-
-            headers:{
-                "Content-Type":"application/json"
-            },
-
             body:JSON.stringify({
                 estado:"LIBRE"
             })
@@ -1386,7 +1572,7 @@ function cerrarModal(id){
 // ==================================================================
 function cargarTopClientes(){
 
-    fetch(`${API}/dashboard/top-clientes`)
+    authFetch(`${API}/dashboard/top-clientes`)
 
     .then(r => r.json())
 
@@ -1426,7 +1612,7 @@ function cargarTopClientes(){
 // ==================================================================
 function cargarTopGamers(){
 
-    fetch(`${API}/dashboard/top-gamers`)
+    authFetch(`${API}/dashboard/top-gamers`)
 
     .then(r => r.json())
 
@@ -1473,13 +1659,9 @@ function agregarStockRapido(){
         return;
     }
 
-    fetch(`${API}/productos/stock`, {
+    authFetch(`${API}/productos/stock`, {
 
         method: "PUT",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
             id_producto: parseInt(id),
@@ -1512,7 +1694,7 @@ function agregarStockRapido(){
 // ==================================================================
 function cargarAlertas(){
 
-    fetch(`${API}/inventario/alertas`)
+    authFetch(`${API}/inventario/alertas`)
 
     .then(r => r.json())
 
@@ -1559,7 +1741,7 @@ function cargarAlertas(){
 // ==================================================================
 function cargarHistorial(){
 
-    fetch(`${API}/inventario/historial`)
+    authFetch(`${API}/inventario/historial`)
 
     .then(r => r.json())
 
@@ -1627,13 +1809,9 @@ function crearProducto(){
         return;
     }
 
-    fetch(`${API}/productos`, {
+    authFetch(`${API}/productos`, {
 
         method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
             nombre: nombre,
@@ -1673,7 +1851,7 @@ function cargarSelectsProducto(){
 
     if(!cat) return;
 
-    fetch(`${API}/productos/categorias`)
+    authFetch(`${API}/productos/categorias`)
     .then(r => r.json())
     .then(data => {
         cat.innerHTML = data
@@ -1696,7 +1874,7 @@ function cargarSubcategoriasProducto(idCategoria){
     const sub = document.getElementById("subcategoriaProducto");
     if(!sub) return;
 
-    fetch(`${API}/productos/subcategorias/${idCategoria}`)
+    authFetch(`${API}/productos/subcategorias/${idCategoria}`)
     .then(r => r.json())
     .then(data => {
         sub.innerHTML = data
@@ -1723,13 +1901,9 @@ function crearTorneo(){
         return;
     }
 
-    fetch(`${API}/torneos`, {
+    authFetch(`${API}/torneos`, {
 
         method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
             nombre: nombre,
@@ -1764,7 +1938,7 @@ function crearTorneo(){
 
 function cargarTorneos(){
 
-    fetch(`${API}/torneos`)
+    authFetch(`${API}/torneos`)
 
     .then(r => r.json())
 
@@ -1807,7 +1981,7 @@ function cargarTorneos(){
 function cargarCierre(){
 
     // Resumen (ventas, gastos, balance)
-    fetch(`${API}/cierres/resumen`)
+    authFetch(`${API}/cierres/resumen`)
 
     .then(r => r.json())
 
@@ -1825,7 +1999,7 @@ function cargarCierre(){
     .catch(error => console.log(error));
 
     // Historial de cierres
-    fetch(`${API}/cierres`)
+    authFetch(`${API}/cierres`)
 
     .then(r => r.json())
 
@@ -1866,13 +2040,9 @@ function registrarCierre(){
     let observacion =
     document.getElementById("observacionCierre").value;
 
-    fetch(`${API}/cierres`, {
+    authFetch(`${API}/cierres`, {
 
         method: "POST",
-
-        headers: {
-            "Content-Type": "application/json"
-        },
 
         body: JSON.stringify({
             id_usuario: usuario ? usuario.id_usuario : 0,
@@ -1902,9 +2072,7 @@ function registrarCierre(){
 // 📊 EXPORTAR A EXCEL
 // ==================================================================
 function exportarExcel(){
-
-    // Abre el endpoint que descarga el Excel de ventas
-    window.open(`${API}/exportar/ventas`, "_blank");
+    window.open(`${API}/exportar/ventas?token=${getToken()}`, "_blank");
 }
 
 
@@ -1916,7 +2084,7 @@ function eliminarProducto(id){
 
     if(!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
-    fetch(`${API}/productos/${id}`, {
+    authFetch(`${API}/productos/${id}`, {
         method: "DELETE"
     })
 

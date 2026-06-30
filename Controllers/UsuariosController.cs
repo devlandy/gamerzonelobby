@@ -1,4 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using MySql.Data.MySqlClient;
 using GamerZoneAPI.Data;
 using GamerZoneAPI.Models;
@@ -9,57 +14,55 @@ namespace GamerZoneAPI.Controllers
     [Route("api/usuarios")]
     public class UsuariosController : ControllerBase
     {
-        private Conexion conexion = new Conexion();
+        private readonly DbManager _db;
+        private readonly IConfiguration _config;
 
-        // 🔐 LOGIN
+        public UsuariosController(DbManager db, IConfiguration config)
+        {
+            _db = db;
+            _config = config;
+        }
+
+        [AllowAnonymous]
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
-            using (var conn = conexion.GetConnection())
+            var rows = _db.ExecuteQuery(
+                "SELECT * FROM usuarios WHERE usuario = @usuario AND password = @password",
+                new MySqlParameter("@usuario", request.usuario),
+                new MySqlParameter("@password", request.password));
+
+            if (rows.Count == 0)
+                return Unauthorized(new { mensaje = "Credenciales incorrectas" });
+
+            var row = rows[0];
+
+            var claims = new[]
             {
-                conn.Open();
+                new Claim(ClaimTypes.NameIdentifier, row["id_usuario"].ToString()!),
+                new Claim(ClaimTypes.Name, row["usuario"].ToString()!),
+                new Claim(ClaimTypes.Role, row["rol"].ToString()!)
+            };
 
-                string query = @"
-                SELECT * FROM usuarios
-                WHERE usuario = @usuario
-                AND password = @password";
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                MySqlCommand cmd =
-                new MySqlCommand(query, conn);
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(8),
+                signingCredentials: creds);
 
-                cmd.Parameters.AddWithValue(
-                    "@usuario",
-                    request.usuario);
-
-                cmd.Parameters.AddWithValue(
-                    "@password",
-                    request.password);
-
-                var reader = cmd.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    return Ok(new
-                    {
-                        id_usuario =
-                        reader["id_usuario"],
-
-                        nombre =
-                        reader["nombre"],
-
-                        usuario =
-                        reader["usuario"],
-
-                        rol =
-                        reader["rol"]
-                    });
-                }
-
-                return BadRequest(new
-                {
-                    mensaje = "Credenciales incorrectas"
-                });
-            }
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expira = token.ValidTo,
+                id_usuario = row["id_usuario"],
+                nombre = row["nombre"],
+                usuario = row["usuario"],
+                rol = row["rol"]
+            });
         }
     }
 }

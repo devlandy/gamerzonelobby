@@ -1,597 +1,178 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
 using GamerZoneAPI.Data;
 
 namespace GamerZoneAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/dashboard")]
     public class DashboardController : ControllerBase
     {
-        private Conexion conexion = new Conexion();
+        private readonly DbManager _db;
+
+        public DashboardController(DbManager db) => _db = db;
 
         [HttpGet]
         public IActionResult ObtenerDashboard()
         {
-            using (var conn = conexion.GetConnection())
+            decimal ventasDia = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE DATE(fecha) = CURDATE()"));
+            int pendientes = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM ventas WHERE forma_cobro = 'PENDIENTE'"));
+            int agotados = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM productos WHERE stock = 0"));
+            int porTerminar = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM productos WHERE stock > 0 AND stock <= 5"));
+            decimal gastosDia = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE DATE(fecha) = CURDATE()"));
+            int cierre = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM cierre_diario WHERE DATE(fecha) = CURDATE()"));
+            int consolasPendientes = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM ventas WHERE tipo = 'CONSOLA' AND forma_cobro = 'PENDIENTE'"));
+
+            return Ok(new
             {
-                conn.Open();
-
-                // =============================
-                // VENTAS DEL DÍA
-                // =============================
-                string ventasQuery = @"
-                SELECT IFNULL(SUM(total),0) 
-                FROM ventas 
-                WHERE DATE(fecha) = CURDATE()";
-
-                MySqlCommand cmdVentas = new MySqlCommand(ventasQuery, conn);
-                decimal ventasDia = Convert.ToDecimal(cmdVentas.ExecuteScalar());
-
-                // =============================
-                // PEDIDOS PENDIENTES
-                // =============================
-                string pendientesQuery = @"
-                SELECT COUNT(*) 
-                FROM ventas 
-                WHERE forma_cobro = 'PENDIENTE'";
-
-                MySqlCommand cmdPendientes = new MySqlCommand(pendientesQuery, conn);
-                int pendientes = Convert.ToInt32(cmdPendientes.ExecuteScalar());
-
-                // =============================
-                // PRODUCTOS AGOTADOS
-                // =============================
-                string agotadosQuery = @"
-                SELECT COUNT(*) 
-                FROM productos 
-                WHERE stock = 0";
-
-                MySqlCommand cmdAgotados = new MySqlCommand(agotadosQuery, conn);
-                int agotados = Convert.ToInt32(cmdAgotados.ExecuteScalar());
-
-                // =============================
-                // PRODUCTOS POR TERMINAR (<5)
-                // =============================
-                string porTerminarQuery = @"
-                SELECT COUNT(*) 
-                FROM productos 
-                WHERE stock > 0 AND stock <= 5";
-
-                MySqlCommand cmdPorTerminar = new MySqlCommand(porTerminarQuery, conn);
-                int porTerminar = Convert.ToInt32(cmdPorTerminar.ExecuteScalar());
-
-                // =============================
-                // GASTOS DEL DÍA
-                // =============================
-                string gastosQuery = @"
-                SELECT IFNULL(SUM(monto),0) 
-                FROM gastos 
-                WHERE DATE(fecha) = CURDATE()";
-
-                MySqlCommand cmdGastos = new MySqlCommand(gastosQuery, conn);
-                decimal gastosDia = Convert.ToDecimal(cmdGastos.ExecuteScalar());
-
-                // =============================
-                // BALANCE
-                // =============================
-                decimal balance = ventasDia - gastosDia;
-
-                // =============================
-                // CIERRE DEL DÍA
-                // =============================
-                string cierreQuery = @"
-                SELECT COUNT(*) 
-                FROM cierre_diario 
-                WHERE DATE(fecha) = CURDATE()";
-
-                MySqlCommand cmdCierre = new MySqlCommand(cierreQuery, conn);
-                int cierre = Convert.ToInt32(cmdCierre.ExecuteScalar());
-
-                string estadoCierre = cierre > 0 ? "REALIZADO" : "PENDIENTE";
-
-                // =============================
-                // CONSOLAS PENDIENTES
-                // =============================
-                string consolasQuery = @"
-                SELECT COUNT(*) 
-                FROM ventas 
-                WHERE tipo = 'CONSOLA' 
-                AND forma_cobro = 'PENDIENTE'";
-
-                MySqlCommand cmdConsolas = new MySqlCommand(consolasQuery, conn);
-                int consolasPendientes = Convert.ToInt32(cmdConsolas.ExecuteScalar());
-
-                return Ok(new
-                {
-                    ventas_dia = ventasDia,
-                    pedidos_pendientes = pendientes,
-                    productos_agotados = agotados,
-                    productos_por_terminar = porTerminar,
-                    gastos_dia = gastosDia,
-                    balance = balance,
-                    cierre_dia = estadoCierre,
-                    consolas_pendientes = consolasPendientes
-                });
-            }
+                ventas_dia = ventasDia,
+                pedidos_pendientes = pendientes,
+                productos_agotados = agotados,
+                productos_por_terminar = porTerminar,
+                gastos_dia = gastosDia,
+                balance = ventasDia - gastosDia,
+                cierre_dia = cierre > 0 ? "REALIZADO" : "PENDIENTE",
+                consolas_pendientes = consolasPendientes
+            });
         }
 
         [HttpPost("cierre")]
         public IActionResult CerrarDia()
         {
-            using (var conn = conexion.GetConnection())
-            {
-                conn.Open();
+            int existe = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM cierre_diario WHERE DATE(fecha) = CURDATE()"));
+            if (existe > 0)
+                return BadRequest("El cierre de hoy ya fue realizado");
 
-                // =============================
-                // VALIDAR SI YA EXISTE CIERRE
-                // =============================
-                string validarQuery = @"
-        SELECT COUNT(*) 
-        FROM cierre_diario 
-        WHERE DATE(fecha) = CURDATE()";
+            decimal ventasDia = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE DATE(fecha) = CURDATE()"));
+            decimal gastosDia = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE DATE(fecha) = CURDATE()"));
+            decimal balance = ventasDia - gastosDia;
 
-                MySqlCommand cmdValidar = new MySqlCommand(validarQuery, conn);
-                int existe = Convert.ToInt32(cmdValidar.ExecuteScalar());
+            _db.ExecuteNonQuery(@"
+                INSERT INTO cierre_diario (total_ventas, total_gastos, balance, estado)
+                VALUES (@ventas, @gastos, @balance, 'CERRADO')",
+                new MySqlParameter("@ventas", ventasDia),
+                new MySqlParameter("@gastos", gastosDia),
+                new MySqlParameter("@balance", balance));
 
-                if (existe > 0)
-                {
-                    return BadRequest("El cierre de hoy ya fue realizado");
-                }
-
-                // =============================
-                // VENTAS DEL DÍA
-                // =============================
-                string ventasQuery = @"
-        SELECT IFNULL(SUM(total),0) 
-        FROM ventas 
-        WHERE DATE(fecha) = CURDATE()";
-
-                MySqlCommand cmdVentas = new MySqlCommand(ventasQuery, conn);
-                decimal ventasDia = Convert.ToDecimal(cmdVentas.ExecuteScalar());
-
-                // =============================
-                // GASTOS DEL DÍA
-                // =============================
-                string gastosQuery = @"
-        SELECT IFNULL(SUM(monto),0) 
-        FROM gastos 
-        WHERE DATE(fecha) = CURDATE()";
-
-                MySqlCommand cmdGastos = new MySqlCommand(gastosQuery, conn);
-                decimal gastosDia = Convert.ToDecimal(cmdGastos.ExecuteScalar());
-
-                // =============================
-                // BALANCE
-                // =============================
-                decimal balance = ventasDia - gastosDia;
-
-                // =============================
-                // GUARDAR CIERRE
-                // =============================
-                string insertQuery = @"
-        INSERT INTO cierre_diario 
-        (total_ventas, total_gastos, balance, estado)
-        VALUES (@ventas, @gastos, @balance, 'CERRADO')";
-
-                MySqlCommand cmdInsert = new MySqlCommand(insertQuery, conn);
-                cmdInsert.Parameters.AddWithValue("@ventas", ventasDia);
-                cmdInsert.Parameters.AddWithValue("@gastos", gastosDia);
-                cmdInsert.Parameters.AddWithValue("@balance", balance);
-
-                cmdInsert.ExecuteNonQuery();
-
-                return Ok(new
-                {
-                    mensaje = "Cierre realizado correctamente",
-                    ventas = ventasDia,
-                    gastos = gastosDia,
-                    balance = balance
-                });
-            }
+            return Ok(new { mensaje = "Cierre realizado correctamente", ventas = ventasDia, gastos = gastosDia, balance });
         }
-
 
         [HttpPost("puntos/juego")]
         public IActionResult PuntosJuego(int id_cliente, int puntos)
         {
-            using (var conn = conexion.GetConnection())
-            {
-                conn.Open();
+            _db.ExecuteNonQuery(@"
+                INSERT INTO historial_puntos (id_cliente, tipo, puntos, motivo) VALUES (@cliente, 'JUEGO', @puntos, 'MANUAL')",
+                new MySqlParameter("@cliente", id_cliente),
+                new MySqlParameter("@puntos", puntos));
 
-                string query = @"INSERT INTO historial_puntos
-        (id_cliente, tipo, puntos, motivo)
-        VALUES (@cliente, 'JUEGO', @puntos, 'MANUAL')";
-
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@cliente", id_cliente);
-                cmd.Parameters.AddWithValue("@puntos", puntos);
-
-                cmd.ExecuteNonQuery();
-
-                return Ok(new { mensaje = "Puntos de juego agregados" });
-            }
+            return Ok(new { mensaje = "Puntos de juego agregados" });
         }
 
         [HttpPost("puntos/consumo")]
         public IActionResult PuntosConsumo(int id_cliente, decimal monto)
         {
-            using (var conn = conexion.GetConnection())
-            {
-                conn.Open();
+            decimal puntos = monto * 0.05m;
 
-                decimal puntos = monto * 0.05m;
+            _db.ExecuteNonQuery(@"
+                INSERT INTO historial_puntos (id_cliente, tipo, puntos, motivo) VALUES (@cliente, 'CONSUMO', @puntos, 'COMPRA')",
+                new MySqlParameter("@cliente", id_cliente),
+                new MySqlParameter("@puntos", puntos));
 
-                string query = @"INSERT INTO historial_puntos
-        (id_cliente, tipo, puntos, motivo)
-        VALUES (@cliente, 'CONSUMO', @puntos, 'COMPRA')";
-
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@cliente", id_cliente);
-                cmd.Parameters.AddWithValue("@puntos", puntos);
-
-                cmd.ExecuteNonQuery();
-
-                return Ok(new
-                {
-                    mensaje = "Puntos de consumo agregados",
-                    puntos = puntos
-                });
-            }
+            return Ok(new { mensaje = "Puntos de consumo agregados", puntos });
         }
 
         [HttpPost("venta-rapida")]
-        public IActionResult VentaRapida(
-    [FromQuery] int id_cliente,
-    [FromQuery] decimal total)
+        public IActionResult VentaRapida([FromQuery] int id_cliente, [FromQuery] decimal total)
         {
-            using (var conn = conexion.GetConnection())
-            {
-                conn.Open();
+            _db.ExecuteNonQuery(@"
+                INSERT INTO ventas (id_cliente, total, forma_cobro, fecha) VALUES (@cliente, @total, 'CANCELADO', NOW())",
+                new MySqlParameter("@cliente", id_cliente),
+                new MySqlParameter("@total", total));
 
-                string query = @"
-        INSERT INTO ventas
-        (id_cliente, total, forma_cobro, fecha)
-        VALUES (@cliente, @total, 'CANCELADO', NOW())";
-
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-
-                cmd.Parameters.AddWithValue("@cliente", id_cliente);
-                cmd.Parameters.AddWithValue("@total", total);
-
-                cmd.ExecuteNonQuery();
-
-                return Ok(new
-                {
-                    mensaje = "Venta registrada correctamente",
-                    cliente = id_cliente,
-                    total = total
-                });
-            }
+            return Ok(new { mensaje = "Venta registrada correctamente", cliente = id_cliente, total });
         }
 
-        // ======================
-        // TOP CLIENTES
-        // ======================
         [HttpGet("top-clientes")]
         public IActionResult TopClientes()
         {
-            using (var conn = conexion.GetConnection())
+            var rows = _db.ExecuteQuery(@"
+                SELECT c.nombre, COUNT(v.id_venta) AS compras, SUM(v.total) AS total, IFNULL(SUM(hp.puntos),0) AS puntos
+                FROM ventas v
+                JOIN clientes c ON v.id_cliente = c.id_cliente
+                LEFT JOIN historial_puntos hp ON c.id_cliente = hp.id_cliente
+                GROUP BY c.id_cliente, c.nombre
+                ORDER BY puntos DESC, total DESC
+                LIMIT 5");
+
+            return Ok(rows.Select(r => new
             {
-                conn.Open();
-
-                string query = @"
-
-SELECT 
-
-c.nombre,
-
-COUNT(v.id_venta) AS compras,
-
-SUM(v.total) AS total,
-
-IFNULL(SUM(hp.puntos),0) AS puntos
-
-FROM ventas v
-
-JOIN clientes c
-ON v.id_cliente = c.id_cliente
-
-LEFT JOIN historial_puntos hp
-ON c.id_cliente = hp.id_cliente
-
-GROUP BY c.id_cliente, c.nombre
-
-ORDER BY puntos DESC, total DESC
-
-LIMIT 5";
-
-                MySqlCommand cmd =
-                new MySqlCommand(query, conn);
-
-                var reader = cmd.ExecuteReader();
-
-                List<object> lista =
-                new List<object>();
-
-                while (reader.Read())
-                {
-                    lista.Add(new
-                    {
-                        nombre =
-                        reader["nombre"],
-
-                        compras =
-                        reader["compras"],
-
-                        total =
-                        reader["total"],
-
-                        puntos =
-                        reader["puntos"]
-                    });
-                }
-
-                return Ok(lista);
-            }
+                nombre = r["nombre"],
+                compras = r["compras"],
+                total = r["total"],
+                puntos = r["puntos"]
+            }));
         }
 
-
-        // ======================
-        // TOP 10 GAMER
-        // ======================
         [HttpGet("top-gamers")]
         public IActionResult TopGamers()
         {
-            using (var conn =
-            conexion.GetConnection())
-            {
-                conn.Open();
+            var rows = _db.ExecuteQuery(@"
+                SELECT c.nombre, c.apodo, SUM(h.puntos) AS puntos
+                FROM historial_puntos h
+                JOIN clientes c ON h.id_cliente = c.id_cliente
+                WHERE h.tipo = 'JUEGO'
+                GROUP BY c.id_cliente
+                ORDER BY puntos DESC
+                LIMIT 10");
 
-                string query = @"
-
-        SELECT 
-
-        c.nombre,
-
-        c.apodo,
-
-        SUM(h.puntos) AS puntos
-
-        FROM historial_puntos h
-
-        JOIN clientes c
-        ON h.id_cliente = c.id_cliente
-
-        WHERE h.tipo = 'JUEGO'
-
-        GROUP BY c.id_cliente
-
-        ORDER BY puntos DESC
-
-        LIMIT 10";
-
-                MySqlCommand cmd =
-                new MySqlCommand(query, conn);
-
-                var reader =
-                cmd.ExecuteReader();
-
-                List<object> lista =
-                new List<object>();
-
-                while (reader.Read())
-                {
-                    lista.Add(new
-                    {
-                        nombre =
-                        reader["nombre"],
-
-                        apodo =
-                        reader["apodo"],
-
-                        puntos =
-                        reader["puntos"]
-                    });
-                }
-
-                return Ok(lista);
-            }
-
+            return Ok(rows.Select(r => new { nombre = r["nombre"], apodo = r["apodo"], puntos = r["puntos"] }));
         }
 
-        // ======================
-        // CIERRE DIA
-        // ======================
-        // ======================
-        // CIERRE DIA
-        // ======================
         [HttpPost("cierre-dia")]
         public IActionResult CierreDia()
         {
-            using (var conn =
-            conexion.GetConnection())
-            {
-                conn.Open();
+            decimal totalVentas = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE forma_cobro = 'PAGADO'"));
+            decimal totalGastos = 0;
+            decimal balance = totalVentas - totalGastos;
 
-                // TOTAL VENTAS PAGADAS
-                string ventasQuery = @"
+            _db.ExecuteNonQuery(@"
+                INSERT INTO cierre_diario (total_ventas, total_gastos, balance, estado)
+                VALUES (@ventas, @gastos, @balance, 'CERRADO')",
+                new MySqlParameter("@ventas", totalVentas),
+                new MySqlParameter("@gastos", totalGastos),
+                new MySqlParameter("@balance", balance));
 
-        SELECT IFNULL(SUM(total),0)
-        FROM ventas
-        WHERE forma_cobro = 'PAGADO'";
-
-                MySqlCommand ventasCmd =
-                new MySqlCommand(
-                ventasQuery, conn);
-
-                decimal totalVentas =
-                Convert.ToDecimal(
-                ventasCmd.ExecuteScalar());
-
-                // TOTAL GASTOS
-                decimal totalGastos = 0;
-
-                // BALANCE
-                decimal balance =
-                totalVentas - totalGastos;
-
-                // INSERTAR CIERRE
-                string insert = @"
-
-        INSERT INTO cierre_diario
-        (
-            total_ventas,
-            total_gastos,
-            balance,
-            estado
-        )
-
-        VALUES
-        (
-            @ventas,
-            @gastos,
-            @balance,
-            'CERRADO'
-        )";
-
-                MySqlCommand cmd =
-                new MySqlCommand(insert, conn);
-
-                cmd.Parameters.AddWithValue(
-                "@ventas",
-                totalVentas);
-
-                cmd.Parameters.AddWithValue(
-                "@gastos",
-                totalGastos);
-
-                cmd.Parameters.AddWithValue(
-                "@balance",
-                balance);
-
-                cmd.ExecuteNonQuery();
-
-                return Ok(new
-                {
-                    ventas = totalVentas,
-                    gastos = totalGastos,
-                    balance = balance
-                });
-            }
+            return Ok(new { ventas = totalVentas, gastos = totalGastos, balance });
         }
 
+        [HttpGet("historial-cierres")]
+        public IActionResult HistorialCierres()
+        {
+            var rows = _db.ExecuteQuery("SELECT * FROM cierre_diario ORDER BY fecha DESC");
 
-            // ======================
-            // HISTORIAL CIERRES
-            // ======================
-            [HttpGet("historial-cierres")]
-            public IActionResult HistorialCierres()
+            return Ok(rows.Select(r => new
             {
-                using (var conn =
-                conexion.GetConnection())
-                {
-                    conn.Open();
+                id = r["id_cierre"],
+                ventas = r["total_ventas"],
+                gastos = r["total_gastos"],
+                balance = r["balance"],
+                estado = r["estado"],
+                fecha = r["fecha"]
+            }));
+        }
 
-                    string query = @"
-
-        SELECT *
-
-        FROM cierre_diario
-
-        ORDER BY fecha DESC";
-
-                    MySqlCommand cmd =
-                    new MySqlCommand(query, conn);
-
-                    var reader =
-                    cmd.ExecuteReader();
-
-                    List<object> lista =
-                    new List<object>();
-
-                    while (reader.Read())
-                    {
-                        lista.Add(new
-                        {
-                            id =
-                            reader["id_cierre"],
-
-                            ventas =
-                            reader["total_ventas"],
-
-                            gastos =
-                            reader["total_gastos"],
-
-                            balance =
-                            reader["balance"],
-
-                            estado =
-                            reader["estado"],
-
-                            fecha =
-                            reader["fecha"]
-                        });
-                    }
-
-                    return Ok(lista);
-                }
-            }
-
-
-        // ======================
-        // GRAFICA VENTAS
-        // ======================
         [HttpGet("grafica-ventas")]
         public IActionResult GraficaVentas()
         {
-            using (var conn =
-            conexion.GetConnection())
-            {
-                conn.Open();
+            var rows = _db.ExecuteQuery(@"
+                SELECT DATE(fecha) AS dia, SUM(total) AS total
+                FROM ventas
+                GROUP BY DATE(fecha)
+                ORDER BY fecha");
 
-                string query = @"
-
-        SELECT 
-
-        DATE(fecha) AS dia,
-
-        SUM(total) AS total
-
-        FROM ventas
-
-        GROUP BY DATE(fecha)
-
-        ORDER BY fecha";
-
-                MySqlCommand cmd =
-                new MySqlCommand(query, conn);
-
-                var reader =
-                cmd.ExecuteReader();
-
-                List<object> lista =
-                new List<object>();
-
-                while (reader.Read())
-                {
-                    lista.Add(new
-                    {
-                        dia =
-                        reader["dia"],
-
-                        total =
-                        reader["total"]
-                    });
-                }
-
-                return Ok(lista);
-            }
+            return Ok(rows.Select(r => new { dia = r["dia"], total = r["total"] }));
         }
     }
-
-    }
-        
-        
-    
-    
+}

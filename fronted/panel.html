@@ -12,6 +12,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<script>
+    // Proteger el panel: si no hay token, redirigir al login
+    if (!localStorage.getItem("token")) {
+        window.location.href = "login.html";
+    }
+</script>
 
     <!-- USUARIO -->
     <div class="usuario-box">
@@ -106,6 +112,13 @@
                 </div>
             </div>
 
+            <div id="ultimaVenta" style="display:none; margin-bottom:12px;">
+                <div class="card" style="background:#1a2e1a; border:1px solid #22c55e;">
+                    <span id="ultimaVentaMsg">✅ Venta registrada</span>
+                    <button class="btn" style="margin-left:12px;" id="ultimaVentaPDF">🧾 Descargar PDF</button>
+                </div>
+            </div>
+
             <hr>
 
             <h3>🛒 Carrito general</h3>
@@ -193,6 +206,16 @@
                 <p>Descarga el detalle de ventas en formato Excel.</p>
                 <button class="btn" onclick="exportarExcel()">Exportar ventas a Excel</button>
             </div>
+
+            <hr>
+
+            <h3>🧾 Historial de facturas</h3>
+            <div id="listaFacturas" class="dashboard-cards"></div>
+
+            <hr>
+
+            <h3>🛒 Historial de ventas</h3>
+            <div id="listaVentasReporte" class="dashboard-cards"></div>
         </div>
 
         <!-- TORNEOS -->
@@ -285,15 +308,31 @@
             <h2>💳 Finalizar venta</h2>
 
             <label>Método de pago</label>
-            <select id="metodoPago">
+            <select id="metodoPago" onchange="toggleCamposPendiente()">
                 <option>EFECTIVO</option>
                 <option>TARJETA</option>
                 <option>TRANSFERENCIA</option>
                 <option>PENDIENTE</option>
             </select>
 
-            <label>Factura / Observación</label>
-            <textarea id="observacionVenta" placeholder="Factura, NIT o comentario"></textarea>
+            <div id="campoNombrePendiente" style="display:none; margin-top:12px;">
+                <label>Nombre del cliente <span style="color:#ef4444">*</span></label>
+                <input id="nombreClientePendiente" placeholder="Ej: Mesa 3, Juan, Habitación 2...">
+            </div>
+
+            <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
+                <input type="checkbox" id="requiereFactura" onchange="toggleCamposFactura()" style="width:18px; height:18px;">
+                ¿Requiere factura?
+            </label>
+
+            <div id="camposFactura" style="display:none; margin-top:12px;">
+                <input id="nitFacturaPOS" placeholder="NIT (ej: 12345678-9 o CF)">
+                <input id="nombreFacturaPOS" placeholder="Nombre para factura">
+                <input id="direccionFacturaPOS" placeholder="Dirección">
+            </div>
+
+            <label style="margin-top:12px;">Observación (opcional)</label>
+            <textarea id="observacionVenta" placeholder="Comentario adicional"></textarea>
 
             <hr>
 
@@ -314,6 +353,19 @@
 
             <button class="btn" onclick="guardarPendiente()">Guardar pago</button>
             <button class="btn cancelar" onclick="cerrarPendiente()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL BEBIDAS COMBO -->
+    <div id="modalBebidas" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2>🥤 Elige las bebidas</h2>
+            <p id="modalBebidasInstruccion" style="color:#aaa; margin-bottom:12px;"></p>
+            <div id="listaBebidas" class="dashboard-cards"></div>
+            <hr>
+            <p>Seleccionadas: <strong id="bebidasSeleccionadas">0</strong> / <strong id="bebidasRequeridas">0</strong></p>
+            <button class="btn" onclick="confirmarBebidas()">Confirmar</button>
+            <button class="btn cancelar" onclick="cerrarModal('modalBebidas')">Cancelar</button>
         </div>
     </div>
 

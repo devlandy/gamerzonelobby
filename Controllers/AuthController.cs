@@ -1,42 +1,35 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
 using GamerZoneAPI.Data;
 
 namespace GamerZoneAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private Conexion conexion = new Conexion();
+        private readonly DbManager _db;
 
+        public AuthController(DbManager db) => _db = db;
+
+        [AllowAnonymous]
         [HttpPost("login")]
         public IActionResult Login(string usuario, string password)
         {
-            using (var conn = conexion.GetConnection())
+            var rows = _db.ExecuteQuery(
+                "SELECT * FROM usuarios WHERE usuario=@usuario AND password=@password",
+                new MySqlParameter("@usuario", usuario),
+                new MySqlParameter("@password", password));
+
+            if (rows.Count > 0)
             {
-                conn.Open();
-
-                string query = "SELECT * FROM usuarios WHERE usuario=@usuario AND password=@password";
-
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@usuario", usuario);
-                cmd.Parameters.AddWithValue("@password", password);
-
-                var reader = cmd.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    return Ok(new
-                    {
-                        mensaje = "Login correcto",
-                        usuario = reader["usuario"],
-                        rol = reader["rol"]
-                    });
-                }
-
-                return Unauthorized("Credenciales incorrectas");
+                var row = rows[0];
+                return Ok(new { mensaje = "Login correcto", usuario = row["usuario"], rol = row["rol"] });
             }
+
+            return Unauthorized("Credenciales incorrectas");
         }
     }
 }

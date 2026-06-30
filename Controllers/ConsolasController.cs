@@ -1,87 +1,46 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
 using GamerZoneAPI.Data;
 
 namespace GamerZoneAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/consolas")]
     public class ConsolasController : ControllerBase
     {
-        private Conexion conexion = new Conexion();
+        private readonly DbManager _db;
 
-        // =========================
-        // LISTAR CONSOLAS
-        // =========================
+        public ConsolasController(DbManager db) => _db = db;
+
         [HttpGet]
         public IActionResult ObtenerConsolas()
         {
-            using (var conn = conexion.GetConnection())
+            var rows = _db.ExecuteQuery("SELECT * FROM consolas ORDER BY nombre");
+
+            return Ok(rows.Select(r => new
             {
-                conn.Open();
-
-                string query = @"
-                SELECT *
-                FROM consolas
-                ORDER BY nombre";
-
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-
-                var reader = cmd.ExecuteReader();
-
-                List<object> lista = new List<object>();
-
-                while (reader.Read())
-                {
-                    lista.Add(new
-                    {
-                        id = reader["id_consola"],
-                        nombre = reader["nombre"],
-                        tipo = reader["tipo"],
-                        precio = reader["precio_hora"],
-                        estado = reader["estado"]
-                    });
-                }
-
-                return Ok(lista);
-            }
+                id = r["id_consola"],
+                nombre = r["nombre"],
+                tipo = r["tipo"],
+                precio = r["precio_hora"],
+                estado = r["estado"]
+            }));
         }
 
-        // =========================
-        // CAMBIAR ESTADO
-        // =========================
         [HttpPut("{id}/estado")]
-        public IActionResult CambiarEstado(
-            int id,
-            [FromBody] EstadoRequest request)
+        public IActionResult CambiarEstado(int id, [FromBody] EstadoRequest request)
         {
-            using (var conn = conexion.GetConnection())
-            {
-                conn.Open();
+            _db.ExecuteNonQuery(
+                "UPDATE consolas SET estado = @estado WHERE id_consola = @id",
+                new MySqlParameter("@estado", request.estado),
+                new MySqlParameter("@id", id));
 
-                string query = @"
-                UPDATE consolas
-                SET estado = @estado
-                WHERE id_consola = @id";
-
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-
-                cmd.Parameters.AddWithValue("@estado", request.estado);
-                cmd.Parameters.AddWithValue("@id", id);
-
-                cmd.ExecuteNonQuery();
-
-                return Ok(new
-                {
-                    mensaje = "Estado actualizado"
-                });
-            }
+            return Ok(new { mensaje = "Estado actualizado" });
         }
     }
 
-    // =========================
-    // REQUEST
-    // =========================
     public class EstadoRequest
     {
         public string estado { get; set; }

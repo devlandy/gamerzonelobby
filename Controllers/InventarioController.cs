@@ -1,107 +1,49 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MySql.Data.MySqlClient;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using GamerZoneAPI.Data;
 
 namespace GamerZoneAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/inventario")]
     public class InventarioController : ControllerBase
     {
-        private Conexion conexion = new Conexion();
+        private readonly DbManager _db;
 
-        // AQUÍ VAN LOS MÉTODOS
+        public InventarioController(DbManager db) => _db = db;
 
         [HttpGet("alertas")]
         public IActionResult Alertas()
         {
-            using (var conn = conexion.GetConnection())
-            {
-                conn.Open();
+            var agotados = _db.ExecuteQuery(
+                "SELECT nombre, stock FROM productos WHERE stock <= 0 AND controla_stock = 1 AND activo = 1")
+                .Select(r => new { nombre = r["nombre"], stock = r["stock"] });
 
-                string agotadosQuery = @"
-        SELECT nombre, stock 
-        FROM productos 
-        WHERE stock <= 0 AND controla_stock = 1 AND activo = 1";
+            var bajos = _db.ExecuteQuery(
+                "SELECT nombre, stock FROM productos WHERE stock > 0 AND stock <= 5 AND controla_stock = 1 AND activo = 1")
+                .Select(r => new { nombre = r["nombre"], stock = r["stock"] });
 
-                MySqlCommand cmdAgotados = new MySqlCommand(agotadosQuery, conn);
-                var readerAgotados = cmdAgotados.ExecuteReader();
-
-                List<object> agotados = new List<object>();
-
-                while (readerAgotados.Read())
-                {
-                    agotados.Add(new
-                    {
-                        nombre = readerAgotados["nombre"],
-                        stock = readerAgotados["stock"]
-                    });
-                }
-
-                readerAgotados.Close();
-
-                string bajosQuery = @"
-        SELECT nombre, stock 
-        FROM productos 
-        WHERE stock > 0 AND stock <= 5 AND controla_stock = 1 AND activo = 1";
-
-                MySqlCommand cmdBajos = new MySqlCommand(bajosQuery, conn);
-                var readerBajos = cmdBajos.ExecuteReader();
-
-                List<object> bajos = new List<object>();
-
-                while (readerBajos.Read())
-                {
-                    bajos.Add(new
-                    {
-                        nombre = readerBajos["nombre"],
-                        stock = readerBajos["stock"]
-                    });
-                }
-
-                return Ok(new
-                {
-                    agotados,
-                    por_terminar = bajos
-                });
-            }
+            return Ok(new { agotados, por_terminar = bajos });
         }
-
 
         [HttpGet("historial")]
         public IActionResult Historial()
         {
-            using (var conn = conexion.GetConnection())
+            var rows = _db.ExecuteQuery(@"
+                SELECT p.nombre, h.tipo_movimiento, h.cantidad, h.observacion, h.fecha
+                FROM historial_inventario h
+                JOIN productos p ON h.id_producto = p.id_producto
+                ORDER BY h.fecha DESC");
+
+            return Ok(rows.Select(r => new
             {
-                conn.Open();
-
-                string query = @"
-        SELECT p.nombre, h.tipo_movimiento, h.cantidad, h.observacion, h.fecha
-        FROM historial_inventario h
-        JOIN productos p ON h.id_producto = p.id_producto
-        ORDER BY h.fecha DESC";
-
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-                var reader = cmd.ExecuteReader();
-
-                List<object> lista = new List<object>();
-
-                while (reader.Read())
-                {
-                    lista.Add(new
-                    {
-                        producto = reader["nombre"],
-                        tipo = reader["tipo_movimiento"],
-                        cantidad = reader["cantidad"],
-                        observacion = reader["observacion"],
-                        fecha = reader["fecha"]
-                    });
-                }
-
-                return Ok(lista);
-            }
+                producto = r["nombre"],
+                tipo = r["tipo_movimiento"],
+                cantidad = r["cantidad"],
+                observacion = r["observacion"],
+                fecha = r["fecha"]
+            }));
         }
-
-
     }
 }
