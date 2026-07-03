@@ -34,7 +34,7 @@ namespace GamerZoneAPI.Controllers
                     VALUES (@cliente, @usuario, 'PRODUCTO', @numero, @nombre, @forma, @metodo, @total, @estado, @obs, NOW());
                     SELECT LAST_INSERT_ID();", conn, transaction);
 
-                cmdVenta.Parameters.AddWithValue("@cliente", request.id_cliente);
+                cmdVenta.Parameters.AddWithValue("@cliente", (object?)request.id_cliente ?? DBNull.Value);
                 cmdVenta.Parameters.AddWithValue("@usuario", request.id_usuario);
                 cmdVenta.Parameters.AddWithValue("@numero", request.numero_orden ?? "000");
                 cmdVenta.Parameters.AddWithValue("@nombre", request.nombre_orden ?? "ORDEN POS");

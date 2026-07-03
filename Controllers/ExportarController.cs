@@ -5,7 +5,7 @@ using ClosedXML.Excel;
 
 namespace GamerZoneAPI.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "ADMIN")]
     [ApiController]
     [Route("api/exportar")]
     public class ExportarController : ControllerBase

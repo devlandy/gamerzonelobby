@@ -24,6 +24,7 @@ namespace GamerZoneAPI.Controllers
             return Ok(new { ventas, gastos, balance = ventas - gastos });
         }
 
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         public IActionResult Registrar([FromBody] CierreRequest request)
         {

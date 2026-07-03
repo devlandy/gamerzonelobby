@@ -28,14 +28,21 @@ namespace GamerZoneAPI.Controllers
         public IActionResult Login([FromBody] LoginRequest request)
         {
             var rows = _db.ExecuteQuery(
-                "SELECT * FROM usuarios WHERE usuario = @usuario AND password = @password",
-                new MySqlParameter("@usuario", request.usuario),
-                new MySqlParameter("@password", request.password));
+                "SELECT * FROM usuarios WHERE usuario = @usuario",
+                new MySqlParameter("@usuario", request.usuario));
 
             if (rows.Count == 0)
                 return Unauthorized(new { mensaje = "Credenciales incorrectas" });
 
             var row = rows[0];
+            string storedPassword = row["password"].ToString()!;
+
+            bool passwordValida = storedPassword.StartsWith("$2")
+                ? BCrypt.Net.BCrypt.Verify(request.password, storedPassword)
+                : storedPassword == request.password;
+
+            if (!passwordValida)
+                return Unauthorized(new { mensaje = "Credenciales incorrectas" });
 
             var claims = new[]
             {
@@ -64,5 +71,44 @@ namespace GamerZoneAPI.Controllers
                 rol = row["rol"]
             });
         }
+
+        [Authorize(Roles = "ADMIN")]
+        [HttpPut("{id}/password")]
+        public IActionResult CambiarPassword(int id, [FromBody] CambiarPasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.nueva_password) || request.nueva_password.Length < 6)
+                return BadRequest(new { mensaje = "La contraseña debe tener al menos 6 caracteres" });
+
+            string hash = BCrypt.Net.BCrypt.HashPassword(request.nueva_password);
+
+            int afectados = _db.ExecuteNonQuery(
+                "UPDATE usuarios SET password = @password WHERE id_usuario = @id",
+                new MySqlParameter("@password", hash),
+                new MySqlParameter("@id", id));
+
+            if (afectados == 0)
+                return NotFound(new { mensaje = "Usuario no encontrado" });
+
+            return Ok(new { mensaje = "Contraseña actualizada correctamente" });
+        }
+
+        [Authorize(Roles = "ADMIN")]
+        [HttpGet]
+        public IActionResult Listar()
+        {
+            var rows = _db.ExecuteQuery("SELECT id_usuario, nombre, usuario, rol FROM usuarios");
+            return Ok(rows.Select(r => new
+            {
+                id = r["id_usuario"],
+                nombre = r["nombre"],
+                usuario = r["usuario"],
+                rol = r["rol"]
+            }));
+        }
+    }
+
+    public class CambiarPasswordRequest
+    {
+        public string nueva_password { get; set; } = "";
     }
 }

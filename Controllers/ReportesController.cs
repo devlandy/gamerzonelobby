@@ -4,7 +4,7 @@ using GamerZoneAPI.Data;
 
 namespace GamerZoneAPI.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "ADMIN")]
     [ApiController]
     [Route("api/reportes")]
     public class ReportesController : ControllerBase

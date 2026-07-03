@@ -1,5 +1,16 @@
-// 🔥 API URL
+// API URL
 const API = "http://localhost:5069/api";
+
+// Escapa HTML para prevenir XSS al insertar datos del servidor en innerHTML
+function s(str) {
+    if (str == null) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
 
 // ======================
 // VARIABLES GLOBALES
@@ -7,6 +18,7 @@ const API = "http://localhost:5069/api";
 let carrito = [];
 let totalVenta = 0;
 let ventaPendienteActual = 0;
+let clienteSeleccionado = null; // { id, nombre } o null para Consumidor Final
 
 // ======================
 // JWT - TOKEN
@@ -205,13 +217,15 @@ function buscarClientes() {
             html += `
                 <div class="card">
 
-                    <h3>${c.nombre}</h3>
+                    <h3>${s(c.nombre)}</h3>
 
-                    <p>${c.codigo}</p>
+                    <p>${s(c.codigo)}</p>
 
                     <img
-                    src="${API}/clientes/qr/${c.codigo}"
+                    src="${API}/clientes/qr/${s(c.codigo)}"
                     width="120">
+
+                    <button class="btn" onclick="seleccionarClientePOS(${c.id}, '${s(c.nombre)}')">Seleccionar para POS</button>
 
                 </div>
             `;
@@ -224,6 +238,15 @@ function buscarClientes() {
             lista.innerHTML = html;
         }
     });
+}
+
+// ======================
+// SELECCIONAR CLIENTE PARA POS
+// ======================
+function seleccionarClientePOS(id, nombre) {
+    clienteSeleccionado = { id, nombre };
+    mostrarMensaje(`✅ Cliente seleccionado: ${nombre}`);
+    mostrar("ventas");
 }
 
 // ======================
@@ -405,9 +428,9 @@ function cargarPendientes(){
 
             html += `
             <div class="card">
-                <h3>${etiqueta}</h3>
-                <p>Total: Q${v.total}</p>
-                <p>Fecha: ${v.fecha}</p>
+                <h3>${s(etiqueta)}</h3>
+                <p>Total: Q${s(v.total)}</p>
+                <p>Fecha: ${s(v.fecha)}</p>
                 <button class="btn" onclick="abrirPendiente(${v.id})">Cobrar</button>
                 <button class="btn" onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}', '_blank')">PDF</button>
             </div>
@@ -449,12 +472,12 @@ function cargarVentasReporte(){
         }
         cont.innerHTML = data.map(v => `
             <div class="card">
-                <h3>Venta #${v.id}</h3>
-                <p>Cliente: ${v.cliente ?? "—"}</p>
-                <p>Total: Q${v.total}</p>
-                <p>Estado: ${v.forma_cobro}</p>
-                <p>Método: ${v.metodo_pago}</p>
-                <p>Fecha: ${v.fecha}</p>
+                <h3>Venta #${s(v.id)}</h3>
+                <p>Cliente: ${s(v.cliente) || "—"}</p>
+                <p>Total: Q${s(v.total)}</p>
+                <p>Estado: ${s(v.forma_cobro)}</p>
+                <p>Método: ${s(v.metodo_pago)}</p>
+                <p>Fecha: ${s(v.fecha)}</p>
                 <button class="btn" onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}', '_blank')">🧾 Descargar PDF</button>
             </div>
         `).join("");
@@ -477,10 +500,10 @@ function cargarFacturas(){
         }
         cont.innerHTML = data.map(f => `
             <div class="card">
-                <h3>Factura #${f.id_factura}</h3>
-                <p>Cliente: ${f.nombre}</p>
-                <p>NIT: ${f.nit}</p>
-                <p>Fecha: ${f.fecha}</p>
+                <h3>Factura #${s(f.id_factura)}</h3>
+                <p>Cliente: ${s(f.nombre)}</p>
+                <p>NIT: ${s(f.nit)}</p>
+                <p>Fecha: ${s(f.fecha)}</p>
                 <button class="btn" onclick="descargarFactura(${f.id_factura})">🧾 Descargar PDF</button>
             </div>
         `).join("");
@@ -1040,6 +1063,10 @@ function renderCarrito(){
 
     html += `
     <div class="card" style="min-width:220px;">
+        <p style="color:#aaa; margin-bottom:6px;">
+            Cliente: <strong>${clienteSeleccionado ? s(clienteSeleccionado.nombre) : "Consumidor Final"}</strong>
+            ${clienteSeleccionado ? `<button class="btn" style="padding:2px 8px; font-size:11px;" onclick="clienteSeleccionado=null; renderCarrito()">✕</button>` : ""}
+        </p>
         <p style="color:#aaa; margin-bottom:6px;">Subtotal: Q${subtotalBruto.toFixed(2)}</p>
         <label style="font-size:13px; color:#aaa;">Descuento (%)</label>
         <input id="descuentoPct" type="number" min="0" max="100" value="${descPct}"
@@ -1177,7 +1204,7 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
 
     let venta = {
 
-        id_cliente: 1,
+        id_cliente: clienteSeleccionado ? clienteSeleccionado.id : null,
 
         id_usuario:
         usuario.id_usuario,

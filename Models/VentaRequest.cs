@@ -2,7 +2,7 @@
 {
     public class VentaRequest
     {
-        public int id_cliente { get; set; }
+        public int? id_cliente { get; set; }
 
         public int id_usuario { get; set; }
 
