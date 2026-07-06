@@ -157,13 +157,22 @@
         <div id="inventario" class="seccion" style="display:none;">
             <h2>📦 Inventario</h2>
 
-            <div class="dashboard-header">
-                <button class="btn" onclick="cargarAlertas()">Ver alertas</button>
-                <button class="btn" onclick="cargarHistorial()">Ver historial</button>
+            <!-- Tabs -->
+            <div style="display:flex; gap:8px; margin-bottom:16px;">
+                <button class="btn" id="tabProductos" onclick="tabInventario('productos')">📦 Productos</button>
+                <button class="btn" id="tabHistorial" onclick="tabInventario('historial')" style="background:#333; color:var(--text);">📋 Historial</button>
             </div>
 
-            <div id="alertas" class="dashboard-cards"></div>
-            <div id="historial" class="dashboard-cards" style="margin-top:18px;"></div>
+            <!-- Vista: Productos contables -->
+            <div id="vistaProductosInv">
+                <div id="alertas" class="dashboard-cards" style="margin-bottom:16px;"></div>
+                <div id="listaProductosInv" class="dashboard-cards"></div>
+            </div>
+
+            <!-- Vista: Historial -->
+            <div id="vistaHistorialInv" style="display:none;">
+                <div id="historial" class="dashboard-cards"></div>
+            </div>
         </div>
 
         <!-- PRODUCTOS -->
@@ -202,9 +211,13 @@
             <h2>📈 Reportes y estadísticas</h2>
 
             <div class="card">
-                <h3>📊 Exportar</h3>
-                <p>Descarga el detalle de ventas en formato Excel.</p>
-                <button class="btn" onclick="exportarExcel()">Exportar ventas a Excel</button>
+                <h3>📊 Exportar a Excel</h3>
+                <p>Elige el mes o descarga todo el historial.</p>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+                    <input type="month" id="mesExcel" style="padding:8px; border-radius:6px; background:var(--card); color:var(--text); border:1px solid #333;">
+                    <button class="btn" onclick="exportarExcel()">Exportar mes</button>
+                    <button class="btn" style="background:#333;" onclick="exportarExcelTodo()">Exportar todo</button>
+                </div>
             </div>
 
             <hr>
@@ -346,13 +359,39 @@
         <div class="modal-content">
             <h2>💳 Cuenta pendiente</h2>
 
-            <input id="metodoPendiente" placeholder="Método de pago">
-            <input id="nitFactura" placeholder="NIT">
-            <input id="nombreFactura" placeholder="Nombre de factura">
-            <input id="direccionFactura" placeholder="Dirección">
+            <label>Método de pago</label>
+            <select id="metodoPendiente">
+                <option>EFECTIVO</option>
+                <option>TARJETA</option>
+                <option>TRANSFERENCIA</option>
+            </select>
 
-            <button class="btn" onclick="guardarPendiente()">Guardar pago</button>
+            <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
+                <input type="checkbox" id="requiereFacturaPendiente" onchange="toggleFacturaPendiente()" style="width:18px; height:18px;">
+                ¿Requiere factura?
+            </label>
+
+            <div id="camposFacturaPendiente" style="display:none; margin-top:12px;">
+                <input id="nitFactura" placeholder="NIT (ej: 12345678-9 o CF)">
+                <input id="nombreFactura" placeholder="Nombre para factura">
+                <input id="direccionFactura" placeholder="Dirección">
+            </div>
+
+            <button class="btn" style="margin-top:16px;" onclick="guardarPendiente()">Guardar pago</button>
             <button class="btn cancelar" onclick="cerrarPendiente()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL CLIENTE -->
+    <div id="modalHistorialCliente" class="modal-dashboard" style="display:none;">
+        <div class="modal-content" style="max-width:700px; max-height:80vh; overflow-y:auto;">
+            <div class="modal-header">
+                <h3 id="tituloHistorialCliente">📋 Historial</h3>
+                <span class="close-btn" onclick="cerrarModal('modalHistorialCliente')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="contenidoHistorialCliente"></div>
+            </div>
         </div>
     </div>
 

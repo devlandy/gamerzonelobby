@@ -21,7 +21,8 @@ namespace GamerZoneAPI.Controllers
                        c.nombre AS cliente, u.nombre AS usuario
                 FROM ventas v
                 JOIN clientes c ON v.id_cliente = c.id_cliente
-                JOIN usuarios u ON v.id_usuario = u.id_usuario");
+                JOIN usuarios u ON v.id_usuario = u.id_usuario
+                ORDER BY v.id_venta DESC");
 
             return Ok(rows.Select(r => new
             {

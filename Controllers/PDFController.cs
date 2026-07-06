@@ -21,7 +21,7 @@ namespace GamerZoneAPI.Controllers
         public IActionResult GenerarTicketVenta(int id)
         {
             var ventas = _db.ExecuteQuery(@"
-                SELECT v.id_venta, v.total, v.metodo_pago, v.fecha, v.tipo,
+                SELECT v.id_venta, v.total, v.metodo_pago, v.fecha, v.tipo, v.descuento_pct,
                        COALESCE(c.nombre, 'Consumidor Final') AS cliente
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
@@ -37,7 +37,8 @@ namespace GamerZoneAPI.Controllers
                 SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio, d.subtotal
                 FROM detalle_ventas d
                 LEFT JOIN productos p ON d.id_producto = p.id_producto
-                WHERE d.id_venta = @id",
+                WHERE d.id_venta = @id
+                ORDER BY d.id_detalle",
                 new MySqlParameter("@id", id));
 
             var pdf = Document.Create(container =>
@@ -91,25 +92,39 @@ namespace GamerZoneAPI.Controllers
 
                                 foreach (var d in detalles)
                                 {
-                                    t.Cell().Padding(4).Text(d["nombre"].ToString());
-                                    t.Cell().Padding(4).Text(d["cantidad"].ToString());
-                                    t.Cell().Padding(4).Text($"Q{d["precio"]}");
-                                    t.Cell().Padding(4).Text($"Q{d["subtotal"]}");
+                                    bool esIngrediente = Convert.ToDecimal(d["precio"]) == 0;
+                                    if (esIngrediente)
+                                    {
+                                        // Ingrediente de combo: nombre indentado, sin precio
+                                        t.Cell().Padding(4).PaddingLeft(16)
+                                            .Text($"└ {d["nombre"]}").FontSize(10).FontColor(Colors.Grey.Medium);
+                                        t.Cell().Padding(4).Text(d["cantidad"].ToString()).FontSize(10).FontColor(Colors.Grey.Medium);
+                                        t.Cell().Padding(4).Text("").FontSize(10);
+                                        t.Cell().Padding(4).Text("").FontSize(10);
+                                    }
+                                    else
+                                    {
+                                        t.Cell().Padding(4).Text(d["nombre"].ToString());
+                                        t.Cell().Padding(4).Text(d["cantidad"].ToString());
+                                        t.Cell().Padding(4).Text($"Q{Convert.ToDecimal(d["precio"]):F2}");
+                                        t.Cell().Padding(4).Text($"Q{Convert.ToDecimal(d["subtotal"]):F2}");
+                                    }
                                 }
                             });
                         }
 
                         col.Item().PaddingTop(20).LineHorizontal(2).LineColor(Colors.Black);
 
-                        decimal subtotalBruto = detalles.Sum(d => Convert.ToDecimal(d["subtotal"]));
+                        decimal subtotalBruto = detalles.Where(d => Convert.ToDecimal(d["precio"]) > 0).Sum(d => Convert.ToDecimal(d["subtotal"]));
                         decimal totalFinal = Convert.ToDecimal(v["total"]);
+                        decimal descuentoPct = Convert.ToDecimal(v["descuento_pct"]);
                         decimal descuento = subtotalBruto - totalFinal;
 
                         col.Item().PaddingTop(8).AlignRight()
                             .Text($"Subtotal: Q{subtotalBruto:F2}").FontSize(13);
                         if (descuento > 0)
                             col.Item().PaddingTop(4).AlignRight()
-                                .Text($"Descuento: -Q{descuento:F2}").FontSize(13).FontColor(Colors.Orange.Medium);
+                                .Text($"Descuento ({descuentoPct:G29}%): -Q{descuento:F2}").FontSize(13).FontColor(Colors.Orange.Medium);
                         col.Item().PaddingTop(4).AlignRight()
                             .Text($"TOTAL: Q{totalFinal:F2}").FontSize(20).Bold();
                     });
@@ -127,7 +142,7 @@ namespace GamerZoneAPI.Controllers
         public IActionResult GenerarFactura(int id)
         {
             var rows = _db.ExecuteQuery(@"
-                SELECT f.id_factura, f.nombre, f.nit, f.direccion, f.fecha, v.total, v.metodo_pago, v.id_venta
+                SELECT f.id_factura, f.nombre, f.nit, f.direccion, f.fecha, v.total, v.metodo_pago, v.id_venta, v.descuento_pct
                 FROM facturas f
                 JOIN ventas v ON f.id_venta = v.id_venta
                 WHERE f.id_factura = @id",
@@ -143,7 +158,8 @@ namespace GamerZoneAPI.Controllers
                 SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio, d.subtotal
                 FROM detalle_ventas d
                 LEFT JOIN productos p ON d.id_producto = p.id_producto
-                WHERE d.id_venta = @id",
+                WHERE d.id_venta = @id
+                ORDER BY d.id_detalle",
                 new MySqlParameter("@id", idVenta));
 
             var pdf = Document.Create(container =>
@@ -204,10 +220,22 @@ namespace GamerZoneAPI.Controllers
 
                                 foreach (var d in detalles)
                                 {
-                                    t.Cell().Padding(4).Text(d["nombre"].ToString());
-                                    t.Cell().Padding(4).Text(d["cantidad"].ToString());
-                                    t.Cell().Padding(4).Text($"Q{d["precio"]}");
-                                    t.Cell().Padding(4).Text($"Q{d["subtotal"]}");
+                                    bool esIngrediente = Convert.ToDecimal(d["precio"]) == 0;
+                                    if (esIngrediente)
+                                    {
+                                        t.Cell().Padding(4).PaddingLeft(16)
+                                            .Text($"└ {d["nombre"]}").FontSize(10).FontColor(Colors.Grey.Medium);
+                                        t.Cell().Padding(4).Text(d["cantidad"].ToString()).FontSize(10).FontColor(Colors.Grey.Medium);
+                                        t.Cell().Padding(4).Text("").FontSize(10);
+                                        t.Cell().Padding(4).Text("").FontSize(10);
+                                    }
+                                    else
+                                    {
+                                        t.Cell().Padding(4).Text(d["nombre"].ToString());
+                                        t.Cell().Padding(4).Text(d["cantidad"].ToString());
+                                        t.Cell().Padding(4).Text($"Q{Convert.ToDecimal(d["precio"]):F2}");
+                                        t.Cell().Padding(4).Text($"Q{Convert.ToDecimal(d["subtotal"]):F2}");
+                                    }
                                 }
                             });
                         }
@@ -218,15 +246,16 @@ namespace GamerZoneAPI.Controllers
 
                         col.Item().PaddingTop(20).LineHorizontal(2).LineColor(Colors.Black);
 
-                        decimal subtotalBrutoF = detalles.Sum(d => Convert.ToDecimal(d["subtotal"]));
+                        decimal subtotalBrutoF = detalles.Where(d => Convert.ToDecimal(d["precio"]) > 0).Sum(d => Convert.ToDecimal(d["subtotal"]));
                         decimal totalFinalF = Convert.ToDecimal(f["total"]);
+                        decimal descuentoPctF = Convert.ToDecimal(f["descuento_pct"]);
                         decimal descuentoF = subtotalBrutoF - totalFinalF;
 
                         col.Item().PaddingTop(8).AlignRight()
                             .Text($"Subtotal: Q{subtotalBrutoF:F2}").FontSize(13);
                         if (descuentoF > 0)
                             col.Item().PaddingTop(4).AlignRight()
-                                .Text($"Descuento: -Q{descuentoF:F2}").FontSize(13).FontColor(Colors.Orange.Medium);
+                                .Text($"Descuento ({descuentoPctF:G29}%): -Q{descuentoF:F2}").FontSize(13).FontColor(Colors.Orange.Medium);
                         col.Item().PaddingTop(4).AlignRight()
                             .Text($"TOTAL: Q{totalFinalF:F2}").FontSize(20).Bold();
                     });

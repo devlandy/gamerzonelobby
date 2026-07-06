@@ -1,6 +1,7 @@
 // API URL
 const API = "http://localhost:5069/api";
 
+<<<<<<< Updated upstream
 // Escapa HTML para prevenir XSS al insertar datos del servidor en innerHTML
 function s(str) {
     if (str == null) return "";
@@ -10,6 +11,16 @@ function s(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+=======
+function fmtFecha(f) {
+    if (!f) return "—";
+    const d = new Date(f);
+    return d.toLocaleString("es-GT", {
+        timeZone: "America/Guatemala",
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit", hour12: true
+    });
+>>>>>>> Stashed changes
 }
 
 // ======================
@@ -79,9 +90,7 @@ function mostrar(seccion) {
 
     // INVENTARIO
     if(seccion === "inventario"){
-        cargarAlertas();
-        cargarHistorial();
-        listarProductos();
+        tabInventario('productos');
     }
 
     // DASHBOARD
@@ -315,66 +324,51 @@ function cerrarPendiente(){
 // ======================
 // GUARDAR PENDIENTE
 // ======================
+function toggleFacturaPendiente(){
+    const checked = document.getElementById("requiereFacturaPendiente").checked;
+    document.getElementById("camposFacturaPendiente").style.display = checked ? "block" : "none";
+}
+
 function guardarPendiente(){
-
-    let metodo =
-    document.getElementById("metodoPendiente").value;
-
-    let nit =
-    document.getElementById("nitFactura").value;
-
-    let nombre =
-    document.getElementById("nombreFactura").value;
-
-    let direccion =
-    document.getElementById("direccionFactura").value;
+    const metodo = document.getElementById("metodoPendiente").value;
+    const requiereFactura = document.getElementById("requiereFacturaPendiente").checked;
 
     authFetch(`${API}/ventas/${ventaPendienteActual}`, {
-
         method: "PUT",
-
         body: JSON.stringify({
-
             forma_cobro: "PAGADO",
-
             metodo_pago: metodo,
-
-            observacion: "Factura generada"
+            observacion: requiereFactura ? "Con factura" : ""
         })
     })
-
     .then(r => r.json())
-
     .then(() => {
+        if (!requiereFactura) {
+            mostrarMensaje("✅ Pago registrado");
+            cerrarPendiente();
+            cargarPendientes();
+            cargarDashboard();
+            return;
+        }
+
+        const nit = document.getElementById("nitFactura").value || "CF";
+        const nombre = document.getElementById("nombreFactura").value || "Consumidor Final";
+        const direccion = document.getElementById("direccionFactura").value || "Ciudad";
 
         return authFetch(`${API}/factura`, {
-
             method: "POST",
-
-            body: JSON.stringify({
-
-                id_venta: ventaPendienteActual,
-
-                nit: nit,
-
-                nombre: nombre,
-
-                direccion: direccion
-            })
+            body: JSON.stringify({ id_venta: ventaPendienteActual, nit, nombre, direccion })
+        })
+        .then(r => r.json())
+        .then(data => {
+            mostrarMensaje("✅ Pago registrado");
+            cerrarPendiente();
+            cargarPendientes();
+            cargarDashboard();
+            if (data.id_factura) {
+                window.open(`${API}/pdf/factura/${data.id_factura}?token=${getToken()}`, "_blank");
+            }
         });
-    })
-
-    .then(r => r.json())
-
-    .then(() => {
-
-        alert("✅ Pago registrado");
-
-        cerrarPendiente();
-
-        cargarPendientes();
-
-        cargarDashboard();
     });
 }
 
@@ -428,9 +422,15 @@ function cargarPendientes(){
 
             html += `
             <div class="card">
+<<<<<<< Updated upstream
                 <h3>${s(etiqueta)}</h3>
                 <p>Total: Q${s(v.total)}</p>
                 <p>Fecha: ${s(v.fecha)}</p>
+=======
+                <h3>${etiqueta}</h3>
+                <p>Total: Q${v.total}</p>
+                <p>Fecha: ${fmtFecha(v.fecha)}</p>
+>>>>>>> Stashed changes
                 <button class="btn" onclick="abrirPendiente(${v.id})">Cobrar</button>
                 <button class="btn" onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}', '_blank')">PDF</button>
             </div>
@@ -472,12 +472,21 @@ function cargarVentasReporte(){
         }
         cont.innerHTML = data.map(v => `
             <div class="card">
+<<<<<<< Updated upstream
                 <h3>Venta #${s(v.id)}</h3>
                 <p>Cliente: ${s(v.cliente) || "—"}</p>
                 <p>Total: Q${s(v.total)}</p>
                 <p>Estado: ${s(v.forma_cobro)}</p>
                 <p>Método: ${s(v.metodo_pago)}</p>
                 <p>Fecha: ${s(v.fecha)}</p>
+=======
+                <h3>Venta #${v.id}</h3>
+                <p>Cliente: ${v.cliente ?? "—"}</p>
+                <p>Total: Q${v.total}</p>
+                <p>Estado: ${v.forma_cobro}</p>
+                <p>Método: ${v.metodo_pago}</p>
+                <p>Fecha: ${fmtFecha(v.fecha)}</p>
+>>>>>>> Stashed changes
                 <button class="btn" onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}', '_blank')">🧾 Descargar PDF</button>
             </div>
         `).join("");
@@ -500,10 +509,17 @@ function cargarFacturas(){
         }
         cont.innerHTML = data.map(f => `
             <div class="card">
+<<<<<<< Updated upstream
                 <h3>Factura #${s(f.id_factura)}</h3>
                 <p>Cliente: ${s(f.nombre)}</p>
                 <p>NIT: ${s(f.nit)}</p>
                 <p>Fecha: ${s(f.fecha)}</p>
+=======
+                <h3>Factura #${f.id_factura}</h3>
+                <p>Cliente: ${f.nombre}</p>
+                <p>NIT: ${f.nit}</p>
+                <p>Fecha: ${fmtFecha(f.fecha)}</p>
+>>>>>>> Stashed changes
                 <button class="btn" onclick="descargarFactura(${f.id_factura})">🧾 Descargar PDF</button>
             </div>
         `).join("");
@@ -1224,6 +1240,8 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
 
         observacion: observacion,
 
+        descuento_pct: parseFloat(document.getElementById("descuentoPct")?.value) || 0,
+
         productos: expandirCarritoParaVenta(carrito)
     };
 
@@ -1352,76 +1370,133 @@ window.onload = function(){
 // 🎮 CONSOLAS
 // ===========================
 
-function cargarConsolas() {
+// Estado del selector de consolas
+let _consolasData = [];
+let _consolaSeleccionada = null;
+let _tiempoConsola = { horas: 0, min10: 0, min5: 0 };
 
+function cargarConsolas() {
     authFetch(`${API}/consolas`)
     .then(r => r.json())
     .then(data => {
-
-        let html = "";
-
-        data.forEach(c => {
-
-            let colorEstado = "#22c55e";
-
-            if(c.estado === "OCUPADA")
-                colorEstado = "#ef4444";
-
-            html += `
-
-            <div class="card">
-
-                <h3>${c.nombre}</h3>
-
-                <p>
-                Tipo: ${c.tipo}
-                </p>
-
-                <p>
-                Precio Hora: Q${c.precio}
-                </p>
-
-                <p style="
-                color:${colorEstado};
-                font-weight:bold;
-                ">
-                ${c.estado}
-                </p>
-
-                ${
-                    c.estado === "LIBRE"
-
-                    ?
-
-                    `
-                    <button class="btn"
-                    onclick="iniciarConsola(${c.id})">
-
-                    Iniciar
-
-                    </button>
-                    `
-
-                    :
-
-                    `
-                    <button class="btn"
-                    onclick="finalizarConsola(${c.id})">
-
-                    Finalizar
-
-                    </button>
-                    `
-                }
-
-            </div>
-
-            `;
-        });
-
-        document.getElementById("listaConsolas").innerHTML = html;
-
+        _consolasData = data;
+        renderSelectorConsolas();
     });
+}
+
+function renderSelectorConsolas() {
+    const data = _consolasData;
+
+    // Botones de selección de consola
+    let botonesHtml = data.map(c => {
+        const libre = c.estado === "LIBRE";
+        const seleccionada = _consolaSeleccionada?.id === c.id;
+        const borde = seleccionada ? "border:2px solid #06b6d4;" : "border:2px solid transparent;";
+        const opacidad = libre ? "" : "opacity:0.4; cursor:not-allowed;";
+        return `
+        <div class="card" style="cursor:${libre ? 'pointer' : 'default'}; ${borde} ${opacidad} min-width:130px; text-align:center;"
+             onclick="${libre ? `seleccionarConsola(${c.id})` : ''}">
+            <strong>${c.nombre}</strong>
+            <p style="font-size:11px; color:#aaa;">${c.tipo} · Q${c.precio}/hr</p>
+            <span style="color:${libre ? '#22c55e' : '#ef4444'}; font-size:12px; font-weight:bold;">${c.estado}</span>
+        </div>`;
+    }).join("");
+
+    // Calcular total
+    let totalConsola = 0;
+    if (_consolaSeleccionada) {
+        const ph = _consolaSeleccionada.precio;
+        totalConsola = ph * _tiempoConsola.horas
+            + (ph / 6) * _tiempoConsola.min10
+            + (ph / 12) * _tiempoConsola.min5;
+    }
+
+    const totalMins = _tiempoConsola.horas * 60 + _tiempoConsola.min10 * 10 + _tiempoConsola.min5 * 5;
+
+    const html = `
+    <div style="width:100%;">
+        <p style="color:#aaa; font-size:13px; margin-bottom:8px;">Selecciona una consola:</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">${botonesHtml}</div>
+
+        <div style="background:var(--card); border-radius:10px; padding:16px; border:1px solid #222;">
+            <p style="color:#aaa; font-size:13px; margin-bottom:12px;">⏱ Tiempo de juego ${_consolaSeleccionada ? `· <strong style="color:#e2e2e2">${_consolaSeleccionada.nombre}</strong>` : ''}</p>
+
+            <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                <div style="text-align:center;">
+                    <p style="font-size:12px; color:#aaa; margin-bottom:4px;">Horas</p>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button class="btn" style="padding:4px 12px;" onclick="cambiarTiempoConsola('horas',-1)">−</button>
+                        <span style="font-size:20px; font-weight:bold; min-width:30px; text-align:center;">${_tiempoConsola.horas}</span>
+                        <button class="btn" style="padding:4px 12px;" onclick="cambiarTiempoConsola('horas',1)">+</button>
+                    </div>
+                </div>
+                <div style="text-align:center;">
+                    <p style="font-size:12px; color:#aaa; margin-bottom:4px;">10 min</p>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button class="btn" style="padding:4px 12px;" onclick="cambiarTiempoConsola('min10',-1)">−</button>
+                        <span style="font-size:20px; font-weight:bold; min-width:30px; text-align:center;">${_tiempoConsola.min10}</span>
+                        <button class="btn" style="padding:4px 12px;" onclick="cambiarTiempoConsola('min10',1)">+</button>
+                    </div>
+                </div>
+                <div style="text-align:center;">
+                    <p style="font-size:12px; color:#aaa; margin-bottom:4px;">5 min</p>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button class="btn" style="padding:4px 12px;" onclick="cambiarTiempoConsola('min5',-1)">−</button>
+                        <span style="font-size:20px; font-weight:bold; min-width:30px; text-align:center;">${_tiempoConsola.min5}</span>
+                        <button class="btn" style="padding:4px 12px;" onclick="cambiarTiempoConsola('min5',1)">+</button>
+                    </div>
+                </div>
+
+                <div style="margin-left:auto; text-align:right;">
+                    <p style="color:#aaa; font-size:12px;">${totalMins > 0 ? totalMins + ' minutos' : ''}</p>
+                    <p style="font-size:22px; font-weight:bold; color:#e2e2e2;">Q${totalConsola.toFixed(2)}</p>
+                    <button class="btn" ${(!_consolaSeleccionada || totalMins === 0) ? 'disabled style="opacity:0.4;"' : ''}
+                        onclick="agregarConsolaAlCarrito()">
+                        ➕ Agregar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    document.getElementById("listaConsolas").innerHTML = html;
+}
+
+function seleccionarConsola(id) {
+    _consolaSeleccionada = _consolasData.find(c => c.id === id);
+    renderSelectorConsolas();
+}
+
+function cambiarTiempoConsola(tipo, delta) {
+    _tiempoConsola[tipo] = Math.max(0, _tiempoConsola[tipo] + delta);
+    renderSelectorConsolas();
+}
+
+function agregarConsolaAlCarrito() {
+    if (!_consolaSeleccionada) return;
+    const ph = _consolaSeleccionada.precio;
+    const totalMins = _tiempoConsola.horas * 60 + _tiempoConsola.min10 * 10 + _tiempoConsola.min5 * 5;
+    const total = ph * _tiempoConsola.horas + (ph/6) * _tiempoConsola.min10 + (ph/12) * _tiempoConsola.min5;
+
+    const partes = [];
+    if (_tiempoConsola.horas > 0) partes.push(`${_tiempoConsola.horas}h`);
+    if (_tiempoConsola.min10 > 0) partes.push(`${_tiempoConsola.min10 * 10}min`);
+    if (_tiempoConsola.min5 > 0) partes.push(`${_tiempoConsola.min5 * 5}min`);
+
+    carrito.push({
+        id_producto: 0,
+        nombre: `🎮 ${_consolaSeleccionada.nombre} (${partes.join(' + ')})`,
+        precio: Math.round(total * 100) / 100,
+        cantidad: 1,
+        tipo: "SERVICIO"
+    });
+
+    // Reset
+    _tiempoConsola = { horas: 0, min10: 0, min5: 0 };
+    _consolaSeleccionada = null;
+    renderSelectorConsolas();
+    renderCarrito();
+    mostrarMensaje("✅ Servicio de consola agregado");
 }
 
 // ===========================
@@ -1619,6 +1694,7 @@ function cargarTopClientes(){
                 <p>Compras: ${c.compras}</p>
                 <p>Total: Q${c.total || 0}</p>
                 <p>Puntos: ${c.puntos || 0}</p>
+                <button class="btn" style="margin-top:8px;" onclick="verHistorialCliente(${c.id}, '${c.nombre}')">Ver historial</button>
             </div>
             `;
         });
@@ -1633,6 +1709,46 @@ function cargarTopClientes(){
     });
 }
 
+
+function verHistorialCliente(id, nombre) {
+    document.getElementById("tituloHistorialCliente").textContent = `📋 Historial de ${nombre}`;
+    document.getElementById("contenidoHistorialCliente").innerHTML = "<p style='color:#aaa;'>Cargando...</p>";
+    abrirModal("modalHistorialCliente");
+
+    authFetch(`${API}/clientes/${id}/compras`)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.length) {
+            document.getElementById("contenidoHistorialCliente").innerHTML = "<p style='color:#aaa;'>Sin compras registradas.</p>";
+            return;
+        }
+
+        const html = data.map(v => `
+            <div style="border:1px solid #222; border-radius:10px; padding:14px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong>Venta #${v.id_venta}</strong>
+                    <span style="color:#aaa; font-size:12px;">${fmtFecha(v.fecha)}</span>
+                </div>
+                <table style="width:100%; font-size:13px; border-collapse:collapse;">
+                    ${v.items.map(i => `
+                        <tr>
+                            <td style="padding:3px 0; color:#ccc;">${i.nombre}</td>
+                            <td style="padding:3px 8px; color:#aaa; text-align:center;">x${i.cantidad}</td>
+                            <td style="padding:3px 0; text-align:right;">Q${(i.precio * i.cantidad).toFixed(2)}</td>
+                        </tr>`).join("")}
+                </table>
+                <div style="border-top:1px solid #333; margin-top:8px; padding-top:8px; display:flex; justify-content:space-between;">
+                    <span style="color:#aaa; font-size:12px;">${v.metodo_pago}</span>
+                    <strong>Total: Q${Number(v.total).toFixed(2)}</strong>
+                </div>
+            </div>`).join("");
+
+        document.getElementById("contenidoHistorialCliente").innerHTML = html;
+    })
+    .catch(() => {
+        document.getElementById("contenidoHistorialCliente").innerHTML = "<p style='color:#ef4444;'>Error cargando historial.</p>";
+    });
+}
 
 // ==================================================================
 // 🎮 TOP GAMERS (puntos de juego)
@@ -1719,6 +1835,61 @@ function agregarStockRapido(){
 // ==================================================================
 // 📦 ALERTAS DE INVENTARIO
 // ==================================================================
+function tabInventario(tab) {
+    const esProductos = tab === 'productos';
+    document.getElementById("vistaProductosInv").style.display = esProductos ? "" : "none";
+    document.getElementById("vistaHistorialInv").style.display = esProductos ? "none" : "";
+    document.getElementById("tabProductos").style.background = esProductos ? "" : "#333";
+    document.getElementById("tabProductos").style.color = esProductos ? "" : "var(--text)";
+    document.getElementById("tabHistorial").style.background = esProductos ? "#333" : "";
+    document.getElementById("tabHistorial").style.color = esProductos ? "var(--text)" : "";
+
+    if (esProductos) {
+        cargarAlertas();
+        cargarProductosInventario();
+    } else {
+        cargarHistorial();
+    }
+}
+
+function cargarProductosInventario() {
+    authFetch(`${API}/productos`)
+    .then(r => r.json())
+    .then(data => {
+        const contables = data.filter(p => p.controla_stock == 1 || p.controla_stock === true);
+        if (!contables.length) {
+            document.getElementById("listaProductosInv").innerHTML = "<p style='color:#aaa;'>No hay productos contables.</p>";
+            return;
+        }
+        const html = `<table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <thead>
+                <tr style="border-bottom:1px solid #333; color:#aaa; text-align:left;">
+                    <th style="padding:10px 12px;">Producto</th>
+                    <th style="padding:10px 12px; text-align:center;">Stock</th>
+                    <th style="padding:10px 12px; text-align:center;">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${contables.map(p => {
+                    const agotado = p.stock === 0;
+                    const bajo = p.stock > 0 && p.stock <= 5;
+                    const punto = (agotado || bajo)
+                        ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:6px;"></span>`
+                        : "";
+                    const estadoTxt = agotado ? "Agotado" : bajo ? "Por terminar" : "OK";
+                    const estadoColor = agotado ? "#ef4444" : bajo ? "#f59e0b" : "#22c55e";
+                    return `<tr style="border-bottom:1px solid #1a1a2e;">
+                        <td style="padding:10px 12px; font-weight:600;">${punto}${p.nombre}</td>
+                        <td style="padding:10px 12px; text-align:center; font-size:18px; font-weight:bold; color:${estadoColor};">${p.stock}</td>
+                        <td style="padding:10px 12px; text-align:center; color:${estadoColor}; font-size:12px; font-weight:bold;">${estadoTxt}</td>
+                    </tr>`;
+                }).join("")}
+            </tbody>
+        </table>`;
+        document.getElementById("listaProductosInv").innerHTML = `<div class="card" style="padding:0; overflow:hidden;">${html}</div>`;
+    });
+}
+
 function cargarAlertas(){
 
     authFetch(`${API}/inventario/alertas`)
@@ -1788,7 +1959,7 @@ function cargarHistorial(){
                 <p>Movimiento: ${m.tipo}</p>
                 <p>Cantidad: ${m.cantidad}</p>
                 <p>${m.observacion || ""}</p>
-                <p style="color:var(--text-faint);font-size:12px;">${m.fecha || ""}</p>
+                <p style="color:var(--text-faint);font-size:12px;">${fmtFecha(m.fecha)}</p>
             </div>
             `;
         });
@@ -2042,7 +2213,7 @@ function cargarCierre(){
 
             html += `
             <div class="card">
-                <h4>${c.fecha || ""}</h4>
+                <h4>${fmtFecha(c.fecha)}</h4>
                 <p>Usuario: ${c.usuario}</p>
                 <p>Ventas: Q${c.total_ventas}</p>
                 <p>Gastos: Q${c.total_gastos}</p>
@@ -2099,6 +2270,15 @@ function registrarCierre(){
 // 📊 EXPORTAR A EXCEL
 // ==================================================================
 function exportarExcel(){
+    const mes = document.getElementById("mesExcel")?.value;
+    if (!mes) {
+        mostrarMensaje("⚠️ Selecciona un mes primero");
+        return;
+    }
+    window.open(`${API}/exportar/ventas?mes=${mes}&token=${getToken()}`, "_blank");
+}
+
+function exportarExcelTodo(){
     window.open(`${API}/exportar/ventas?token=${getToken()}`, "_blank");
 }
 

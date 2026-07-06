@@ -18,7 +18,7 @@
     --border-strong: rgba(120, 130, 220, 0.30);
 
     /* Neón */
-    --neon-cyan:     #21f3ff;
+    --neon-cyan:     #e2e2e2;
     --neon-magenta:  #ff2d9b;
     --neon-violet:   #9b5cff;
     --neon-green:    #2bff88;
@@ -31,7 +31,7 @@
     --text-faint:    #6b6b94;
 
     /* Glow */
-    --glow-cyan:     0 0 18px rgba(33, 243, 255, 0.45);
+    --glow-cyan:     0 0 12px rgba(200, 200, 200, 0.25);
     --glow-magenta:  0 0 18px rgba(255, 45, 155, 0.45);
 
     /* Fuentes */
@@ -341,7 +341,7 @@ label {
    ========================= */
 .btn {
     background: var(--neon-cyan);
-    color: #04121a;
+    color: #111111;
     border: none;
     padding: 11px 18px;
     border-radius: var(--radius-sm);
@@ -402,12 +402,12 @@ label {
 .filtros-pos .btn {
     text-transform: none;
     letter-spacing: 0.2px;
-    background: rgba(33, 243, 255, 0.10);
-    color: var(--neon-cyan);
+    background: rgba(200, 200, 200, 0.10);
+    color: var(--text);
     border: 1px solid var(--border-strong);
 }
 .filtros-pos .btn:hover {
-    background: rgba(33, 243, 255, 0.18);
+    background: rgba(200, 200, 200, 0.18);
     box-shadow: none;
 }
 

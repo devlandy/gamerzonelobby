@@ -18,6 +18,8 @@
 
         public string observacion { get; set; }
 
+        public decimal descuento_pct { get; set; }
+
         public List<ProductoVenta> productos { get; set; }
     }
 

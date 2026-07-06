@@ -24,14 +24,17 @@ namespace GamerZoneAPI.Controllers
 
             try
             {
-                decimal total = request.productos.Sum(p => p.precio * p.cantidad);
+                decimal subtotal = request.productos.Sum(p => p.precio * p.cantidad);
+                decimal total = request.descuento_pct > 0
+                    ? Math.Round(subtotal * (1 - request.descuento_pct / 100), 2)
+                    : subtotal;
 
                 string estado = request.metodo_pago == "PENDIENTE" ? "PENDIENTE" : "PAGADO";
                 string formaCobro = estado == "PENDIENTE" ? "PENDIENTE" : "PAGADO";
 
                 var cmdVenta = new MySqlCommand(@"
-                    INSERT INTO ventas (id_cliente, id_usuario, tipo, numero_orden, nombre_orden, forma_cobro, metodo_pago, total, estado, observacion, fecha)
-                    VALUES (@cliente, @usuario, 'PRODUCTO', @numero, @nombre, @forma, @metodo, @total, @estado, @obs, NOW());
+                    INSERT INTO ventas (id_cliente, id_usuario, tipo, numero_orden, nombre_orden, forma_cobro, metodo_pago, total, descuento_pct, estado, observacion, fecha)
+                    VALUES (@cliente, @usuario, 'PRODUCTO', @numero, @nombre, @forma, @metodo, @total, @descuento, @estado, @obs, NOW());
                     SELECT LAST_INSERT_ID();", conn, transaction);
 
                 cmdVenta.Parameters.AddWithValue("@cliente", (object?)request.id_cliente ?? DBNull.Value);
@@ -41,6 +44,7 @@ namespace GamerZoneAPI.Controllers
                 cmdVenta.Parameters.AddWithValue("@forma", formaCobro);
                 cmdVenta.Parameters.AddWithValue("@metodo", request.metodo_pago);
                 cmdVenta.Parameters.AddWithValue("@total", total);
+                cmdVenta.Parameters.AddWithValue("@descuento", request.descuento_pct);
                 cmdVenta.Parameters.AddWithValue("@estado", estado);
                 cmdVenta.Parameters.AddWithValue("@obs", request.observacion ?? "");
 

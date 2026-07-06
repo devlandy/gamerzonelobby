@@ -86,5 +86,44 @@ namespace GamerZoneAPI.Controllers
             qrImage.Save(ms, ImageFormat.Png);
             return File(ms.ToArray(), "image/png");
         }
+
+        [HttpGet("{id}/compras")]
+        public IActionResult HistorialCompras(int id)
+        {
+            var ventas = _db.ExecuteQuery(@"
+                SELECT v.id_venta, v.fecha, v.total, v.metodo_pago, v.estado
+                FROM ventas v
+                WHERE v.id_cliente = @id AND v.estado != 'CANCELADO'
+                ORDER BY v.fecha DESC",
+                new MySqlParameter("@id", id));
+
+            var resultado = ventas.Select(v =>
+            {
+                int idVenta = Convert.ToInt32(v["id_venta"]);
+                var detalle = _db.ExecuteQuery(@"
+                    SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio
+                    FROM detalle_ventas d
+                    LEFT JOIN productos p ON d.id_producto = p.id_producto
+                    WHERE d.id_venta = @id AND d.precio > 0",
+                    new MySqlParameter("@id", idVenta));
+
+                return new
+                {
+                    id_venta = idVenta,
+                    fecha = v["fecha"],
+                    total = v["total"],
+                    metodo_pago = v["metodo_pago"],
+                    estado = v["estado"],
+                    items = detalle.Select(d => new
+                    {
+                        nombre = d["nombre"].ToString(),
+                        cantidad = d["cantidad"],
+                        precio = d["precio"]
+                    })
+                };
+            });
+
+            return Ok(resultado);
+        }
     }
 }
