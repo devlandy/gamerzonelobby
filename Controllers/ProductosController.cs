@@ -67,16 +67,60 @@ namespace GamerZoneAPI.Controllers
         [HttpGet]
         public IActionResult ObtenerProductos()
         {
-            var rows = _db.ExecuteQuery("SELECT * FROM productos WHERE activo = 1");
+            var rows = _db.ExecuteQuery("SELECT * FROM productos WHERE activo = 1 ORDER BY nombre");
 
             return Ok(rows.Select(r => new
             {
-                id = r["id_producto"],
-                nombre = r["nombre"],
-                precio_venta = r["precio_venta"],
-                stock = r["stock"],
-                controla_stock = Convert.ToInt32(r["controla_stock"])
+                id             = Convert.ToInt32(r["id_producto"]),
+                nombre         = r["nombre"],
+                precio_compra  = r["precio_compra"],
+                precio_venta   = r["precio_venta"],
+                stock          = r["stock"],
+                controla_stock = Convert.ToInt32(r["controla_stock"]),
+                es_ingrediente = Convert.ToDecimal(r["precio_venta"]) == 0
             }));
+        }
+
+        [HttpPost("{id}/entrada")]
+        public IActionResult EntradaStock(int id, [FromBody] EntradaStockRequest req)
+        {
+            var prod = _db.ExecuteQuery("SELECT nombre, precio_venta FROM productos WHERE id_producto=@id",
+                new MySqlParameter("@id", id));
+            if (prod.Count == 0) return NotFound(new { error = "Producto no encontrado" });
+
+            bool esIngrediente = Convert.ToDecimal(prod[0]["precio_venta"]) == 0;
+            string nombre = prod[0]["nombre"]?.ToString() ?? "";
+
+            // Actualizar precio_compra si se envía uno nuevo
+            if (req.precio_compra > 0)
+                _db.ExecuteNonQuery("UPDATE productos SET precio_compra=@pc WHERE id_producto=@id",
+                    new MySqlParameter("@pc", req.precio_compra),
+                    new MySqlParameter("@id", id));
+
+            _db.ExecuteNonQuery("UPDATE productos SET stock = stock + @cantidad WHERE id_producto=@id",
+                new MySqlParameter("@cantidad", req.cantidad),
+                new MySqlParameter("@id", id));
+
+            _db.ExecuteNonQuery(@"
+                INSERT INTO historial_inventario (id_producto, tipo_movimiento, cantidad, observacion, fecha)
+                VALUES (@id, 'ENTRADA', @cantidad, @obs, NOW())",
+                new MySqlParameter("@id", id),
+                new MySqlParameter("@cantidad", req.cantidad),
+                new MySqlParameter("@obs", req.observacion ?? "Compra de stock"));
+
+            // Registrar costo como gasto en finanzas si se indica precio de compra
+            if (req.precio_compra > 0)
+            {
+                decimal costoTotal = req.precio_compra * req.cantidad;
+                string tipoDesc = esIngrediente ? "ingrediente" : "producto";
+                _db.ExecuteNonQuery(@"
+                    INSERT INTO gastos (descripcion, monto, fecha)
+                    VALUES (@desc, @monto, NOW())",
+                    new MySqlParameter("@desc", $"Compra {tipoDesc}: {nombre} x{req.cantidad}"),
+                    new MySqlParameter("@monto", costoTotal));
+            }
+
+            return Ok(new { mensaje = "Stock actualizado", gasto_registrado = req.precio_compra > 0 });
         }
 
         [HttpGet("alertas")]
@@ -93,8 +137,68 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("categorias")]
         public IActionResult Categorias()
         {
-            var rows = _db.ExecuteQuery("SELECT * FROM categorias");
-            return Ok(rows.Select(r => new { id = r["id_categoria"], nombre = r["nombre"] }));
+            var rows = _db.ExecuteQuery("SELECT * FROM categorias ORDER BY nombre");
+            return Ok(rows.Select(r => new { id = Convert.ToInt32(r["id_categoria"]), nombre = r["nombre"] }));
+        }
+
+        [HttpPost("categorias")]
+        public IActionResult CrearCategoria([FromBody] NombreRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req.nombre))
+                return BadRequest(new { error = "El nombre es requerido" });
+
+            _db.ExecuteNonQuery("INSERT INTO categorias (nombre) VALUES (@nombre)",
+                new MySqlParameter("@nombre", req.nombre.Trim()));
+
+            return Ok(new { mensaje = "Categoría creada" });
+        }
+
+        [HttpDelete("categorias/{id}")]
+        public IActionResult EliminarCategoria(int id)
+        {
+            var count = Convert.ToInt32(_db.ExecuteScalar(
+                "SELECT COUNT(*) FROM productos WHERE id_categoria=@id",
+                new MySqlParameter("@id", id)));
+
+            if (count > 0)
+                return BadRequest(new { error = $"No se puede eliminar: tiene {count} producto(s) asociado(s)" });
+
+            _db.ExecuteNonQuery("DELETE FROM subcategorias WHERE id_categoria=@id",
+                new MySqlParameter("@id", id));
+            _db.ExecuteNonQuery("DELETE FROM categorias WHERE id_categoria=@id",
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Categoría eliminada" });
+        }
+
+        [HttpPost("subcategorias")]
+        public IActionResult CrearSubcategoria([FromBody] SubcategoriaRequest req)
+        {
+            if (string.IsNullOrWhiteSpace(req.nombre))
+                return BadRequest(new { error = "El nombre es requerido" });
+
+            _db.ExecuteNonQuery(
+                "INSERT INTO subcategorias (nombre, id_categoria, activo) VALUES (@nombre, @cat, 1)",
+                new MySqlParameter("@nombre", req.nombre.Trim()),
+                new MySqlParameter("@cat", req.id_categoria));
+
+            return Ok(new { mensaje = "Subcategoría creada" });
+        }
+
+        [HttpDelete("subcategorias/{id}")]
+        public IActionResult EliminarSubcategoria(int id)
+        {
+            var count = Convert.ToInt32(_db.ExecuteScalar(
+                "SELECT COUNT(*) FROM productos WHERE id_subcategoria=@id",
+                new MySqlParameter("@id", id)));
+
+            if (count > 0)
+                return BadRequest(new { error = $"No se puede eliminar: tiene {count} producto(s) asociado(s)" });
+
+            _db.ExecuteNonQuery("DELETE FROM subcategorias WHERE id_subcategoria=@id",
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Subcategoría eliminada" });
         }
 
         [HttpGet("categoria/{id}")]
@@ -106,11 +210,13 @@ namespace GamerZoneAPI.Controllers
 
             return Ok(rows.Select(r => new
             {
-                id = r["id_producto"],
-                nombre = r["nombre"],
-                precio_venta = r["precio_venta"],
-                stock = r["stock"],
-                controla_stock = r["controla_stock"]
+                id             = Convert.ToInt32(r["id_producto"]),
+                nombre         = r["nombre"],
+                precio_compra  = r["precio_compra"],
+                precio_venta   = r["precio_venta"],
+                stock          = r["stock"],
+                controla_stock = Convert.ToInt32(r["controla_stock"]),
+                es_ingrediente = Convert.ToDecimal(r["precio_venta"]) == 0
             }));
         }
 

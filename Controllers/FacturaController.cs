@@ -74,20 +74,76 @@ namespace GamerZoneAPI.Controllers
         [HttpGet]
         public IActionResult HistorialFacturas()
         {
-            var rows = _db.ExecuteQuery(@"
-                SELECT f.id_factura, f.fecha, f.nit, f.nombre, v.total
-                FROM facturas f
-                JOIN ventas v ON f.id_venta = v.id_venta
-                ORDER BY f.fecha DESC");
-
-            return Ok(rows.Select(r => new
+            try
             {
-                id_factura = r["id_factura"],
-                fecha = r["fecha"],
-                nit = r["nit"],
-                nombre = r["nombre"],
-                total = r["total"]
-            }));
+                var rows = _db.ExecuteQuery(@"
+                    SELECT f.id_factura, f.fecha, f.nit, f.nombre, v.total, v.id_venta,
+                           f.sat_estado, f.sat_numero
+                    FROM facturas f
+                    JOIN ventas v ON f.id_venta = v.id_venta
+                    ORDER BY f.fecha DESC");
+
+                return Ok(rows.Select(r => new
+                {
+                    id_factura = r["id_factura"],
+                    id_venta = r["id_venta"],
+                    fecha = r["fecha"],
+                    nit = r["nit"],
+                    nombre = r["nombre"],
+                    total = r["total"],
+                    sat_estado = r.ContainsKey("sat_estado") ? r["sat_estado"]?.ToString() ?? "PENDIENTE" : "PENDIENTE",
+                    sat_numero = r.ContainsKey("sat_numero") ? r["sat_numero"] : null
+                }));
+            }
+            catch
+            {
+                // Fallback sin columnas SAT (antes de ejecutar ALTER TABLE)
+                var rows = _db.ExecuteQuery(@"
+                    SELECT f.id_factura, f.fecha, f.nit, f.nombre, v.total, v.id_venta
+                    FROM facturas f
+                    JOIN ventas v ON f.id_venta = v.id_venta
+                    ORDER BY f.fecha DESC");
+
+                return Ok(rows.Select(r => new
+                {
+                    id_factura = r["id_factura"],
+                    id_venta = r["id_venta"],
+                    fecha = r["fecha"],
+                    nit = r["nit"],
+                    nombre = r["nombre"],
+                    total = r["total"],
+                    sat_estado = "PENDIENTE",
+                    sat_numero = (object?)null
+                }));
+            }
         }
+
+        [HttpPatch("{id}/sat")]
+        public IActionResult MarcarSAT(int id, [FromBody] SatRequest request)
+        {
+            _db.ExecuteNonQuery(@"
+                UPDATE facturas SET sat_estado='FACTURADA', sat_numero=@numero
+                WHERE id_factura=@id",
+                new MySqlParameter("@numero", request.sat_numero ?? ""),
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Marcada como facturada en SAT" });
+        }
+
+        [HttpPatch("{id}/sat-revertir")]
+        public IActionResult RevertirSAT(int id)
+        {
+            _db.ExecuteNonQuery(@"
+                UPDATE facturas SET sat_estado='PENDIENTE', sat_numero=NULL
+                WHERE id_factura=@id",
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Revertida a pendiente SAT" });
+        }
+    }
+
+    public class SatRequest
+    {
+        public string? sat_numero { get; set; }
     }
 }

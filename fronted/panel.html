@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 <script>
@@ -31,13 +32,14 @@
     <!-- NAV -->
     <nav class="sidebar">
         <h2>🎮 LOBBY ZONE</h2>
-        <button onclick="mostrar('dashboard')">Dashboard</button>
+        <button onclick="mostrar('dashboard')">Principal</button>
         <button onclick="mostrar('ventas')">Ventas</button>
         <button onclick="mostrar('clientes')">Clientes</button>
         <button id="inventarioBtn" onclick="mostrar('inventario')">Inventario</button>
         <button id="productosBtn" onclick="mostrar('productos')">Productos</button>
         <button id="reportesBtn" onclick="mostrar('reportes')">Reportes</button>
         <button onclick="mostrar('torneos')">Torneos</button>
+        <button onclick="mostrar('finanzas')">Finanzas</button>
         <button onclick="mostrar('cierre')">Cierre Día</button>
         <button onclick="logout()">Cerrar Sesión</button>
     </nav>
@@ -46,7 +48,7 @@
 
         <!-- DASHBOARD -->
         <div id="dashboard" class="seccion">
-            <h2>📊 Dashboard</h2>
+            <h2>📊 Principal</h2>
 
             <div id="dashboardData" class="dashboard-cards"></div>
 
@@ -59,9 +61,12 @@
             <div class="dashboard-cards">
                 <div class="card">
                     <h4>➕ Agregar stock</h4>
-                    <input id="productoRapido" placeholder="ID Producto">
-                    <input id="cantidadRapida" type="number" placeholder="Cantidad">
-                    <button class="btn" onclick="agregarStockRapido()">Agregar</button>
+                    <select id="productoRapido" style="width:100%; margin-bottom:8px;">
+                        <option value="">— Selecciona producto —</option>
+                    </select>
+                    <input id="cantidadRapida" type="number" min="1" placeholder="Cantidad a agregar">
+                    <input id="obsRapida" placeholder="Observación (opcional)" style="margin-top:6px;">
+                    <button class="btn" onclick="agregarStockRapido()" style="margin-top:8px;">Agregar</button>
                 </div>
 
                 <div class="card">
@@ -78,56 +83,104 @@
             </div>
 
             <div class="dashboard-cards">
-                <div class="card text-center">
+                <div class="card">
                     <h4>👑 Clientes frecuentes</h4>
-                    <p>Ranking de clientes.</p>
-                    <button class="btn" onclick="abrirModal('modalClientes')">Entrar</button>
+                    <div id="miniTopClientes"><p style="color:#555; font-size:13px;">Sin datos aún.</p></div>
                 </div>
 
-                <div class="card text-center">
+                <div class="card">
                     <h4>🎮 Top gamers</h4>
-                    <p>Ranking de jugadores.</p>
-                    <button class="btn" onclick="abrirModal('modalGamers')">Entrar</button>
+                    <div id="miniTopGamers"><p style="color:#555; font-size:13px;">Sin datos aún.</p></div>
                 </div>
             </div>
         </div>
 
         <!-- VENTAS / POS -->
         <div id="ventas" class="seccion" style="display:none;">
-            <h2>💰 POS Ventas</h2>
+            <h2>💰 Venta</h2>
 
-            <div class="ventas-layout">
-                <div class="ventas-columna">
-                    <h3>🎮 Consolas</h3>
-                    <div id="listaConsolas" class="dashboard-cards"></div>
+            <!-- Selector modo -->
+            <div style="display:flex; gap:14px; margin-bottom:24px;">
+                <button id="modoConsolasBtn" onclick="seleccionarModoPOS('consolas')" style="
+                    flex:1; padding:20px 16px; border-radius:14px; border:2px solid rgba(41,121,255,0.5);
+                    background:linear-gradient(135deg,rgba(21,101,192,0.25),rgba(41,121,255,0.12));
+                    color:var(--text); cursor:pointer; transition:0.25s ease; text-align:left;
+                    display:flex; align-items:center; gap:14px; font-family:var(--font-head);">
+                    <span style="font-size:38px; line-height:1; filter:drop-shadow(0 4px 8px rgba(41,121,255,0.6));">🎮</span>
+                    <div>
+                        <div style="font-size:17px; font-weight:700; letter-spacing:0.5px;">Consolas</div>
+                        <div style="font-size:12px; color:var(--text-dim); margin-top:2px;">Tiempo de juego · Controles</div>
+                    </div>
+                    <span style="margin-left:auto; font-size:11px; padding:4px 10px; border-radius:20px;
+                        background:rgba(41,121,255,0.2); color:#90caf9; letter-spacing:1px;">JUEGO</span>
+                </button>
+
+                <button id="modoProductosBtn" onclick="seleccionarModoPOS('productos')" style="
+                    flex:1; padding:20px 16px; border-radius:14px; border:2px solid transparent;
+                    background:rgba(255,255,255,0.03);
+                    color:var(--text-dim); cursor:pointer; transition:0.25s ease; text-align:left;
+                    display:flex; align-items:center; gap:14px; font-family:var(--font-head);">
+                    <span style="font-size:38px; line-height:1; filter:drop-shadow(0 4px 8px rgba(255,111,0,0.4));">🍔</span>
+                    <div>
+                        <div style="font-size:17px; font-weight:700; letter-spacing:0.5px;">Productos</div>
+                        <div style="font-size:12px; color:var(--text-dim); margin-top:2px;">Comida · Bebidas · Otros</div>
+                    </div>
+                    <span style="margin-left:auto; font-size:11px; padding:4px 10px; border-radius:20px;
+                        background:rgba(255,111,0,0.15); color:#ffcc80; letter-spacing:1px;">CONSUMO</span>
+                </button>
+            </div>
+
+            <!-- Contenido dinámico -->
+            <div style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;">
+
+                <!-- Panel izquierdo: consolas o productos -->
+                <div>
+                    <div id="panelConsolas" style="background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:20px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+                            <span style="font-size:22px;">🎮</span>
+                            <span style="font-family:var(--font-head); font-size:15px; font-weight:700;">Consolas disponibles</span>
+                        </div>
+                        <div id="listaConsolas"></div>
+                    </div>
+
+                    <div id="panelProductos" style="display:none; background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:20px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+                            <span style="font-size:22px;">🍔</span>
+                            <span style="font-family:var(--font-head); font-size:15px; font-weight:700;">Catálogo de productos</span>
+                        </div>
+                        <div id="categoriasPOS" class="filtros-pos"></div>
+                        <div id="subcategoriasPOS" class="filtros-pos" style="margin-top:8px;"></div>
+                        <div style="height:1px; background:var(--border); margin:12px 0;"></div>
+                        <div id="productosPOS" class="dashboard-cards"></div>
+                    </div>
                 </div>
 
-                <div class="ventas-columna">
-                    <h3>🍔 Productos</h3>
-                    <div id="categoriasPOS" class="filtros-pos"></div>
-                    <hr>
-                    <div id="subcategoriasPOS" class="filtros-pos"></div>
-                    <hr>
-                    <div id="productosPOS" class="dashboard-cards"></div>
+                <!-- Panel derecho: carrito fijo -->
+                <div style="position:sticky; top:70px; display:flex; flex-direction:column; gap:16px;">
+                    <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+                        <div style="display:flex; align-items:center; gap:10px; padding:16px 20px; border-bottom:1px solid var(--border); background:var(--surface-1);">
+                            <span style="font-size:18px;">🛒</span>
+                            <span style="font-family:var(--font-head); font-size:14px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--text);">Orden actual</span>
+                        </div>
+                        <div id="carrito" style="padding:12px 16px;"></div>
+                    </div>
+
+                    <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+                        <div style="display:flex; align-items:center; gap:10px; padding:16px 20px; border-bottom:1px solid var(--border); background:var(--surface-1);">
+                            <span style="font-size:18px;">📋</span>
+                            <span style="font-family:var(--font-head); font-size:14px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--text);">Pagos pendientes</span>
+                        </div>
+                        <div id="pendientes" style="padding:12px 16px; display:flex; flex-direction:column; gap:8px;"></div>
+                    </div>
                 </div>
             </div>
 
-            <div id="ultimaVenta" style="display:none; margin-bottom:12px;">
-                <div class="card" style="background:#1a2e1a; border:1px solid #22c55e;">
+            <div id="ultimaVenta" style="display:none; margin-top:16px;">
+                <div class="card" style="background:rgba(0,80,30,0.3); border:1px solid rgba(0,230,118,0.4);">
                     <span id="ultimaVentaMsg">✅ Venta registrada</span>
                     <button class="btn" style="margin-left:12px;" id="ultimaVentaPDF">🧾 Descargar PDF</button>
                 </div>
             </div>
-
-            <hr>
-
-            <h3>🛒 Carrito general</h3>
-            <div id="carrito" class="dashboard-cards"></div>
-
-            <hr>
-
-            <h3>📋 Pagos pendientes</h3>
-            <div id="pendientes" class="dashboard-cards"></div>
         </div>
 
         <!-- CLIENTES -->
@@ -148,6 +201,7 @@
                 <h3>🔍 Buscar</h3>
                 <input id="buscar" placeholder="Nombre, teléfono o apodo">
                 <button class="btn" onclick="buscarClientes()">Buscar</button>
+                <button class="btn" style="background:#1a3a5c; margin-left:8px;" onclick="recalcularPuntos()">Recalcular puntos históricos</button>
             </div>
 
             <div id="lista" class="dashboard-cards"></div>
@@ -171,83 +225,338 @@
 
             <!-- Vista: Historial -->
             <div id="vistaHistorialInv" style="display:none;">
-                <div id="historial" class="dashboard-cards"></div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center;">
+                    <input id="filtroHistProd" placeholder="Buscar producto..." style="flex:1; min-width:160px;" oninput="cargarHistorial()">
+                    <select id="filtroHistTipo" onchange="cargarHistorial()" style="width:auto;">
+                        <option value="">Todos los movimientos</option>
+                        <option value="ENTRADA">Solo entradas</option>
+                        <option value="SALIDA">Solo salidas</option>
+                    </select>
+                    <input type="month" id="filtroHistMes" onchange="cargarHistorial()" style="width:auto;">
+                    <button onclick="exportarInventarioExcel()" style="padding:9px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Excel</button>
+                </div>
+                <div id="historial"></div>
             </div>
         </div>
 
         <!-- PRODUCTOS -->
         <div id="productos" class="seccion" style="display:none;">
-            <h2>📦 Productos</h2>
+            <h2>📦 Gestión de Catálogo</h2>
 
-            <div class="card">
-                <h3>➕ Nuevo producto</h3>
-                <input id="nombreProducto" placeholder="Nombre">
-
-                <label>Categoría</label>
-                <select id="categoriaProducto"></select>
-
-                <label>Subcategoría</label>
-                <select id="subcategoriaProducto"></select>
-
-                <input id="precioCompraProducto" placeholder="Precio de compra">
-                <input id="precioProducto" placeholder="Precio de venta">
-                <input id="stockProducto" placeholder="Stock inicial">
-
-                <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--text-dim);">
-                    <input type="checkbox" id="controlaStockProducto" checked style="width:auto;margin:0;">
-                    Controla stock (desmárcalo para comida hecha al momento: crepas, lasaña…)
-                </label>
-
-                <button class="btn" onclick="crearProducto()">Crear producto</button>
+            <!-- Pestañas -->
+            <div style="display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid #222; padding-bottom:0;">
+                <button id="tabCat" class="tab-btn tab-active" onclick="tabCatalogo('categorias')">Categorías</button>
+                <button id="tabSub" class="tab-btn" onclick="tabCatalogo('subcategorias')">Subcategorías</button>
+                <button id="tabProd" class="tab-btn" onclick="tabCatalogo('productos')">Productos</button>
             </div>
 
-            <hr>
+            <!-- PESTAÑA: CATEGORÍAS -->
+            <div id="tabPanelCategorias">
+                <div class="card" style="margin-bottom:14px;">
+                    <h3>Nueva categoría</h3>
+                    <div style="display:flex; gap:8px;">
+                        <input id="nuevaCategoriaNombre" placeholder="Ej: Bebidas, Comida, Postres…" style="flex:1;">
+                        <button class="btn" onclick="crearCategoria()">Agregar</button>
+                    </div>
+                </div>
+                <div id="listaCategorias"></div>
+            </div>
 
-            <div id="productosLista" class="dashboard-cards"></div>
+            <!-- PESTAÑA: SUBCATEGORÍAS -->
+            <div id="tabPanelSubcategorias" style="display:none;">
+                <div class="card" style="margin-bottom:14px;">
+                    <h3>Nueva subcategoría</h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <select id="nuevaSubcatCategoria" style="flex:1; min-width:160px;"></select>
+                        <input id="nuevaSubcatNombre" placeholder="Ej: Jugos, Crepas dulces…" style="flex:2; min-width:160px;">
+                        <button class="btn" onclick="crearSubcategoria()">Agregar</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                    <label style="color:#aaa; font-size:13px;">Filtrar por categoría:</label>
+                    <select id="filtroSubcatCategoria" onchange="cargarSubcategoriasCatalogo()" style="width:auto;"></select>
+                </div>
+                <div id="listaSubcategorias"></div>
+            </div>
+
+            <!-- PESTAÑA: PRODUCTOS -->
+            <div id="tabPanelProductos" style="display:none;">
+                <div class="card" style="margin-bottom:14px;">
+                    <h3>Nuevo producto</h3>
+                    <div style="display:flex; gap:16px; margin-bottom:12px; flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#90caf9;text-transform:none;letter-spacing:0;" title="Bebidas, snacks — descuenta de finanzas al registrar compra">
+                            <input type="checkbox" id="registraCosto" style="width:auto;margin:0;" onchange="toggleFormProducto()">
+                            Registra precio de compra
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#aaa;text-transform:none;letter-spacing:0;" title="Desactívalo para comida preparada al momento">
+                            <input type="checkbox" id="controlaStockProducto" checked style="width:auto;margin:0;" onchange="toggleFormProducto()">
+                            Controla stock
+                        </label>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <input id="nombreProducto" placeholder="Nombre del producto" style="grid-column:span 2;">
+                        <select id="categoriaProducto" onchange="cargarSubcatsProducto()"></select>
+                        <select id="subcategoriaProducto"></select>
+                        <input id="precioCompraProducto" placeholder="Precio de compra (Q)" type="number" step="0.01">
+                        <input id="precioProducto" placeholder="Precio de venta (Q)" type="number" step="0.01">
+                        <input id="stockProducto" placeholder="Stock inicial" type="number" style="grid-column:span 2;">
+                    </div>
+                    <button class="btn" style="margin-top:12px;" onclick="crearProducto()">Agregar producto</button>
+                </div>
+
+                <div style="margin-bottom:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <label style="color:#aaa; font-size:13px;">Filtrar:</label>
+                    <select id="filtroProdCategoria" onchange="cargarSubcatsFiltro();cargarProductosCatalogo()" style="width:auto;"></select>
+                    <select id="filtroProdSubcat" onchange="cargarProductosCatalogo()" style="width:auto;"></select>
+                    <input id="filtroProdNombre" placeholder="Buscar por nombre..." style="width:180px;" oninput="cargarProductosCatalogo()">
+                </div>
+                <div id="productosLista"></div>
+            </div>
         </div>
 
         <!-- REPORTES -->
         <div id="reportes" class="seccion" style="display:none;">
-            <h2>📈 Reportes y estadísticas</h2>
-
-            <div class="card">
-                <h3>📊 Exportar a Excel</h3>
-                <p>Elige el mes o descarga todo el historial.</p>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;">
-                    <input type="month" id="mesExcel" style="padding:8px; border-radius:6px; background:var(--card); color:var(--text); border:1px solid #333;">
-                    <button class="btn" onclick="exportarExcel()">Exportar mes</button>
-                    <button class="btn" style="background:#333;" onclick="exportarExcelTodo()">Exportar todo</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+                <div>
+                    <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">📈 Reportes</h2>
+                    <p style="margin:4px 0 0; color:#555; font-size:13px;">Estadísticas y ventas por mes</p>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="month" id="mesReporte" style="padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarReportes()">
+                    <button onclick="cargarReportes()" style="padding:9px 16px;border-radius:9px;border:none;background:#1e1e1e;color:#e2e2e2;font-size:13px;font-weight:600;cursor:pointer;">🔍 Buscar</button>
                 </div>
             </div>
 
-            <hr>
+            <!-- TABS -->
+            <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #222;">
+                <button id="tabRep-stats" class="tab-btn tab-active" onclick="tabReporte('stats')">📊 Estadísticas</button>
+                <button id="tabRep-facturas" class="tab-btn" onclick="tabReporte('facturas')">🧾 Facturas SAT</button>
+                <button id="tabRep-ventas" class="tab-btn" onclick="tabReporte('ventas')">🛒 Ventas</button>
+            </div>
 
-            <h3>🧾 Historial de facturas</h3>
-            <div id="listaFacturas" class="dashboard-cards"></div>
+            <!-- ESTADÍSTICAS -->
+            <div id="repStats">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
 
-            <hr>
+                    <!-- Top productos -->
+                    <div class="card">
+                        <h3>🏆 Top 5 productos del mes</h3>
+                        <div id="repTopProductos"><p style="color:#555; font-size:13px;">Sin ventas este mes.</p></div>
+                    </div>
 
-            <h3>🛒 Historial de ventas</h3>
-            <div id="listaVentasReporte" class="dashboard-cards"></div>
+                    <!-- Métodos de pago -->
+                    <div class="card">
+                        <h3>💳 Ingresos por método de pago</h3>
+                        <div id="repMetodosPago"><p style="color:#555; font-size:13px;">Sin ventas este mes.</p></div>
+                    </div>
+
+                    <!-- Cancelaciones -->
+                    <div class="card">
+                        <h3>❌ Cancelaciones del mes</h3>
+                        <div id="repCancelaciones"><p style="color:#555; font-size:13px;">Sin cancelaciones este mes.</p></div>
+                    </div>
+
+                    <!-- Margen por producto -->
+                    <div class="card">
+                        <h3>📉 Margen de ganancia por producto</h3>
+                        <div id="repMargenes"><p style="color:#555; font-size:13px;">Sin productos.</p></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- FACTURAS SAT -->
+            <div id="repFacturas" style="display:none;">
+                <div style="display:flex; gap:8px; margin-bottom:16px;">
+                    <button id="tabSat-pendiente" class="tab-btn tab-active" onclick="tabSAT('pendiente')">⏳ Pendientes SAT</button>
+                    <button id="tabSat-facturada" class="tab-btn" onclick="tabSAT('facturada')">✅ Facturadas en SAT</button>
+                </div>
+                <div id="listaFacturasPendientesSAT"></div>
+                <div id="listaFacturasFacturadasSAT" style="display:none;"></div>
+            </div>
+
+            <!-- HISTORIAL VENTAS -->
+            <div id="repVentas" style="display:none;">
+                <div style="display:flex; gap:10px; margin-bottom:16px; align-items:center;">
+                    <button onclick="exportarExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Excel mes</button>
+                    <button onclick="exportarExcelTodo()" style="padding:9px 18px;border-radius:9px;border:1px solid #2a2a2a;background:#111;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">📥 Excel todo</button>
+                </div>
+                <div id="listaVentasReporte"></div>
+            </div>
         </div>
 
         <!-- TORNEOS -->
         <div id="torneos" class="seccion" style="display:none;">
             <h2>🏆 Torneos</h2>
 
-            <div class="card">
-                <h3>➕ Crear torneo</h3>
-                <input id="torneoNombre" placeholder="Nombre del torneo">
-                <input id="torneoJuego" placeholder="Juego">
-                <input id="torneoPremio" placeholder="Premio">
-                <input id="torneoInscripcion" placeholder="Inscripción">
-                <input id="torneoCupos" placeholder="Cupos">
-                <button class="btn" onclick="crearTorneo()">Crear torneo</button>
+            <!-- TABS tipo -->
+            <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #222;">
+                <button id="tabTorneo-microwin" class="tab-btn tab-active" onclick="tabTorneo('microwin')">⚡ Microwin</button>
+                <button id="tabTorneo-flash"    class="tab-btn"            onclick="tabTorneo('flash')">🔥 Flash</button>
             </div>
 
-            <hr>
+            <!-- MICROWIN -->
+            <div id="secTorneoMicrowin">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-bottom:24px;">
+                    <div class="card">
+                        <h3>➕ Nuevo Microwin</h3>
+                        <p style="color:#aaa;font-size:12px;margin-bottom:10px;">Se anuncia con anticipación a los clientes.</p>
+                        <input id="mwNombre"      placeholder="Nombre del torneo">
+                        <input id="mwJuego"       placeholder="Juego" style="margin-top:8px;">
+                        <input id="mwPremio"      type="number" placeholder="Premio (Q)" style="margin-top:8px;">
+                        <input id="mwInscripcion" type="number" placeholder="Inscripción (Q)" style="margin-top:8px;">
+                        <input id="mwCupos"       type="number" placeholder="Cupos" style="margin-top:8px;">
+                        <button class="btn" onclick="crearTorneo('MICROWIN')" style="margin-top:10px;">Crear Microwin</button>
+                    </div>
+                    <div class="card">
+                        <h3>🏅 Puntos por posición</h3>
+                        <p style="font-size:13px;color:#aaa;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
+                        <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥇 Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥈 Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥉 Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
+                            <tr><td style="padding:6px;">🎮 Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <h3>📋 Microwin activos y pasados</h3>
+                <div id="listaMicrowin" class="dashboard-cards"></div>
+            </div>
 
-            <div id="listaTorneos" class="dashboard-cards"></div>
+            <!-- FLASH -->
+            <div id="secTorneoFlash" style="display:none;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-bottom:24px;">
+                    <div class="card">
+                        <h3>➕ Nuevo torneo Flash</h3>
+                        <p style="color:#aaa;font-size:12px;margin-bottom:10px;">Se organiza el mismo día, sin anuncio previo.</p>
+                        <input id="flNombre"      placeholder="Nombre del torneo">
+                        <input id="flJuego"       placeholder="Juego" style="margin-top:8px;">
+                        <input id="flPremio"      type="number" placeholder="Premio (Q)" style="margin-top:8px;">
+                        <input id="flInscripcion" type="number" placeholder="Inscripción (Q)" style="margin-top:8px;">
+                        <input id="flCupos"       type="number" placeholder="Cupos" style="margin-top:8px;">
+                        <button class="btn" onclick="crearTorneo('FLASH')" style="margin-top:10px; background:#ef4444;">Crear Flash</button>
+                    </div>
+                    <div class="card">
+                        <h3>🏅 Puntos por posición</h3>
+                        <p style="font-size:13px;color:#aaa;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
+                        <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥇 Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥈 Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥉 Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
+                            <tr><td style="padding:6px;">🎮 Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <h3>📋 Flash activos y pasados</h3>
+                <div id="listaFlash" class="dashboard-cards"></div>
+            </div>
+
+            <!-- MODAL detalle torneo -->
+            <div id="modalTorneo" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; overflow-y:auto;">
+                <div class="card" style="max-width:600px; margin:40px auto; position:relative;">
+                    <button onclick="cerrarModalTorneo()" style="position:absolute;top:10px;right:10px;background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer;">✕</button>
+                    <div id="modalTorneoContenido"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINANZAS -->
+        <div id="finanzas" class="seccion" style="display:none;">
+
+            <!-- HEADER -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:24px;">
+                <div>
+                    <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">💰 Control Financiero</h2>
+                    <p style="margin:4px 0 0; color:#555; font-size:13px;">Resumen de ingresos, gastos y balance mensual</p>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <input type="month" id="mesFinanzas" style="padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarFinanzas()">
+                    <button id="btnExcelFinanzas" onclick="exportarFinanzasExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Excel</button>
+                </div>
+            </div>
+
+            <!-- TARJETAS RESUMEN -->
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;">
+                <div style="background:#0d1f0d; border:1px solid #1a3a1a; border-radius:14px; padding:18px 20px;">
+                    <div style="font-size:11px; color:#4ade80; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ventas del mes</div>
+                    <div id="finIngresos" style="font-size:24px; font-weight:800; color:#4ade80;">Q0.00</div>
+                    <div style="font-size:11px; color:#2d5a2d; margin-top:4px;">Cobros completados</div>
+                </div>
+                <div style="background:#0d1827; border:1px solid #1a304a; border-radius:14px; padding:18px 20px;">
+                    <div style="font-size:11px; color:#60a5fa; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ingresos extra</div>
+                    <div id="finIngresosExtra" style="font-size:24px; font-weight:800; color:#60a5fa;">Q0.00</div>
+                    <div style="font-size:11px; color:#1d3a5a; margin-top:4px;">Torneos, membresías…</div>
+                </div>
+                <div style="background:#1f0d0d; border:1px solid #3a1a1a; border-radius:14px; padding:18px 20px;">
+                    <div style="font-size:11px; color:#f87171; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Gastos del mes</div>
+                    <div id="finGastos" style="font-size:24px; font-weight:800; color:#f87171;">Q0.00</div>
+                    <div style="font-size:11px; color:#5a1d1d; margin-top:4px;">Compras y egresos</div>
+                </div>
+                <div style="background:#111; border:1px solid #252525; border-radius:14px; padding:18px 20px;">
+                    <div style="font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ganancia neta</div>
+                    <div id="finGanancia" style="font-size:24px; font-weight:800; color:#e2e2e2;">Q0.00</div>
+                    <div style="font-size:11px; color:#444; margin-top:4px;">Ventas + extra − gastos</div>
+                </div>
+            </div>
+
+            <!-- FORMULARIOS LADO A LADO -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px;">
+                <!-- Form Gasto -->
+                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:20px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                        <span style="font-size:18px;">🔴</span>
+                        <span style="font-size:14px; font-weight:700; color:#f87171;">Registrar gasto</span>
+                    </div>
+                    <input id="gastoDesc" placeholder="Descripción (ej: Compra de gas, papas...)" style="margin-bottom:10px;">
+                    <input id="gastoMonto" type="number" min="0" step="0.01" placeholder="Monto (Q)">
+                    <button onclick="registrarGasto()" style="margin-top:12px; width:100%; padding:10px; border-radius:9px; border:none; background:linear-gradient(135deg,#991b1b,#7f1d1d); color:#fff; font-size:13px; font-weight:700; cursor:pointer;">Registrar gasto</button>
+                </div>
+                <!-- Form Ingreso Extra -->
+                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:20px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                        <span style="font-size:18px;">🟢</span>
+                        <span style="font-size:14px; font-weight:700; color:#60a5fa;">Registrar ingreso extra</span>
+                    </div>
+                    <input id="ingresoDesc" placeholder="Descripción (ej: Premio torneo, Membresía...)" style="margin-bottom:10px;">
+                    <input id="ingresoMonto" type="number" min="0" step="0.01" placeholder="Monto (Q)">
+                    <button onclick="registrarIngresoExtra()" style="margin-top:12px; width:100%; padding:10px; border-radius:9px; border:none; background:linear-gradient(135deg,#1565c0,#0d47a1); color:#fff; font-size:13px; font-weight:700; cursor:pointer;">Registrar ingreso</button>
+                </div>
+            </div>
+
+            <!-- LISTAS -->
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:start;">
+                <!-- Gastos -->
+                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden;">
+                    <div style="padding:14px 18px; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:8px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#f87171;display:inline-block;"></span>
+                        <span style="font-size:13px; font-weight:700; color:#e2e2e2;">Gastos registrados</span>
+                    </div>
+                    <div id="listaGastos" style="padding:8px 0; max-height:380px; overflow-y:auto;">
+                        <p style="color:#555; font-size:13px; padding:16px 18px;">Sin gastos este mes.</p>
+                    </div>
+                </div>
+                <!-- Ingresos Extra -->
+                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden;">
+                    <div style="padding:14px 18px; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:8px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;display:inline-block;"></span>
+                        <span style="font-size:13px; font-weight:700; color:#e2e2e2;">Ingresos extra</span>
+                    </div>
+                    <div id="listaIngresosExtra" style="padding:8px 0; max-height:380px; overflow-y:auto;">
+                        <p style="color:#555; font-size:13px; padding:16px 18px;">Sin ingresos extra este mes.</p>
+                    </div>
+                </div>
+                <!-- Ventas por día -->
+                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden;">
+                    <div style="padding:14px 18px; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:8px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;"></span>
+                        <span style="font-size:13px; font-weight:700; color:#e2e2e2;">Ventas por día</span>
+                    </div>
+                    <div id="listaIngresosDia" style="padding:8px 0; max-height:380px; overflow-y:auto;">
+                        <p style="color:#555; font-size:13px; padding:16px 18px;">Sin ventas este mes.</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- CIERRE -->
@@ -310,7 +619,7 @@
             </div>
             <div class="modal-body">
                 <button class="btn" onclick="cargarTopGamers()">Actualizar ranking</button>
-                <div id="topGamers" class="dashboard-cards"></div>
+                <div id="topGamers" style="margin-top:14px;"></div>
             </div>
         </div>
     </div>
@@ -395,6 +704,30 @@
         </div>
     </div>
 
+    <!-- MODAL ENTRADA DE STOCK / COMPRA INGREDIENTE -->
+    <div id="modalEntradaStock" class="modal-dashboard" style="display:none;">
+        <div class="modal-content" style="max-width:420px;">
+            <div class="modal-header">
+                <h3 id="entradaStockNombre">Agregar stock</h3>
+                <span class="close-btn" onclick="cerrarModal('modalEntradaStock')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="entradaStockId">
+                <input type="hidden" id="entradaStockEsIngrediente">
+                <div id="entradaStockNota" style="background:#78350f22; border:1px solid #fbbf2444; border-radius:8px; padding:10px; margin-bottom:14px; font-size:12px; color:#fbbf24; display:none;">
+                    Esta compra se registrará automáticamente como gasto en Finanzas.
+                </div>
+                <label>Cantidad</label>
+                <input type="number" id="entradaStockCantidad" placeholder="Ej: 10" min="1">
+                <label>Precio de compra por unidad (Q)</label>
+                <input type="number" id="entradaStockPrecio" placeholder="Ej: 5.00" step="0.01" min="0">
+                <label>Observación (opcional)</label>
+                <input id="entradaStockObs" placeholder="Ej: Compra en mercado">
+                <button class="btn" style="margin-top:12px; width:100%;" onclick="confirmarEntradaStock()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL BEBIDAS COMBO -->
     <div id="modalBebidas" class="modal" style="display:none;">
         <div class="modal-content">
@@ -408,9 +741,53 @@
         </div>
     </div>
 
+    <!-- MODAL QR CLIENTE -->
+    <div id="modalQR" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; display:none; align-items:center; justify-content:center;">
+        <div style="background:#111; border:1px solid #222; border-radius:16px; padding:28px; max-width:320px; width:90%; text-align:center; position:relative;">
+            <button onclick="cerrarModalQR()" style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:#aaa;font-size:20px;cursor:pointer;">✕</button>
+            <p style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:4px;">LOBBY ZONE</p>
+            <h3 id="qrNombreCliente" style="margin-bottom:4px;font-size:18px;"></h3>
+            <p id="qrCodigoCliente" style="font-size:11px;color:#555;margin-bottom:20px;"></p>
+            <div id="qrCanvas" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
+            <div id="qrPuntosCliente" style="min-height:36px;margin-bottom:12px;"></div>
+            <p style="font-size:11px;color:#555;margin-bottom:16px;">Escanea para ver tus puntos</p>
+            <button class="btn" onclick="descargarQR()" style="width:100%;font-size:13px;">⬇ Descargar QR</button>
+        </div>
+    </div>
+
     <!-- SCRIPTS -->
     <script src="app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;"></div>
+
+    <!-- MODAL CONFIRMACIÓN CUSTOM -->
+    <div id="modalConfirm" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+        <div style="background:#111;border:1px solid #222;border-radius:18px;padding:28px 28px 22px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:fadeInScale .15s ease;">
+            <div id="modalConfirmIcon" style="font-size:36px;text-align:center;margin-bottom:12px;"></div>
+            <div id="modalConfirmTitle" style="font-size:16px;font-weight:700;text-align:center;color:#fff;margin-bottom:8px;"></div>
+            <div id="modalConfirmMsg" style="font-size:13px;color:#888;text-align:center;line-height:1.5;margin-bottom:22px;"></div>
+            <div style="display:flex;gap:10px;">
+                <button id="modalConfirmCancel" style="flex:1;padding:11px;border-radius:10px;border:1px solid #2a2a2a;background:transparent;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+                <button id="modalConfirmOk" style="flex:1;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;"></button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    @keyframes fadeInScale {
+        from { opacity:0; transform:scale(.93); }
+        to   { opacity:1; transform:scale(1); }
+    }
+    @keyframes toastIn {
+        from { opacity:0; transform:translateY(12px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes toastOut {
+        from { opacity:1; transform:translateY(0); }
+        to   { opacity:0; transform:translateY(8px); }
+    }
+    </style>
 </body>
 </html>

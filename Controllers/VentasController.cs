@@ -87,6 +87,43 @@ namespace GamerZoneAPI.Controllers
                 }
 
                 transaction.Commit();
+
+                // Puntos automáticos si hay cliente vinculado y la venta está pagada
+                if (request.id_cliente.HasValue && estado == "PAGADO")
+                {
+                    try
+                    {
+                        // CONSUMO: 0.05 puntos por cada Q1 gastado en comida/productos (NO consola)
+                        decimal totalComida = request.productos
+                            .Where(p => p.id_producto > 0)
+                            .Sum(p => p.precio * p.cantidad);
+                        decimal puntosConsumo = Math.Round(totalComida * 0.05m, 2);
+                        if (puntosConsumo > 0)
+                        {
+                            _db.ExecuteNonQuery(@"
+                                INSERT INTO historial_puntos (id_cliente, tipo, puntos, motivo)
+                                VALUES (@cliente, 'CONSUMO', @puntos, 'COMPRA')",
+                                new MySqlParameter("@cliente", request.id_cliente.Value),
+                                new MySqlParameter("@puntos", puntosConsumo));
+                        }
+
+                        // JUEGO: 5 puntos por cada hora de consola pagada (proporcional por minutos)
+                        int minutosJuego = request.productos
+                            .Where(p => p.id_producto == 0)
+                            .Sum(p => p.minutos ?? 0);
+                        decimal puntosJuego = Math.Round((minutosJuego / 60m) * 5m, 2);
+                        if (puntosJuego > 0)
+                        {
+                            _db.ExecuteNonQuery(@"
+                                INSERT INTO historial_puntos (id_cliente, tipo, puntos, motivo)
+                                VALUES (@cliente, 'JUEGO', @puntos, 'CONSOLA')",
+                                new MySqlParameter("@cliente", request.id_cliente.Value),
+                                new MySqlParameter("@puntos", puntosJuego));
+                        }
+                    }
+                    catch { /* no interrumpir la venta si falla el registro de puntos */ }
+                }
+
                 return Ok(new { mensaje = "Venta registrada correctamente", id_venta = idVenta, total });
             }
             catch (Exception ex)
@@ -108,7 +145,7 @@ namespace GamerZoneAPI.Controllers
 
             return Ok(rows.Select(r => new
             {
-                id = r["id_venta"],
+                id_venta = Convert.ToInt32(r["id_venta"]),
                 numero = r["numero_orden"],
                 nombre_orden = r["nombre_orden"],
                 tipo = r["tipo"],
@@ -131,6 +168,24 @@ namespace GamerZoneAPI.Controllers
                 new MySqlParameter("@id", id));
 
             return Ok(new { mensaje = "Venta actualizada" });
+        }
+
+        [HttpPatch("{id}/cancelar")]
+        public IActionResult CancelarVenta(int id, [FromBody] CancelarVentaRequest request)
+        {
+            var venta = _db.ExecuteQuery("SELECT estado FROM ventas WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+
+            if (venta.Count == 0) return NotFound(new { error = "Venta no encontrada" });
+            if (venta[0]["estado"].ToString() == "CANCELADO")
+                return BadRequest(new { error = "La venta ya está cancelada" });
+
+            _db.ExecuteNonQuery(@"
+                UPDATE ventas SET estado='CANCELADO', observacion=@obs WHERE id_venta=@id",
+                new MySqlParameter("@obs", request.motivo ?? ""),
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Venta cancelada" });
         }
 
         [HttpGet("{id}")]
@@ -171,5 +226,10 @@ namespace GamerZoneAPI.Controllers
                 productos
             });
         }
+    }
+
+    public class CancelarVentaRequest
+    {
+        public string? motivo { get; set; }
     }
 }

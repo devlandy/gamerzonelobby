@@ -2,19 +2,13 @@
 {
     public class TorneoRequest
     {
-        public string nombre { get; set; }
-
-        public string juego { get; set; }
-
-        public decimal premio { get; set; }
-
+        public string nombre       { get; set; }
+        public string tipo         { get; set; } // MICROWIN o FLASH
+        public string juego        { get; set; }
+        public decimal premio      { get; set; }
         public decimal inscripcion { get; set; }
-
-        public int cupos { get; set; }
-
-        public List<Participante> participantes
-        { get; set; }
-        = new List<Participante>();
+        public int cupos           { get; set; }
+        public List<Participante> participantes { get; set; } = new List<Participante>();
     }
 
     public class Participante

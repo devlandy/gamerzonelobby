@@ -32,5 +32,7 @@
         public int cantidad { get; set; }
 
         public decimal precio { get; set; }
+
+        public int? minutos { get; set; }
     }
 }

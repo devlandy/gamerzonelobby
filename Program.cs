@@ -73,6 +73,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("PermitirFrontend");
 // app.UseHttpsRedirection();
+
+// Servir archivos estáticos del frontend (panel.html, mis-puntos.html, app.js, etc.)
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "fronted")),
+    RequestPath = ""
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

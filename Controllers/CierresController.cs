@@ -18,8 +18,8 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("resumen")]
         public IActionResult Resumen()
         {
-            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado='PAGADO'"));
-            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos"));
+            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado='PAGADO' AND DATE(fecha) = CURDATE()"));
+            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE DATE(fecha) = CURDATE()"));
 
             return Ok(new { ventas, gastos, balance = ventas - gastos });
         }
@@ -28,8 +28,8 @@ namespace GamerZoneAPI.Controllers
         [HttpPost]
         public IActionResult Registrar([FromBody] CierreRequest request)
         {
-            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado='PAGADO'"));
-            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos"));
+            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado='PAGADO' AND DATE(fecha) = CURDATE()"));
+            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE DATE(fecha) = CURDATE()"));
             decimal balance = ventas - gastos;
 
             _db.ExecuteNonQuery(@"

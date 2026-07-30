@@ -3,26 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lobby Zone — Acceso</title>
+    <title>El Lobby Zone — Acceso</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        .login-page::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 600px 400px at 20% 30%, rgba(41, 121, 255, 0.12), transparent 60%),
+                radial-gradient(ellipse 500px 400px at 80% 70%, rgba(255, 214, 0, 0.06), transparent 60%);
+            pointer-events: none;
+        }
+        .login-card { position: relative; z-index: 1; }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 4px 0 16px;
+            color: var(--text-faint);
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+        .login-divider::before,
+        .login-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border-strong);
+        }
+    </style>
 </head>
 <body class="login-page">
 
     <div class="card login-card">
-        <img src="logo.jpeg" alt="Lobby Zone" class="login-logo">
 
-        <h1 class="login-brand">LOBBY ZONE</h1>
-        <p class="login-tagline">Panel de control</p>
+        <img src="imagen.jpeg" alt="El Lobby Zone" class="login-logo">
+        <h1 class="login-brand">EL LOBBY ZONE</h1>
+        <p class="login-tagline">Panel de Control</p>
+
+        <div class="login-divider">ACCESO</div>
 
         <input id="usuario" placeholder="Usuario" autocomplete="username">
         <input id="password" type="password" placeholder="Contraseña" autocomplete="current-password">
 
-        <button class="btn" style="width: 100%; margin-top: 12px;" onclick="login()">Ingresar</button>
+        <button class="btn" onclick="login()">Ingresar al sistema</button>
     </div>
 
     <script src="app.js"></script>

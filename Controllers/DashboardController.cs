@@ -17,11 +17,25 @@ namespace GamerZoneAPI.Controllers
         [HttpGet]
         public IActionResult ObtenerDashboard()
         {
-            decimal ventasDia = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE DATE(fecha) = CURDATE()"));
+            // Contar solo desde el último cierre registrado (o desde el inicio del día si no hay cierre)
+            var ultimoCierreRaw = _db.ExecuteScalar(@"
+                SELECT IFNULL(MAX(fecha), DATE(NOW()))
+                FROM cierre_diario");
+
+            DateTime desde = ultimoCierreRaw != null && ultimoCierreRaw != DBNull.Value
+                ? Convert.ToDateTime(ultimoCierreRaw)
+                : DateTime.Today;
+            string desdeStr = desde.ToString("yyyy-MM-dd HH:mm:ss");
+
+            decimal ventasDia = Convert.ToDecimal(_db.ExecuteScalar(
+                "SELECT IFNULL(SUM(total),0) FROM ventas WHERE fecha > @desde AND estado != 'CANCELADO'",
+                new MySql.Data.MySqlClient.MySqlParameter("@desde", desdeStr)));
             int pendientes = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM ventas WHERE forma_cobro = 'PENDIENTE'"));
             int agotados = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM productos WHERE stock = 0"));
             int porTerminar = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM productos WHERE stock > 0 AND stock <= 5"));
-            decimal gastosDia = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE DATE(fecha) = CURDATE()"));
+            decimal gastosDia = Convert.ToDecimal(_db.ExecuteScalar(
+                "SELECT IFNULL(SUM(monto),0) FROM gastos WHERE fecha > @desde",
+                new MySql.Data.MySqlClient.MySqlParameter("@desde", desdeStr)));
             int cierre = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM cierre_diario WHERE DATE(fecha) = CURDATE()"));
             int consolasPendientes = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM ventas WHERE tipo = 'CONSOLA' AND forma_cobro = 'PENDIENTE'"));
 
@@ -36,6 +50,51 @@ namespace GamerZoneAPI.Controllers
                 cierre_dia = cierre > 0 ? "REALIZADO" : "PENDIENTE",
                 consolas_pendientes = consolasPendientes
             });
+        }
+
+        private string GetDesdeStr()
+        {
+            var raw = _db.ExecuteScalar("SELECT IFNULL(MAX(fecha), DATE(NOW())) FROM cierre_diario");
+            DateTime desde = (raw != null && raw != DBNull.Value) ? Convert.ToDateTime(raw) : DateTime.Today;
+            return desde.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        [HttpGet("detalle-ventas")]
+        public IActionResult DetalleVentas()
+        {
+            string desde = GetDesdeStr();
+            var rows = _db.ExecuteQuery(@"
+                SELECT v.fecha, IFNULL(c.nombre, 'Sin cliente') AS cliente, v.total, v.metodo_pago
+                FROM ventas v
+                LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+                WHERE v.fecha > @desde AND v.estado != 'CANCELADO'
+                ORDER BY v.fecha DESC",
+                new MySqlParameter("@desde", desde));
+
+            return Ok(rows.Select(r => new {
+                fecha      = r["fecha"],
+                cliente    = r["cliente"]?.ToString() ?? "",
+                total      = Convert.ToDecimal(r["total"]),
+                metodo_pago= r["metodo_pago"]?.ToString() ?? ""
+            }));
+        }
+
+        [HttpGet("detalle-gastos")]
+        public IActionResult DetalleGastos()
+        {
+            string desde = GetDesdeStr();
+            var rows = _db.ExecuteQuery(@"
+                SELECT fecha, descripcion, monto
+                FROM gastos
+                WHERE fecha > @desde
+                ORDER BY fecha DESC",
+                new MySqlParameter("@desde", desde));
+
+            return Ok(rows.Select(r => new {
+                fecha       = r["fecha"],
+                descripcion = r["descripcion"]?.ToString() ?? "",
+                monto       = Convert.ToDecimal(r["monto"])
+            }));
         }
 
         [HttpPost("cierre")]
@@ -98,7 +157,7 @@ namespace GamerZoneAPI.Controllers
         public IActionResult TopClientes()
         {
             var rows = _db.ExecuteQuery(@"
-                SELECT c.nombre, COUNT(v.id_venta) AS compras, SUM(v.total) AS total, IFNULL(SUM(hp.puntos),0) AS puntos
+                SELECT c.id_cliente, c.nombre, COUNT(v.id_venta) AS compras, SUM(v.total) AS total, IFNULL(SUM(hp.puntos),0) AS puntos
                 FROM ventas v
                 JOIN clientes c ON v.id_cliente = c.id_cliente
                 LEFT JOIN historial_puntos hp ON c.id_cliente = hp.id_cliente
@@ -108,6 +167,7 @@ namespace GamerZoneAPI.Controllers
 
             return Ok(rows.Select(r => new
             {
+                id = Convert.ToInt32(r["id_cliente"]),
                 nombre = r["nombre"],
                 compras = r["compras"],
                 total = r["total"],
@@ -119,15 +179,24 @@ namespace GamerZoneAPI.Controllers
         public IActionResult TopGamers()
         {
             var rows = _db.ExecuteQuery(@"
-                SELECT c.nombre, c.apodo, SUM(h.puntos) AS puntos
+                SELECT c.id_cliente, c.nombre, c.apodo,
+                       SUM(CASE WHEN h.tipo = 'JUEGO' THEN h.puntos ELSE 0 END) AS pts_juego,
+                       SUM(CASE WHEN h.tipo = 'CONSUMO' THEN h.puntos ELSE 0 END) AS pts_consumo,
+                       SUM(h.puntos) AS puntos
                 FROM historial_puntos h
                 JOIN clientes c ON h.id_cliente = c.id_cliente
-                WHERE h.tipo = 'JUEGO'
-                GROUP BY c.id_cliente
+                GROUP BY c.id_cliente, c.nombre, c.apodo
                 ORDER BY puntos DESC
                 LIMIT 10");
 
-            return Ok(rows.Select(r => new { nombre = r["nombre"], apodo = r["apodo"], puntos = r["puntos"] }));
+            return Ok(rows.Select(r => new {
+                id         = Convert.ToInt32(r["id_cliente"]),
+                nombre     = r["nombre"]?.ToString() ?? "",
+                apodo      = r["apodo"] == DBNull.Value ? "" : r["apodo"]?.ToString() ?? "",
+                pts_juego  = r["pts_juego"],
+                pts_consumo= r["pts_consumo"],
+                puntos     = r["puntos"]
+            }));
         }
 
         [HttpPost("cierre-dia")]
