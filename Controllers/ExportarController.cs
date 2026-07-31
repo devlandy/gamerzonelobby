@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using GamerZoneAPI.Data;
 using ClosedXML.Excel;
+using System.Text.RegularExpressions;
 
 namespace GamerZoneAPI.Controllers
 {
@@ -14,21 +15,25 @@ namespace GamerZoneAPI.Controllers
 
         public ExportarController(DbManager db) => _db = db;
 
+        private static string MesSafe(string? mes) =>
+            Regex.IsMatch(mes ?? "", @"^\d{4}-\d{2}$") ? mes! : "";
+
         [HttpGet("ventas")]
         public IActionResult ExportarVentas([FromQuery] string? mes = null)
         {
             var workbook = new XLWorkbook();
 
-            string filtroWhere = string.IsNullOrEmpty(mes)
+            string mesFiltrado = MesSafe(mes);
+            string filtroWhere = string.IsNullOrEmpty(mesFiltrado)
                 ? "WHERE v.estado != 'CANCELADO'"
-                : $"WHERE DATE_FORMAT(v.fecha, '%Y-%m') = '{mes}' AND v.estado != 'CANCELADO'";
+                : $"WHERE DATE_FORMAT(v.fecha, '%Y-%m') = '{mesFiltrado}' AND v.estado != 'CANCELADO'";
 
             string[] meses = { "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre" };
             string tituloMes = "Todas las ventas";
-            if (!string.IsNullOrEmpty(mes) && mes.Length == 7)
+            if (!string.IsNullOrEmpty(mesFiltrado) && mesFiltrado.Length == 7)
             {
-                int m = int.Parse(mes.Split('-')[1]);
-                string a = mes.Split('-')[0];
+                int m = int.Parse(mesFiltrado.Split('-')[1]);
+                string a = mesFiltrado.Split('-')[0];
                 tituloMes = meses[m - 1] + " " + a;
             }
 

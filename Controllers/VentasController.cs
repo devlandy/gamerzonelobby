@@ -126,10 +126,10 @@ namespace GamerZoneAPI.Controllers
 
                 return Ok(new { mensaje = "Venta registrada correctamente", id_venta = idVenta, total });
             }
-            catch (Exception ex)
+            catch
             {
                 transaction.Rollback();
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(new { error = "No se pudo registrar la venta. Intenta de nuevo." });
             }
         }
 

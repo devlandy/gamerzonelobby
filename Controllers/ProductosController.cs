@@ -57,10 +57,10 @@ namespace GamerZoneAPI.Controllers
                 transaction.Commit();
                 return Ok(new { mensaje = "Stock actualizado" });
             }
-            catch (Exception ex)
+            catch
             {
                 transaction.Rollback();
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = "No se pudo actualizar el stock. Intenta de nuevo." });
             }
         }
 

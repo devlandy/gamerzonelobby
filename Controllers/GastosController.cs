@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
 using GamerZoneAPI.Data;
+using System.Text.RegularExpressions;
 
 namespace GamerZoneAPI.Controllers
 {
@@ -13,12 +14,17 @@ namespace GamerZoneAPI.Controllers
         private readonly DbManager _db;
         public GastosController(DbManager db) => _db = db;
 
+        // Valida que mes sea exactamente "YYYY-MM" para evitar SQL injection
+        private static string MesSafe(string? mes) =>
+            Regex.IsMatch(mes ?? "", @"^\d{4}-\d{2}$") ? mes! : "";
+
         [HttpGet("resumen")]
         public IActionResult Resumen([FromQuery] string? mes)
         {
-            string filtroMes = string.IsNullOrEmpty(mes)
+            string mesFiltrado = MesSafe(mes);
+            string filtroMes = string.IsNullOrEmpty(mesFiltrado)
                 ? "DATE_FORMAT(CURDATE(), '%Y-%m')"
-                : $"'{mes}'";
+                : $"'{mesFiltrado}'";
 
             decimal ingresosVentas = Convert.ToDecimal(_db.ExecuteScalar($@"
                 SELECT IFNULL(SUM(total), 0) FROM ventas
@@ -50,9 +56,10 @@ namespace GamerZoneAPI.Controllers
         {
             try
             {
-                string where = string.IsNullOrEmpty(mes)
+                string mesFiltrado = MesSafe(mes);
+                string where = string.IsNullOrEmpty(mesFiltrado)
                     ? "WHERE DATE_FORMAT(fecha, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')"
-                    : $"WHERE DATE_FORMAT(fecha, '%Y-%m') = '{mes}'";
+                    : $"WHERE DATE_FORMAT(fecha, '%Y-%m') = '{mesFiltrado}'";
 
                 var rows = _db.ExecuteQuery($@"
                     SELECT id_ingreso, descripcion, monto, fecha
@@ -97,9 +104,10 @@ namespace GamerZoneAPI.Controllers
         [HttpGet]
         public IActionResult ObtenerGastos([FromQuery] string? mes)
         {
-            string where = string.IsNullOrEmpty(mes)
+            string mesFiltrado = MesSafe(mes);
+            string where = string.IsNullOrEmpty(mesFiltrado)
                 ? "WHERE DATE_FORMAT(fecha, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')"
-                : $"WHERE DATE_FORMAT(fecha, '%Y-%m') = '{mes}'";
+                : $"WHERE DATE_FORMAT(fecha, '%Y-%m') = '{mesFiltrado}'";
 
             var rows = _db.ExecuteQuery($@"
                 SELECT id_gasto, descripcion, monto, fecha
@@ -119,9 +127,10 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("ingresos-por-dia")]
         public IActionResult IngresosPorDia([FromQuery] string? mes)
         {
-            string filtroMes = string.IsNullOrEmpty(mes)
+            string mesFiltrado = MesSafe(mes);
+            string filtroMes = string.IsNullOrEmpty(mesFiltrado)
                 ? "DATE_FORMAT(CURDATE(), '%Y-%m')"
-                : $"'{mes}'";
+                : $"'{mesFiltrado}'";
 
             var rows = _db.ExecuteQuery($@"
                 SELECT DATE(fecha) AS dia, COUNT(*) AS ventas, SUM(total) AS total

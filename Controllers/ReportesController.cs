@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
 using GamerZoneAPI.Data;
+using System.Text.RegularExpressions;
 
 namespace GamerZoneAPI.Controllers
 {
@@ -13,6 +14,9 @@ namespace GamerZoneAPI.Controllers
         private readonly DbManager _db;
 
         public ReportesController(DbManager db) => _db = db;
+
+        private static string MesSafe(string? mes) =>
+            Regex.IsMatch(mes ?? "", @"^\d{4}-\d{2}$") ? mes! : "";
 
         [HttpGet("ventas")]
         public IActionResult Ventas()
@@ -63,9 +67,10 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("top-productos")]
         public IActionResult TopProductos([FromQuery] string? mes)
         {
-            string where = string.IsNullOrEmpty(mes)
+            string mesFiltrado = MesSafe(mes);
+            string where = string.IsNullOrEmpty(mesFiltrado)
                 ? "WHERE DATE_FORMAT(v.fecha, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m') AND v.estado != 'CANCELADO'"
-                : $"WHERE DATE_FORMAT(v.fecha, '%Y-%m') = '{mes}' AND v.estado != 'CANCELADO'";
+                : $"WHERE DATE_FORMAT(v.fecha, '%Y-%m') = '{mesFiltrado}' AND v.estado != 'CANCELADO'";
 
             var rows = _db.ExecuteQuery($@"
                 SELECT p.nombre, SUM(d.cantidad) AS total_vendidos, SUM(d.subtotal) AS total_ingresos
@@ -88,9 +93,10 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("cancelaciones")]
         public IActionResult Cancelaciones([FromQuery] string? mes)
         {
-            string where = string.IsNullOrEmpty(mes)
+            string mesFiltrado = MesSafe(mes);
+            string where = string.IsNullOrEmpty(mesFiltrado)
                 ? "WHERE DATE_FORMAT(v.fecha, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m') AND v.estado = 'CANCELADO'"
-                : $"WHERE DATE_FORMAT(v.fecha, '%Y-%m') = '{mes}' AND v.estado = 'CANCELADO'";
+                : $"WHERE DATE_FORMAT(v.fecha, '%Y-%m') = '{mesFiltrado}' AND v.estado = 'CANCELADO'";
 
             var rows = _db.ExecuteQuery($@"
                 SELECT v.id_venta, v.fecha, v.total, v.observacion,
@@ -113,9 +119,10 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("metodos-pago")]
         public IActionResult MetodosPago([FromQuery] string? mes)
         {
-            string where = string.IsNullOrEmpty(mes)
+            string mesFiltrado = MesSafe(mes);
+            string where = string.IsNullOrEmpty(mesFiltrado)
                 ? "WHERE DATE_FORMAT(fecha, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m') AND metodo_pago IS NOT NULL AND estado != 'CANCELADO'"
-                : $"WHERE DATE_FORMAT(fecha, '%Y-%m') = '{mes}' AND metodo_pago IS NOT NULL AND estado != 'CANCELADO'";
+                : $"WHERE DATE_FORMAT(fecha, '%Y-%m') = '{mesFiltrado}' AND metodo_pago IS NOT NULL AND estado != 'CANCELADO'";
 
             var rows = _db.ExecuteQuery($@"
                 SELECT metodo_pago, COUNT(*) AS cantidad, SUM(total) AS total
