@@ -26,6 +26,52 @@ namespace GamerZoneAPI.Controllers
             return Ok(new { host = $"http://{ip}:5069" });
         }
 
+        [HttpGet("buscar")]
+        public IActionResult BuscarCliente([FromQuery] string texto)
+        {
+            if (string.IsNullOrWhiteSpace(texto) || texto.Length < 2)
+                return BadRequest(new { error = "Escribe al menos 2 caracteres" });
+
+            var rows = _db.ExecuteQuery(@"
+                SELECT id_cliente, nombre, apodo, codigo
+                FROM clientes
+                WHERE nombre LIKE @t OR apodo LIKE @t
+                LIMIT 10",
+                new MySqlParameter("@t", "%" + texto + "%"));
+
+            return Ok(rows.Select(r => new {
+                id     = Convert.ToInt32(r["id_cliente"]),
+                nombre = r["nombre"]?.ToString(),
+                apodo  = r["apodo"]?.ToString(),
+                codigo = r["codigo"]?.ToString()
+            }));
+        }
+
+        [HttpGet("qr-general")]
+        public IActionResult QrGeneral([FromQuery] string? baseUrl = null)
+        {
+            string url;
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+            {
+                url = baseUrl.TrimEnd('/') + "/mis-puntos.html";
+            }
+            else
+            {
+                string ip = Dns.GetHostAddresses(Dns.GetHostName())
+                    .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a))
+                    ?.ToString() ?? "localhost";
+                url = $"http://{ip}:5069/mis-puntos.html";
+            }
+
+            using var qrGenerator = new QRCoder.QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(url, QRCoder.QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new QRCoder.QRCode(qrData);
+            using var qrImage = qrCode.GetGraphic(10);
+            using var ms = new System.IO.MemoryStream();
+            qrImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            return File(ms.ToArray(), "image/png");
+        }
+
         [HttpGet("cliente/{codigo}")]
         public IActionResult PuntosCliente(string codigo)
         {

@@ -334,6 +334,86 @@ async function recalcularPuntos() {
 }
 
 // ===========================
+// QR GENERAL DE CONSULTA DE PUNTOS
+// ===========================
+function mostrarQRGeneral() {
+    let overlay = document.getElementById('_qrGeneralOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = '_qrGeneralOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        document.body.appendChild(overlay);
+    }
+    const urlGuardada = localStorage.getItem('_ngrokUrl') || '';
+    overlay.innerHTML = `
+        <div style="background:#181818;border-radius:14px;padding:28px 24px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px #000a;">
+            <h3 style="color:#e2e2e2;margin-bottom:6px;">📱 QR — Consulta de puntos</h3>
+            <p style="color:#555;font-size:13px;margin-bottom:16px;">Los clientes escanean para ver sus puntos</p>
+
+            <div style="text-align:left;margin-bottom:14px;">
+                <label style="font-size:12px;color:#666;">URL pública (ngrok) — opcional</label>
+                <div style="display:flex;gap:6px;margin-top:4px;">
+                    <input id="_ngrokUrlInput" value="${urlGuardada}" placeholder="https://xxx.ngrok-free.dev"
+                        style="flex:1;background:#0a0a14;border:1px solid #2a2a3e;border-radius:8px;color:#e2e2e2;font-size:13px;padding:8px 10px;outline:none;">
+                    <button onclick="generarQR()" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">Generar</button>
+                </div>
+                <p style="font-size:11px;color:#333;margin-top:4px;">Vacío = usa IP local (solo red del local)</p>
+            </div>
+
+            <div id="_qrImg" style="background:#fff;border-radius:10px;padding:12px;display:inline-block;margin-bottom:16px;min-width:120px;min-height:60px;">
+                <p style="color:#aaa;font-size:13px;padding:20px 10px;">Presiona Generar</p>
+            </div>
+            <br>
+            <button onclick="imprimirQRGeneral()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">🖨️ Imprimir</button>
+            <button onclick="document.getElementById('_qrGeneralOverlay').remove()" style="background:#222;color:#888;border:1px solid #333;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;">Cerrar</button>
+        </div>`;
+    overlay.style.display = 'flex';
+
+    if (urlGuardada) generarQR();
+}
+
+function generarQR() {
+    const urlInput = document.getElementById('_ngrokUrlInput')?.value?.trim();
+    if (urlInput) localStorage.setItem('_ngrokUrl', urlInput);
+
+    document.getElementById('_qrImg').innerHTML = '<p style="color:#aaa;font-size:13px;padding:20px 10px;">Generando...</p>';
+
+    const param = urlInput ? `&baseUrl=${encodeURIComponent(urlInput)}` : '';
+    const img = new Image();
+    img.onload = () => {
+        img.style.cssText = 'width:220px;height:220px;display:block;';
+        document.getElementById('_qrImg').innerHTML = '';
+        document.getElementById('_qrImg').appendChild(img);
+    };
+    img.onerror = () => {
+        document.getElementById('_qrImg').innerHTML = '<p style="color:#ef4444;font-size:13px;padding:10px;">Error al generar QR</p>';
+    };
+    img.src = `${API}/publico/qr-general?t=${Date.now()}${param}`;
+}
+
+function imprimirQRGeneral() {
+    const img = document.querySelector('#_qrImg img');
+    if (!img) return;
+    const w = window.open('', '_blank');
+    w.document.write(`
+        <html><head><title>QR Lobby Zone</title>
+        <style>
+            body { margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif; background:#fff; }
+            h2 { font-size:22px; margin-bottom:4px; color:#111; }
+            p  { color:#666; font-size:14px; margin-bottom:20px; }
+            img { width:260px; height:260px; }
+            small { color:#aaa; font-size:11px; margin-top:12px; }
+        </style></head><body>
+        <h2>🎮 El Lobby Zone</h2>
+        <p>Escanea para consultar tus puntos</p>
+        <img src="${img.src}">
+        <small>Apunta con la cámara de tu celular</small>
+        </body></html>`);
+    w.document.close();
+    w.onload = () => { w.print(); };
+}
+
 // BUSCAR CLIENTES
 // ===========================
 function buscarClientes() {

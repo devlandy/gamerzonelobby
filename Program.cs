@@ -16,12 +16,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("PermitirFrontend",
         policy =>
         {
-            policy.WithOrigins(
-                    "http://localhost:5500",
-                    "http://127.0.0.1:5500",
-                    "http://localhost:3000",
-                    "http://localhost:5069"
-                )
+            policy.SetIsOriginAllowed(origin =>
+                    origin == "http://localhost:5500" ||
+                    origin == "http://127.0.0.1:5500" ||
+                    origin == "http://localhost:3000"  ||
+                    origin == "http://localhost:5069"  ||
+                    origin.EndsWith(".ngrok-free.dev") ||
+                    origin.EndsWith(".ngrok.io"))
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -78,7 +79,11 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "fronted")),
-    RequestPath = ""
+    RequestPath = "",
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers["ngrok-skip-browser-warning"] = "true";
+    }
 });
 
 app.UseAuthentication();

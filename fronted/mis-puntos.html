@@ -3,98 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Puntos — Lobby Zone</title>
+    <title>Mis Puntos — El Lobby Zone</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: #0a0a0a;
+            background: #0a0a0f;
             color: #e2e2e2;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 24px 16px;
+            padding: 28px 16px;
         }
 
-        .logo {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            color: #e91e8c;
-            margin-bottom: 24px;
+        .logo-header {
+            text-align: center;
+            margin-bottom: 28px;
         }
 
-        .card {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 12px;
-            padding: 20px;
-            width: 100%;
-            max-width: 420px;
-            margin-bottom: 16px;
-        }
-
-        .nombre {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .apodo {
-            color: #555;
-            font-size: 13px;
+        .logo-header img {
+            width: 130px;
+            object-fit: contain;
             margin-bottom: 4px;
         }
 
-        .codigo {
-            font-size: 11px;
-            color: #333;
+        .logo-title {
+            font-size: 13px;
+            color: #555;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
+
+        /* ── BÚSQUEDA ── */
+        .search-card {
+            background: #111118;
+            border: 1px solid #1e1e2e;
+            border-radius: 16px;
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .search-card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e2e2e2;
+            margin-bottom: 6px;
+        }
+
+        .search-card p {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #0a0a14;
+            border: 1px solid #2a2a3e;
+            border-radius: 10px;
+            color: #e2e2e2;
+            font-size: 15px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .search-input:focus { border-color: #3b82f6; }
+
+        .btn-buscar {
+            width: 100%;
+            background: #1d4ed8;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 12px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-buscar:hover { background: #2563eb; }
+
+        /* ── RESULTADOS BÚSQUEDA ── */
+        .resultado-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #111;
+            cursor: pointer;
+            transition: background .15s;
+            border-radius: 8px;
+        }
+
+        .resultado-item:hover { background: #1a1a2e; }
+
+        .res-nombre { font-size: 14px; font-weight: 600; }
+        .res-apodo  { font-size: 12px; color: #555; }
+        .res-arrow  { color: #3b82f6; font-size: 18px; }
+
+        /* ── PERFIL ── */
+        .card {
+            background: #111118;
+            border: 1px solid #1e1e2e;
+            border-radius: 14px;
+            padding: 20px;
+            width: 100%;
+            max-width: 420px;
+            margin-bottom: 14px;
+        }
+
+        .nombre    { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+        .apodo     { color: #555; font-size: 13px; margin-bottom: 4px; }
+        .codigo    { font-size: 11px; color: #2a2a2a; }
 
         .puntos-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
+            width: 100%;
+            max-width: 420px;
         }
 
         .pts-card {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 10px;
-            padding: 16px;
+            background: #0a0a14;
+            border: 1px solid #1e1e2e;
+            border-radius: 12px;
+            padding: 18px;
             text-align: center;
         }
 
-        .pts-label {
-            font-size: 11px;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .pts-valor {
-            font-size: 32px;
-            font-weight: 800;
-        }
-
-        .pts-juego   { color: #f59e0b; }
-        .pts-consumo { color: #60a5fa; }
-
-        .pts-sub {
-            font-size: 11px;
-            color: #555;
-            margin-top: 4px;
-        }
+        .pts-label  { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .pts-valor  { font-size: 34px; font-weight: 800; }
+        .pts-juego  { color: #f59e0b; }
+        .pts-consumo{ color: #60a5fa; }
+        .pts-sub    { font-size: 11px; color: #444; margin-top: 4px; }
 
         .ranking-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #1a1a0a;
+            background: #1a1500;
             border: 1px solid #f59e0b44;
             border-radius: 20px;
             padding: 4px 14px;
@@ -104,23 +160,17 @@
         }
 
         .info-box {
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
+            background: #0a0a14;
+            border: 1px solid #1a1a2e;
             border-radius: 8px;
             padding: 12px 14px;
             font-size: 12px;
             color: #555;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             line-height: 1.6;
         }
 
-        h3 {
-            font-size: 14px;
-            color: #aaa;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #1a1a1a;
-        }
+        h3 { font-size: 13px; color: #aaa; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #1a1a1a; }
 
         .hist-fila {
             display: flex;
@@ -131,89 +181,144 @@
             font-size: 13px;
         }
 
-        .hist-tipo {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-
-        .tipo-juego   { background: #1a1500; color: #f59e0b; }
-        .tipo-consumo { background: #0a1020; color: #60a5fa; }
-
-        .hist-pts { font-weight: 700; }
+        .hist-tipo   { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .tipo-juego  { background: #1a1500; color: #f59e0b; }
+        .tipo-consumo{ background: #0a1020; color: #60a5fa; }
+        .hist-pts    { font-weight: 700; }
         .hist-motivo { color: #555; font-size: 11px; }
         .hist-fecha  { color: #333; font-size: 11px; }
 
-        .error { text-align: center; color: #ef4444; padding: 40px 0; }
+        .btn-volver {
+            background: transparent;
+            border: 1px solid #2a2a3e;
+            color: #888;
+            border-radius: 8px;
+            font-size: 13px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-bottom: 16px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .btn-volver:hover { background: #1a1a2e; }
+
+        .error  { text-align: center; color: #ef4444; padding: 40px 0; }
         .loader { text-align: center; color: #555; padding: 60px 0; font-size: 14px; }
+        .empty  { text-align: center; color: #444; padding: 20px 0; font-size: 13px; }
     </style>
 </head>
 <body>
 
-<div class="logo">🎮 LOBBY ZONE</div>
+<div class="logo-header">
+    <img src="imagen.jpeg" alt="El Lobby Zone">
+    <div class="logo-title">Mis puntos</div>
+</div>
 
-<div id="contenido" class="loader">Cargando tu perfil...</div>
+<div id="contenido"></div>
 
 <script>
     const API = window.location.origin + "/api";
 
     function fmtFecha(f) {
         if (!f) return "—";
-        const d = new Date(f);
-        return d.toLocaleDateString("es-GT", { day:"2-digit", month:"short", year:"numeric" });
+        return new Date(f).toLocaleDateString("es-GT", { day:"2-digit", month:"short", year:"numeric" });
     }
 
     function fmtPts(n) {
-        return parseFloat(n || 0).toFixed(2).replace(/\.00$/, "");
+        return parseFloat(n || 0).toFixed(0);
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const codigo = params.get("codigo");
+    // ── VISTA BÚSQUEDA ──────────────────────────────────────────────
+    function mostrarBusqueda(msgError) {
+        document.getElementById("contenido").innerHTML = `
+            <div class="search-card">
+                <h2>🎮 Consulta tus puntos</h2>
+                <p>Escribe tu nombre o apodo para ver tu perfil</p>
+                ${msgError ? `<p style="color:#ef4444;font-size:13px;margin-bottom:10px;">${msgError}</p>` : ''}
+                <input id="txtBuscar" class="search-input" placeholder="Nombre o apodo..." maxlength="60" autofocus>
+                <button class="btn-buscar" onclick="buscarCliente()">Buscar</button>
+                <div id="resultados" style="margin-top:16px;text-align:left;"></div>
+            </div>`;
 
-    if (!codigo) {
-        document.getElementById("contenido").innerHTML =
-            `<p class="error">❌ Código de cliente no encontrado.<br>Escanea tu QR personal.</p>`;
-    } else {
-        fetch(`${API}/publico/cliente/${encodeURIComponent(codigo)}`, {
-            headers: { "ngrok-skip-browser-warning": "true" }
+        document.getElementById("txtBuscar").addEventListener("keydown", e => {
+            if (e.key === "Enter") buscarCliente();
+        });
+    }
+
+    function buscarCliente() {
+        const texto = document.getElementById("txtBuscar")?.value?.trim();
+        if (!texto || texto.length < 2) {
+            document.getElementById("resultados").innerHTML =
+                '<p class="empty">Escribe al menos 2 caracteres.</p>';
+            return;
+        }
+
+        document.getElementById("resultados").innerHTML = '<p class="empty">Buscando...</p>';
+
+        fetch(`${API}/publico/buscar?texto=${encodeURIComponent(texto)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.length) {
+                document.getElementById("resultados").innerHTML =
+                    '<p class="empty">No se encontró ningún cliente con ese nombre.</p>';
+                return;
+            }
+            document.getElementById("resultados").innerHTML = data.map(c => `
+                <div class="resultado-item" onclick="cargarPerfil('${c.codigo}')">
+                    <div>
+                        <div class="res-nombre">${esc(c.nombre)}</div>
+                        ${c.apodo ? `<div class="res-apodo">🎮 ${esc(c.apodo)}</div>` : ''}
+                    </div>
+                    <span class="res-arrow">›</span>
+                </div>`).join('');
         })
-        .then(r => {
-            if (!r.ok) throw new Error("no encontrado");
-            return r.json();
-        })
+        .catch(() => {
+            document.getElementById("resultados").innerHTML =
+                '<p class="empty" style="color:#ef4444;">Error al buscar. Intenta de nuevo.</p>';
+        });
+    }
+
+    // ── VISTA PERFIL ────────────────────────────────────────────────
+    function cargarPerfil(codigo) {
+        document.getElementById("contenido").innerHTML = '<p class="loader">Cargando tu perfil...</p>';
+
+        fetch(`${API}/publico/cliente/${encodeURIComponent(codigo)}`)
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
         .then(data => {
             const posStr = data.posicion_ranking
                 ? `<div class="ranking-badge">🏆 Posición #${data.posicion_ranking} en el ranking</div>`
                 : "";
 
-            const histHTML = (data.historial || []).length === 0
-                ? `<p style="color:#333;font-size:13px;text-align:center;padding:12px 0;">Sin movimientos aún.</p>`
+            const histHTML = !(data.historial || []).length
+                ? '<p style="color:#333;font-size:13px;text-align:center;padding:12px 0;">Sin movimientos aún.</p>'
                 : data.historial.map(h => `
                     <div class="hist-fila">
                         <div>
-                            <span class="hist-tipo ${h.tipo === 'JUEGO' ? 'tipo-juego' : 'tipo-consumo'}">${h.tipo}</span>
-                            <span class="hist-motivo" style="margin-left:6px;">${h.motivo || ""}</span>
+                            <span class="hist-tipo ${h.tipo==='JUEGO'?'tipo-juego':'tipo-consumo'}">${h.tipo}</span>
+                            <span class="hist-motivo" style="margin-left:6px;">${esc(h.motivo||'')}</span>
                         </div>
                         <div style="text-align:right;">
-                            <span class="hist-pts ${h.tipo === 'JUEGO' ? 'pts-juego' : 'pts-consumo'}">+${fmtPts(h.puntos)}</span>
+                            <span class="hist-pts ${h.tipo==='JUEGO'?'pts-juego':'pts-consumo'}">+${fmtPts(h.puntos)}</span>
                             <div class="hist-fecha">${fmtFecha(h.fecha)}</div>
                         </div>
-                    </div>`).join("");
+                    </div>`).join('');
 
             document.getElementById("contenido").innerHTML = `
+                <button class="btn-volver" onclick="mostrarBusqueda()">← Volver a buscar</button>
+
                 <div class="card">
-                    <p class="nombre">${data.nombre || "—"}</p>
-                    ${data.apodo ? `<p class="apodo">🎮 ${data.apodo}</p>` : ""}
-                    <p class="codigo">${data.codigo}</p>
+                    <p class="nombre">${esc(data.nombre||'—')}</p>
+                    ${data.apodo ? `<p class="apodo">🎮 ${esc(data.apodo)}</p>` : ''}
+                    <p class="codigo">${esc(data.codigo||'')}</p>
                     ${posStr}
                 </div>
 
-                <div class="puntos-grid" style="width:100%;max-width:420px;">
+                <div class="puntos-grid">
                     <div class="pts-card">
                         <p class="pts-label">Puntos de juego</p>
                         <p class="pts-valor pts-juego">${fmtPts(data.puntos_juego)}</p>
-                        <p class="pts-sub">Cuentan para el Top 10</p>
+                        <p class="pts-sub">Ranking Top 10</p>
                     </div>
                     <div class="pts-card">
                         <p class="pts-label">Puntos consumo</p>
@@ -224,18 +329,30 @@
 
                 <div class="card">
                     <div class="info-box">
-                        💡 Los puntos de <strong style="color:#f59e0b;">juego</strong> se ganan jugando en consola (5 pts/hora) y en torneos.<br>
-                        Los puntos de <strong style="color:#60a5fa;">consumo</strong> se ganan comprando comida (0.05 pts/Q) y se canjean por Q1 cada uno.
+                        💡 <strong style="color:#f59e0b;">Juego</strong>: 5 pts por hora en consola y torneos.<br>
+                        <strong style="color:#60a5fa;">Consumo</strong>: 0.05 pts por Q1 en productos, canjeables por comida.
                     </div>
                     <h3>📋 Últimos movimientos</h3>
                     ${histHTML}
-                </div>
-            `;
+                </div>`;
         })
         .catch(() => {
-            document.getElementById("contenido").innerHTML =
-                `<p class="error">❌ No se encontró tu perfil.<br>Verifica tu código QR.</p>`;
+            mostrarBusqueda('No se pudo cargar el perfil. Intenta de nuevo.');
         });
+    }
+
+    function esc(str) {
+        return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── INICIO ──────────────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const codigo = params.get("codigo");
+
+    if (codigo) {
+        cargarPerfil(codigo);
+    } else {
+        mostrarBusqueda();
     }
 </script>
 </body>
