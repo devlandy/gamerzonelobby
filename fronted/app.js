@@ -345,20 +345,19 @@ function mostrarQRGeneral() {
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
         document.body.appendChild(overlay);
     }
-    const urlGuardada = localStorage.getItem('_ngrokUrl') || '';
+    const urlGuardada = localStorage.getItem('_baseUrl') || window.location.origin;
     overlay.innerHTML = `
         <div style="background:#181818;border-radius:14px;padding:28px 24px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px #000a;">
             <h3 style="color:#e2e2e2;margin-bottom:6px;">📱 QR — Consulta de puntos</h3>
             <p style="color:#555;font-size:13px;margin-bottom:16px;">Los clientes escanean para ver sus puntos</p>
 
             <div style="text-align:left;margin-bottom:14px;">
-                <label style="font-size:12px;color:#666;">URL pública (ngrok) — opcional</label>
+                <label style="font-size:12px;color:#666;">URL pública</label>
                 <div style="display:flex;gap:6px;margin-top:4px;">
-                    <input id="_ngrokUrlInput" value="${urlGuardada}" placeholder="https://xxx.ngrok-free.dev"
+                    <input id="_ngrokUrlInput" value="${urlGuardada}" placeholder="https://gamerzonelobby-production.up.railway.app"
                         style="flex:1;background:#0a0a14;border:1px solid #2a2a3e;border-radius:8px;color:#e2e2e2;font-size:13px;padding:8px 10px;outline:none;">
                     <button onclick="generarQR()" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">Generar</button>
                 </div>
-                <p style="font-size:11px;color:#333;margin-top:4px;">Vacío = usa IP local (solo red del local)</p>
             </div>
 
             <div id="_qrImg" style="background:#fff;border-radius:10px;padding:12px;display:inline-block;margin-bottom:16px;min-width:120px;min-height:60px;">
@@ -375,7 +374,7 @@ function mostrarQRGeneral() {
 
 function generarQR() {
     const urlInput = document.getElementById('_ngrokUrlInput')?.value?.trim();
-    if (urlInput) localStorage.setItem('_ngrokUrl', urlInput);
+    if (urlInput) localStorage.setItem('_baseUrl', urlInput);
 
     document.getElementById('_qrImg').innerHTML = '<p style="color:#aaa;font-size:13px;padding:20px 10px;">Generando...</p>';
 
@@ -509,7 +508,7 @@ function toggleClienteDetalle(codigo, nombre, id) {
     // Generar QR
     const qrEl = document.getElementById(`qrInline-${codigo}`);
     if (qrEl && !qrEl.hasChildNodes()) {
-        const baseUrl = "https://agency-tantrum-overripe.ngrok-free.dev";
+        const baseUrl = window.location.origin;
         new QRCode(qrEl, {
             text: `${baseUrl}/mis-puntos.html?codigo=${encodeURIComponent(codigo)}`,
             width: 150, height: 150,
@@ -582,8 +581,7 @@ function mostrarQR(codigo, nombre) {
     const ptsEl = document.getElementById("qrPuntosCliente");
     if (ptsEl) ptsEl.innerHTML = `<span style="color:#555;font-size:12px;">Cargando puntos...</span>`;
 
-    // URL pública via ngrok para que el QR funcione desde cualquier celular
-    const baseUrl = "https://agency-tantrum-overripe.ngrok-free.dev";
+    const baseUrl = window.location.origin;
     {
         const url = `${baseUrl}/mis-puntos.html?codigo=${encodeURIComponent(codigo)}`;
         canvas.innerHTML = "";
