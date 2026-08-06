@@ -65,11 +65,9 @@ namespace GamerZoneAPI.Controllers
 
             using var qrGenerator = new QRCoder.QRCodeGenerator();
             using var qrData = qrGenerator.CreateQrCode(url, QRCoder.QRCodeGenerator.ECCLevel.Q);
-            using var qrCode = new QRCoder.QRCode(qrData);
-            using var qrImage = qrCode.GetGraphic(10);
-            using var ms = new System.IO.MemoryStream();
-            qrImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-            return File(ms.ToArray(), "image/png");
+            var svgCode = new QRCoder.SvgQRCode(qrData);
+            string svgString = svgCode.GetGraphic(10);
+            return Content(svgString, "image/svg+xml");
         }
 
         [HttpGet("cliente/{codigo}")]
