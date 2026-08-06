@@ -1,5 +1,5 @@
 // API URL
-const API = "http://localhost:5069/api";
+const API = window.location.origin + "/api";
 
 // Escapa HTML para prevenir XSS al insertar datos del servidor en innerHTML
 function s(str) {
