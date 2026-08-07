@@ -53,7 +53,7 @@ namespace GamerZoneAPI.Controllers
             decimal descuentoPct = Convert.ToDecimal(venta["descuento_pct"]);
             decimal descuento    = subtotalBruto - totalFinal;
             var numDoc = venta.ContainsKey("id_venta") ? venta["id_venta"] : venta["id_factura"];
-            var fechaDoc = Convert.ToDateTime(venta["fecha"]);
+            var fechaDoc = Convert.ToDateTime(venta["fecha"]).AddHours(-6);
 
             container.Page(page =>
             {
