@@ -188,6 +188,23 @@ namespace GamerZoneAPI.Controllers
             return Ok(new { mensaje = "Venta cancelada" });
         }
 
+        [HttpPatch("{id}/reactivar")]
+        public IActionResult ReactivarVenta(int id)
+        {
+            var venta = _db.ExecuteQuery("SELECT estado FROM ventas WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+
+            if (venta.Count == 0) return NotFound(new { error = "Venta no encontrada" });
+            if (venta[0]["estado"].ToString() != "CANCELADO")
+                return BadRequest(new { error = "La venta no está cancelada" });
+
+            _db.ExecuteNonQuery(@"
+                UPDATE ventas SET estado='PAGADO', observacion='' WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Venta reactivada" });
+        }
+
         [HttpGet("{id}")]
         public IActionResult ObtenerVenta(int id)
         {

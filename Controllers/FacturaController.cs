@@ -78,9 +78,10 @@ namespace GamerZoneAPI.Controllers
             {
                 var rows = _db.ExecuteQuery(@"
                     SELECT f.id_factura, f.fecha, f.nit, f.nombre, v.total, v.id_venta,
-                           f.sat_estado, f.sat_numero
+                           f.sat_estado, f.sat_numero, v.estado AS estado_venta
                     FROM facturas f
                     JOIN ventas v ON f.id_venta = v.id_venta
+                    WHERE v.estado != 'CANCELADO'
                     ORDER BY f.fecha DESC");
 
                 return Ok(rows.Select(r => new
