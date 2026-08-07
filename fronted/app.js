@@ -1003,7 +1003,7 @@ function cargarVentasReporte(){
             const esCancelada = v.estado === "CANCELADO";
             const colorEstado = esCancelada ? "#ef4444" : v.estado === "PENDIENTE" ? "#f59e0b" : "#4ade80";
             const acciones = esCancelada
-                ? `<span style="color:#555;font-size:11px;">—</span>`
+                ? `<button onclick="reactivarVenta(${v.id})" style="${btnStyle}border:1px solid #4ade80;color:#4ade80;">Reactivar</button>`
                 : `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
                     <button onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}','_blank')" style="${btnStyle}border:1px solid #333;color:#aaa;">PDF</button>
                     <input id="motivo_${v.id}" placeholder="Motivo..." style="padding:3px 6px;font-size:11px;width:110px;border-radius:4px;background:#1a1a1a;color:#ccc;border:1px solid #333;">
@@ -1051,6 +1051,17 @@ async function cancelarVenta(id) {
     .catch(() => mostrarMensaje("❌ Error al cancelar la venta"));
 }
 
+async function reactivarVenta(id) {
+    if (!await confirmarDialog("Reactivar venta", "¿Deseas reactivar esta venta cancelada?", "info")) return;
+    authFetch(`${API}/ventas/${id}/reactivar`, { method: "PATCH" })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { mostrarMensaje("❌ " + data.error); return; }
+        mostrarMensaje("✅ Venta reactivada");
+        cargarReportes();
+    })
+    .catch(() => mostrarMensaje("❌ Error al reactivar la venta"));
+}
 
 function cargarFacturas(){
     authFetch(`${API}/factura`)
