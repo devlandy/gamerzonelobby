@@ -81,7 +81,6 @@ namespace GamerZoneAPI.Controllers
                            f.sat_estado, f.sat_numero, v.estado AS estado_venta
                     FROM facturas f
                     JOIN ventas v ON f.id_venta = v.id_venta
-                    WHERE v.estado != 'CANCELADO'
                     ORDER BY f.fecha DESC");
 
                 return Ok(rows.Select(r => new
@@ -93,7 +92,8 @@ namespace GamerZoneAPI.Controllers
                     nombre = r["nombre"],
                     total = r["total"],
                     sat_estado = r.ContainsKey("sat_estado") ? r["sat_estado"]?.ToString() ?? "PENDIENTE" : "PENDIENTE",
-                    sat_numero = r.ContainsKey("sat_numero") ? r["sat_numero"] : null
+                    sat_numero = r.ContainsKey("sat_numero") ? r["sat_numero"] : null,
+                    estado_venta = r.ContainsKey("estado_venta") ? r["estado_venta"]?.ToString() : "PAGADO"
                 }));
             }
             catch

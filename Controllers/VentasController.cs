@@ -185,6 +185,42 @@ namespace GamerZoneAPI.Controllers
                 new MySqlParameter("@obs", request.motivo ?? ""),
                 new MySqlParameter("@id", id));
 
+            // Descontar puntos al cliente si tiene uno asignado
+            var ventaData = _db.ExecuteQuery("SELECT id_cliente FROM ventas WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+            if (ventaData.Count > 0 && ventaData[0]["id_cliente"] != DBNull.Value && ventaData[0]["id_cliente"] != null)
+            {
+                int idCliente = Convert.ToInt32(ventaData[0]["id_cliente"]);
+                // Obtener fecha de la venta para buscar puntos registrados en ese momento
+                var fechaVenta = _db.ExecuteQuery("SELECT fecha FROM ventas WHERE id_venta=@id",
+                    new MySqlParameter("@id", id));
+                if (fechaVenta.Count > 0)
+                {
+                    string fechaStr = Convert.ToDateTime(fechaVenta[0]["fecha"]).ToString("yyyy-MM-dd HH:mm:ss");
+                    var puntosVenta = _db.ExecuteQuery(@"
+                        SELECT tipo, SUM(puntos) AS total FROM historial_puntos
+                        WHERE id_cliente=@idC AND (motivo='COMPRA' OR motivo='CONSOLA')
+                          AND ABS(TIMESTAMPDIFF(MINUTE, fecha, @fecha)) <= 2
+                        GROUP BY tipo",
+                        new MySqlParameter("@idC", idCliente),
+                        new MySqlParameter("@fecha", fechaStr));
+
+                    foreach (var p in puntosVenta)
+                    {
+                        decimal puntos = Convert.ToDecimal(p["total"]);
+                        string tipo = p["tipo"]?.ToString() ?? "CONSUMO";
+                        if (puntos > 0)
+                            _db.ExecuteNonQuery(@"
+                                INSERT INTO historial_puntos (id_cliente, tipo, puntos, motivo)
+                                VALUES (@idC, @tipo, @puntos, @motivo)",
+                                new MySqlParameter("@idC", idCliente),
+                                new MySqlParameter("@tipo", tipo),
+                                new MySqlParameter("@puntos", -puntos),
+                                new MySqlParameter("@motivo", $"Cancelación venta #{id}"));
+                    }
+                }
+            }
+
             return Ok(new { mensaje = "Venta cancelada" });
         }
 

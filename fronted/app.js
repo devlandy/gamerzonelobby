@@ -1003,7 +1003,7 @@ function cargarVentasReporte(){
             const esCancelada = v.estado === "CANCELADO";
             const colorEstado = esCancelada ? "#ef4444" : v.estado === "PENDIENTE" ? "#f59e0b" : "#4ade80";
             const acciones = esCancelada
-                ? `<button onclick="reactivarVenta(${v.id})" style="${btnStyle}border:1px solid #4ade80;color:#4ade80;">Reactivar</button>`
+                ? `<span style="color:#555;font-size:11px;">—</span>`
                 : `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
                     <button onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}','_blank')" style="${btnStyle}border:1px solid #333;color:#aaa;">PDF</button>
                     <input id="motivo_${v.id}" placeholder="Motivo..." style="padding:3px 6px;font-size:11px;width:110px;border-radius:4px;background:#1a1a1a;color:#ccc;border:1px solid #333;">
@@ -1051,17 +1051,6 @@ async function cancelarVenta(id) {
     .catch(() => mostrarMensaje("❌ Error al cancelar la venta"));
 }
 
-async function reactivarVenta(id) {
-    if (!await confirmarDialog("Reactivar venta", "¿Deseas reactivar esta venta cancelada?", "info")) return;
-    authFetch(`${API}/ventas/${id}/reactivar`, { method: "PATCH" })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) { mostrarMensaje("❌ " + data.error); return; }
-        mostrarMensaje("✅ Venta reactivada");
-        cargarReportes();
-    })
-    .catch(() => mostrarMensaje("❌ Error al reactivar la venta"));
-}
 
 function cargarFacturas(){
     authFetch(`${API}/factura`)
@@ -1072,13 +1061,18 @@ function cargarFacturas(){
 
         const btnStyle = "background:transparent;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;";
         const renderFila = (f, esPendiente) => {
-            const numSat = esPendiente
-                ? `<input id="satNum_${f.id_factura}" placeholder="No. SAT" style="padding:4px 8px;font-size:12px;width:110px;">`
-                : `<span style="color:#4ade80;font-size:12px;">${s(f.sat_numero||"—")}</span>`;
-            const btnSat = esPendiente
-                ? `<button onclick="marcarSAT(${f.id_factura})" style="${btnStyle}border:1px solid #4ade80;color:#4ade80;">Marcar SAT</button>`
-                : `<button onclick="revertirSAT(${f.id_factura})" style="${btnStyle}border:1px solid #555;color:#555;">Revertir</button>`;
-            return `<tr style="border-bottom:1px solid #1a1a1a;">
+            const esCancelada = f.estado_venta === "CANCELADO";
+            const numSat = esCancelada
+                ? `<span style="color:#ef4444;font-size:12px;">Venta cancelada</span>`
+                : esPendiente
+                    ? `<input id="satNum_${f.id_factura}" placeholder="No. SAT" style="padding:4px 8px;font-size:12px;width:110px;">`
+                    : `<span style="color:#4ade80;font-size:12px;">${s(f.sat_numero||"—")}</span>`;
+            const btnSat = esCancelada
+                ? ``
+                : esPendiente
+                    ? `<button onclick="marcarSAT(${f.id_factura})" style="${btnStyle}border:1px solid #4ade80;color:#4ade80;">Marcar SAT</button>`
+                    : `<button onclick="revertirSAT(${f.id_factura})" style="${btnStyle}border:1px solid #555;color:#555;">Revertir</button>`;
+            return `<tr style="border-bottom:1px solid #1a1a1a;${esCancelada ? 'opacity:0.5;' : ''}">
                 <td style="padding:8px 6px;color:#aaa;">#${f.id_factura}</td>
                 <td style="padding:8px 6px;color:#aaa;white-space:nowrap;">${fmtFecha(f.fecha)}</td>
                 <td style="padding:8px 6px;">${s(f.nombre)}</td>
@@ -1086,7 +1080,7 @@ function cargarFacturas(){
                 <td style="padding:8px 6px;text-align:right;font-weight:600;">Q${parseFloat(f.total).toFixed(2)}</td>
                 <td style="padding:8px 6px;">${numSat}</td>
                 <td style="padding:8px 6px;">
-                    <button onclick="descargarFactura(${f.id_factura})" style="${btnStyle}border:1px solid #333;color:#aaa;margin-right:4px;">PDF</button>
+                    ${!esCancelada ? `<button onclick="descargarFactura(${f.id_factura})" style="${btnStyle}border:1px solid #333;color:#aaa;margin-right:4px;">PDF</button>` : ''}
                     ${btnSat}
                 </td>
             </tr>`;
