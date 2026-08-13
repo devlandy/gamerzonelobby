@@ -162,6 +162,7 @@ namespace GamerZoneAPI.Controllers
                 JOIN clientes c ON v.id_cliente = c.id_cliente
                 LEFT JOIN historial_puntos hp ON c.id_cliente = hp.id_cliente
                 GROUP BY c.id_cliente, c.nombre
+                HAVING puntos > 0
                 ORDER BY puntos DESC, total DESC
                 LIMIT 5");
 
@@ -186,6 +187,7 @@ namespace GamerZoneAPI.Controllers
                 FROM historial_puntos h
                 JOIN clientes c ON h.id_cliente = c.id_cliente
                 GROUP BY c.id_cliente, c.nombre, c.apodo
+                HAVING puntos > 0
                 ORDER BY puntos DESC
                 LIMIT 10");
 
