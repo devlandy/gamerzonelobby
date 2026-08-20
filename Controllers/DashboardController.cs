@@ -30,7 +30,7 @@ namespace GamerZoneAPI.Controllers
             decimal ventasDia = Convert.ToDecimal(_db.ExecuteScalar(
                 "SELECT IFNULL(SUM(total),0) FROM ventas WHERE fecha > @desde AND estado != 'CANCELADO'",
                 new MySql.Data.MySqlClient.MySqlParameter("@desde", desdeStr)));
-            int pendientes = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM ventas WHERE forma_cobro = 'PENDIENTE'"));
+            int pendientes = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM ventas WHERE forma_cobro = 'PENDIENTE' AND estado != 'CANCELADO'"));
             int agotados = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM productos WHERE stock = 0"));
             int porTerminar = Convert.ToInt32(_db.ExecuteScalar("SELECT COUNT(*) FROM productos WHERE stock > 0 AND stock <= 5"));
             decimal gastosDia = Convert.ToDecimal(_db.ExecuteScalar(
