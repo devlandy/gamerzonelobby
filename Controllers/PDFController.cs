@@ -49,101 +49,62 @@ namespace GamerZoneAPI.Controllers
             var logo = CargarLogo();
             decimal subtotalBruto = detalles.Where(d => Convert.ToDecimal(d["precio"]) > 0)
                                             .Sum(d => Convert.ToDecimal(d["subtotal"]));
-            decimal totalFinal   = venta["total"] != DBNull.Value ? Convert.ToDecimal(venta["total"]) : 0;
+            decimal totalFinal   = venta.ContainsKey("total") && venta["total"] != DBNull.Value ? Convert.ToDecimal(venta["total"]) : 0;
             decimal descuentoPct = venta.ContainsKey("descuento_pct") && venta["descuento_pct"] != DBNull.Value ? Convert.ToDecimal(venta["descuento_pct"]) : 0;
-            decimal descuento    = subtotalBruto - totalFinal;
-            var numDoc = venta.ContainsKey("id_venta") ? venta["id_venta"] : venta["id_factura"];
-            var fechaDoc = Convert.ToDateTime(venta["fecha"]).AddHours(-6);
+            decimal descuento    = descuentoPct > 0 ? Math.Round(subtotalBruto * descuentoPct / 100, 2) : 0;
+            var numDoc = venta.ContainsKey("id_venta") ? venta["id_venta"] : (venta.ContainsKey("id_factura") ? venta["id_factura"] : "");
+            var fechaDoc = venta.ContainsKey("fecha") && venta["fecha"] != DBNull.Value
+                ? Convert.ToDateTime(venta["fecha"]).AddHours(-6) : DateTime.Now;
+            string metodo = venta.ContainsKey("metodo_pago") ? venta["metodo_pago"]?.ToString() ?? "" : "";
+            string tipo   = venta.ContainsKey("tipo")       ? venta["tipo"]?.ToString() ?? titulo : titulo;
 
             container.Page(page =>
             {
                 page.Size(PageSizes.A4);
-                page.MarginHorizontal(36);
-                page.MarginVertical(28);
+                page.MarginHorizontal(40);
+                page.MarginVertical(30);
                 page.Background(Colors.White);
                 page.DefaultTextStyle(t => t.FontSize(10).FontColor("#1a1a1a"));
 
-                // ── HEADER ──────────────────────────────────────────────
                 page.Header().Column(h =>
                 {
-                    // Fila superior: logo | título | info negocio
-                    h.Item().PaddingBottom(6).Row(r =>
+                    // Logo + Título + Info en una fila simple
+                    h.Item().PaddingBottom(8).Row(r =>
                     {
-                        // Logo izquierda
                         if (logo != null)
-                            r.ConstantItem(110).AlignMiddle()
-                                .Image(logo).FitWidth();
+                            r.ConstantItem(90).Image(logo).FitWidth();
                         else
-                            r.ConstantItem(110).AlignMiddle()
-                                .Text("EL LOBBY ZONE").FontSize(16).Bold().FontColor(ColorPrimario);
+                            r.ConstantItem(90).Text("EL LOBBY ZONE").FontSize(13).Bold().FontColor(ColorPrimario);
 
-                        r.ConstantItem(12);
-
-                        // Título centrado
-                        r.RelativeItem().AlignMiddle().AlignCenter().Column(c =>
+                        r.RelativeItem().PaddingLeft(10).Column(c =>
                         {
-                            c.Item().AlignCenter()
-                                .Text(titulo)
-                                .FontSize(14).Bold()
-                                .Underline();
-                        });
-
-                        r.ConstantItem(12);
-
-                        // Info negocio derecha
-                        r.ConstantItem(160).AlignMiddle().Column(c =>
-                        {
-                            c.Item().Text("EL LOBBY ZONE").FontSize(9).Bold();
-                            c.Item().Text("Gaming · Entretenimiento · Comida").FontSize(8).FontColor("#555");
-                            c.Item().PaddingTop(2).Text("Guatemala").FontSize(8).FontColor("#555");
+                            c.Item().Text(titulo).FontSize(16).Bold();
+                            c.Item().PaddingTop(2).Text("EL LOBBY ZONE · Gaming · Entretenimiento · Comida").FontSize(8).FontColor("#666");
+                            c.Item().PaddingTop(1).Text("Guatemala").FontSize(8).FontColor("#666");
                         });
                     });
-
-                    // Línea separadora doble
-                    h.Item().BorderTop(3).BorderColor("#1a1a1a").PaddingTop(1).BorderTop(1).BorderColor("#1a1a1a");
+                    h.Item().BorderTop(2).BorderColor("#1a1a1a");
                     h.Item().PaddingBottom(4);
                 });
 
-                // ── CONTENIDO ────────────────────────────────────────────
                 page.Content().Column(col =>
                 {
-                    // Bloque de info: datos doc (izq) | datos cliente (der)
-                    col.Item().PaddingBottom(8).Row(r =>
+                    // Info del documento
+                    col.Item().PaddingBottom(10).Row(r =>
                     {
-                        // Izquierda: número de documento + fechas
                         r.RelativeItem().Column(c =>
                         {
-                            c.Item().Text(tb => {
-                                tb.Span("Documento N°  ").FontSize(9).Bold();
-                                tb.Span($"0{numDoc}").FontSize(9);
-                            });
-                            c.Item().PaddingTop(2).Text(tb => {
-                                tb.Span("Fecha de emisión:  ").FontSize(9).Bold();
-                                tb.Span(fechaDoc.ToString("dd/MM/yyyy")).FontSize(9);
-                            });
-                            c.Item().PaddingTop(2).Text(tb => {
-                                tb.Span("Hora:  ").FontSize(9).Bold();
-                                tb.Span(fechaDoc.ToString("hh:mm:ss tt")).FontSize(9);
-                            });
-                            c.Item().PaddingTop(2).Text(tb => {
-                                tb.Span("Tipo:  ").FontSize(9).Bold();
-                                tb.Span(venta.ContainsKey("tipo") ? venta["tipo"]?.ToString() ?? titulo : titulo).FontSize(9);
-                            });
+                            c.Item().Text($"Documento N° 0{numDoc}").FontSize(9).Bold();
+                            c.Item().PaddingTop(2).Text($"Fecha: {fechaDoc:dd/MM/yyyy}  Hora: {fechaDoc:hh:mm tt}").FontSize(9);
+                            c.Item().PaddingTop(2).Text($"Tipo: {QuitarEmojis(tipo)}").FontSize(9);
                         });
-
-                        r.ConstantItem(16);
-
-                        // Derecha: datos del cliente
-                        r.RelativeItem().Border(1).BorderColor("#cccccc").Padding(8).Column(c =>
+                        r.RelativeItem().Border(1).BorderColor("#ccc").Padding(7).Column(c =>
                         {
                             c.Item().Text("CLIENTE").FontSize(8).Bold().FontColor(ColorPrimario);
-                            c.Item().PaddingTop(3).Text(nombreCliente).FontSize(10).Bold();
+                            c.Item().PaddingTop(2).Text(nombreCliente).FontSize(10).Bold();
                             if (!string.IsNullOrWhiteSpace(infoExtra))
-                                c.Item().PaddingTop(2).Text(infoExtra).FontSize(8).FontColor("#555");
-                            c.Item().PaddingTop(2).Text(tb => {
-                                tb.Span("Método de pago: ").FontSize(8).Bold();
-                                tb.Span(venta["metodo_pago"]?.ToString() ?? "").FontSize(8);
-                            });
+                                c.Item().PaddingTop(1).Text(infoExtra).FontSize(8).FontColor("#555");
+                            c.Item().PaddingTop(2).Text($"Método de pago: {metodo}").FontSize(8);
                         });
                     });
 
@@ -152,99 +113,54 @@ namespace GamerZoneAPI.Controllers
                     {
                         t.ColumnsDefinition(c =>
                         {
-                            c.ConstantColumn(40);    // Cant
-                            c.RelativeColumn(5);     // Descripción
-                            c.RelativeColumn(2);     // Precio unit
-                            c.RelativeColumn(2);     // Importe
+                            c.ConstantColumn(36);
+                            c.RelativeColumn(5);
+                            c.RelativeColumn(2);
+                            c.RelativeColumn(2);
                         });
 
-                        // Encabezado negro
                         void Th(string txt, bool right = false) {
-                            var cell = t.Cell().Background("#1a1a1a").PaddingVertical(6).PaddingHorizontal(6);
-                            var txt2 = cell.Text(txt).FontSize(9).Bold().FontColor(Colors.White);
+                            var cell = t.Cell().Background("#1a1a1a").PaddingVertical(5).PaddingHorizontal(5);
+                            var txt2 = cell.Text(txt).FontSize(8).Bold().FontColor(Colors.White);
                             if (right) txt2.AlignRight();
                         }
-
                         Th("CANT."); Th("DESCRIPCIÓN"); Th("PRECIO", true); Th("IMPORTE", true);
 
                         bool par = false;
                         foreach (var d in detalles)
                         {
-                            bool esIngrediente = Convert.ToDecimal(d["precio"]) == 0;
-                            string bg = esIngrediente ? "#f9f9f9" : (par ? ColorGris : Colors.White);
-                            if (!esIngrediente) par = !par;
+                            bool esIng = Convert.ToDecimal(d["precio"]) == 0;
+                            string bg  = par ? ColorGris : Colors.White;
+                            if (!esIng) par = !par;
+                            string borde = "#ddd";
 
-                            string borde = "#dddddd";
-
-                            if (esIngrediente)
-                            {
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5).Text("").FontSize(9);
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5).PaddingLeft(14)
-                                    .Text($"└ {QuitarEmojis(d["nombre"]?.ToString())}").FontSize(9).FontColor("#888");
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5).Text("").FontSize(9);
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5).Text("").FontSize(9);
-                            }
-                            else
-                            {
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5).AlignCenter()
-                                    .Text(d["cantidad"].ToString()).FontSize(9);
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5)
-                                    .Text(QuitarEmojis(d["nombre"]?.ToString())).FontSize(9);
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5).AlignRight()
-                                    .Text($"Q{Convert.ToDecimal(d["precio"]):F2}").FontSize(9);
-                                t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(5).AlignRight()
-                                    .Text($"Q{Convert.ToDecimal(d["subtotal"]):F2}").FontSize(9);
-                            }
+                            t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(4).AlignCenter()
+                                .Text(esIng ? "" : d["cantidad"].ToString()).FontSize(9);
+                            t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(4)
+                                .Text((esIng ? "  └ " : "") + QuitarEmojis(d["nombre"]?.ToString())).FontSize(9).FontColor(esIng ? "#888" : "#1a1a1a");
+                            t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(4).AlignRight()
+                                .Text(esIng ? "" : $"Q{Convert.ToDecimal(d["precio"]):F2}").FontSize(9);
+                            t.Cell().BorderBottom(1).BorderColor(borde).Background(bg).Padding(4).AlignRight()
+                                .Text(esIng ? "" : $"Q{Convert.ToDecimal(d["subtotal"]):F2}").FontSize(9);
                         }
                     });
 
-                    // Observaciones
-                    col.Item().PaddingTop(12).Border(1).BorderColor("#cccccc").Padding(8).Column(c =>
+                    // Totales
+                    col.Item().PaddingTop(10).AlignRight().Column(c =>
                     {
-                        c.Item().Text("OBSERVACIONES:").FontSize(9).Bold();
-                        c.Item().PaddingTop(20);
-                    });
-
-                    // ── BARRA DE TOTALES (dentro del contenido para que siempre sea visible) ──
-                    col.Item().PaddingTop(12).Table(t =>
-                    {
-                        t.ColumnsDefinition(c =>
+                        if (descuento > 0)
                         {
-                            c.RelativeColumn(1);  // Página
-                            c.RelativeColumn(2);  // Subtotal
-                            c.RelativeColumn(2);  // Descuento
-                            c.RelativeColumn(2);  // Forma de pago
-                            c.RelativeColumn(2);  // TOTAL
-                        });
-
-                        void Th2(string txt) =>
-                            t.Cell().Background("#1a1a1a").PaddingVertical(7).PaddingHorizontal(6)
-                                .AlignCenter().Text(txt).FontSize(9).Bold().FontColor(Colors.White);
-
-                        Th2("PÁGINA"); Th2("SUBTOTAL"); Th2("DESCUENTO"); Th2("FORMA DE PAGO"); Th2("TOTAL");
-
-                        t.Cell().Background("#f0f0f0").PaddingVertical(9).PaddingHorizontal(6)
-                            .AlignCenter().Text("1/1").FontSize(10).Bold();
-                        t.Cell().Background("#f0f0f0").PaddingVertical(9).PaddingHorizontal(6)
-                            .AlignCenter().Text($"Q{subtotalBruto:F2}").FontSize(10);
-                        t.Cell().Background(descuento > 0 ? "#fff0f0" : "#f0f0f0").PaddingVertical(9).PaddingHorizontal(6)
-                            .AlignCenter()
-                            .Text(descuento > 0 ? $"-Q{descuento:F2} ({descuentoPct:F1}%)" : "—")
-                            .FontSize(9).FontColor(descuento > 0 ? "#cc0000" : "#777");
-                        t.Cell().Background("#f0f0f0").PaddingVertical(9).PaddingHorizontal(6)
-                            .AlignCenter().Text(venta["metodo_pago"]?.ToString() ?? "").FontSize(9);
-                        t.Cell().Background(ColorPrimario).PaddingVertical(9).PaddingHorizontal(6)
-                            .AlignCenter().Text($"Q{totalFinal:F2}").FontSize(13).Bold().FontColor(Colors.White);
+                            c.Item().Text($"Subtotal: Q{subtotalBruto:F2}").FontSize(9).FontColor("#555");
+                            c.Item().Text($"Descuento ({descuentoPct:F1}%): -Q{descuento:F2}").FontSize(9).FontColor("#cc0000");
+                        }
+                        c.Item().PaddingTop(4).Text($"TOTAL: Q{totalFinal:F2}").FontSize(14).Bold().FontColor(ColorPrimario);
+                        c.Item().PaddingTop(2).Text($"Forma de pago: {metodo}").FontSize(9).FontColor("#555");
                     });
                 });
 
-                // ── FOOTER ───────────────────────────────────────────────
-                page.Footer().Column(f =>
-                {
-                    f.Item().PaddingTop(6).AlignCenter()
-                        .Text("¡Gracias por tu visita! · El Lobby Zone · Gaming · Entretenimiento · Comida")
-                        .FontSize(8).FontColor("#888");
-                });
+                page.Footer().AlignCenter()
+                    .Text("¡Gracias por tu visita! · El Lobby Zone · Gaming · Entretenimiento · Comida")
+                    .FontSize(8).FontColor("#888");
             });
         }
 
