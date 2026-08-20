@@ -3645,8 +3645,9 @@ function renderOrdenes(data) {
     if (!data.length) { el.innerHTML = '<p style="color:#555;grid-column:1/-1;">Sin órdenes.</p>'; return; }
 
     el.innerHTML = data.map(o => {
-        const estadoColor = o.estado === 'PENDIENTE' ? '#f59e0b' : o.estado === 'PAGADO' ? '#4ade80' : '#ef4444';
-        const esPendiente = o.estado === 'PENDIENTE';
+        const pagado    = o.estado === 'PAGADO';
+        const entregado = o.entregado;
+        const cancelado = o.estado === 'CANCELADO';
         const fecha = new Date(o.fecha).toLocaleString('es-GT', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'});
         const items = (o.productos || []).map(p =>
             `<div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0;">
@@ -3654,14 +3655,27 @@ function renderOrdenes(data) {
                 <span style="color:#aaa;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
             </div>`).join('');
 
+        const badgePago     = `<span style="background:${pagado?'#4ade80':'#f59e0b'};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${pagado?'PAGADO':'SIN COBRAR'}</span>`;
+        const badgeEntrega  = `<span style="background:${entregado?'#4ade80':'#f59e0b'};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${entregado?'ENTREGADO':'POR ENTREGAR'}</span>`;
+        const badgeCancelado= `<span style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CANCELADO</span>`;
+
+        const botones = cancelado ? '' : `
+            ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta},${parseFloat(o.total).toFixed(2)})">💳 Cobrar</button>` : ''}
+            ${!entregado ? `<button class="cli-btn" style="background:#7c3aed;" onclick="entregarOrden(${o.id_venta})">✅ Entregar</button>` : ''}
+            <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
+            <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>`;
+
         return `
-        <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:10px;padding:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="background:#1a1a2e;border:1px solid ${cancelado?'#4a1a1a':'#2a2a4a'};border-radius:10px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;">
                 <div>
                     <span style="font-weight:700;font-size:15px;">${s(o.nombre_orden || 'Orden #' + o.id_venta)}</span>
                     <span style="font-size:11px;color:#666;margin-left:6px;">${fecha}</span>
                 </div>
-                <span style="background:${estadoColor};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${o.estado}</span>
+                <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+                    ${cancelado ? badgeCancelado : badgePago}
+                    ${!cancelado ? badgeEntrega : ''}
+                </div>
             </div>
             <div style="color:#aaa;font-size:12px;margin-bottom:8px;">👤 ${s(o.cliente)}</div>
             <div style="border-top:1px solid #222;padding-top:8px;margin-bottom:8px;">${items || '<span style="color:#555;font-size:12px;">Sin productos</span>'}</div>
@@ -3669,13 +3683,7 @@ function renderOrdenes(data) {
                 <span style="color:#aaa;font-size:12px;">Total</span>
                 <span style="font-weight:700;font-size:16px;color:#4ade80;">Q${parseFloat(o.total).toFixed(2)}</span>
             </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                ${esPendiente ? `
-                <button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta}, ${parseFloat(o.total).toFixed(2)})">💳 Cobrar</button>
-                <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
-                <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>
-                ` : ''}
-            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">${botones}</div>
         </div>`;
     }).join('');
 }
@@ -3693,12 +3701,33 @@ function abrirNuevaOrden() {
         <h3 style="margin:0 0 16px;color:#fff;">Nueva Orden</h3>
         <input id="noNombreOrden" placeholder="Nombre de la orden (ej: Mesa 1, Juan)" style="width:100%;margin-bottom:10px;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
         <div id="noProductosList" style="max-height:250px;overflow-y:auto;border:1px solid #222;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
-        <div style="display:flex;gap:6px;margin-bottom:10px;">
-            <select id="noSelectProd" style="flex:1;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;"></select>
-            <input id="noSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
-            <button onclick="noAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+        <div style="position:relative;margin-bottom:10px;">
+            <div style="display:flex;gap:6px;">
+                <div style="flex:1;position:relative;">
+                    <input id="noBuscarProd" placeholder="Buscar producto..." autocomplete="off"
+                        oninput="noBuscarProducto(this.value)"
+                        style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
+                    <div id="noSugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e3a;border:1px solid #333;border-radius:6px;z-index:10000;max-height:180px;overflow-y:auto;"></div>
+                </div>
+                <input id="noSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
+                <button onclick="noAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+            </div>
+            <input type="hidden" id="noSelectProd" data-precio="">
         </div>
-        <div style="font-size:13px;color:#aaa;margin-bottom:14px;">Total: <strong id="noTotal" style="color:#4ade80;">Q0.00</strong></div>
+        <div style="font-size:13px;color:#aaa;margin-bottom:12px;">Total: <strong id="noTotal" style="color:#4ade80;">Q0.00</strong></div>
+        <div style="border-top:1px solid #222;padding-top:12px;margin-bottom:14px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#ccc;font-size:13px;margin-bottom:10px;">
+                <input type="checkbox" id="noCobrarAhora" onchange="noToggleCobro()" style="width:16px;height:16px;">
+                Cobrar ahora
+            </label>
+            <div id="noCobrarOpciones" style="display:none;">
+                <select id="noMetodoPago" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TARJETA">Tarjeta</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                </select>
+            </div>
+        </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
             <button onclick="document.getElementById('modalNuevaOrden').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
             <button onclick="confirmarNuevaOrden()" style="padding:8px 16px;background:#15803d;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Crear Orden</button>
@@ -3706,28 +3735,52 @@ function abrirNuevaOrden() {
       </div>`;
     document.body.appendChild(modal);
     _noItems = [];
+    _noProductosCatalogo = [];
     _noRenderItems();
-    // Cargar productos en select
     authFetch(`${API}/productos`).then(r => r.json()).then(prods => {
-        const sel = document.getElementById('noSelectProd');
-        if (!sel) return;
-        sel.innerHTML = prods.filter(p => !p.es_ingrediente).map(p =>
-            `<option value="${p.id}" data-precio="${p.precio_venta}">${s(p.nombre)} - Q${parseFloat(p.precio_venta).toFixed(2)}</option>`).join('');
+        _noProductosCatalogo = prods.filter(p => !p.es_ingrediente);
     });
 }
 
 let _noItems = [];
+let _noProductosCatalogo = [];
+
+function noBuscarProducto(q) {
+    const sugs = document.getElementById('noSugerencias');
+    if (!sugs) return;
+    if (!q.trim()) { sugs.style.display = 'none'; return; }
+    const matches = _noProductosCatalogo.filter(p => p.nombre.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+    if (!matches.length) { sugs.style.display = 'none'; return; }
+    sugs.style.display = 'block';
+    sugs.innerHTML = matches.map(p => `
+        <div onclick="noSeleccionarProducto(${p.id},'${p.nombre.replace(/'/g,"\\'")}',${p.precio_venta})"
+            style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #222;display:flex;justify-content:space-between;"
+            onmouseover="this.style.background='#2a2a4a'" onmouseout="this.style.background=''">
+            <span>${s(p.nombre)}</span><span style="color:#4ade80;">Q${parseFloat(p.precio_venta).toFixed(2)}</span>
+        </div>`).join('');
+}
+
+function noSeleccionarProducto(id, nombre, precio) {
+    const inp = document.getElementById('noBuscarProd');
+    const hid = document.getElementById('noSelectProd');
+    const sugs = document.getElementById('noSugerencias');
+    if (inp) inp.value = nombre;
+    if (hid) { hid.value = id; hid.dataset.precio = precio; hid.dataset.nombre = nombre; }
+    if (sugs) sugs.style.display = 'none';
+}
 
 function noAgregarProducto() {
-    const sel = document.getElementById('noSelectProd');
+    const hid  = document.getElementById('noSelectProd');
     const cant = parseInt(document.getElementById('noSelectCant').value || 1);
-    if (!sel || !sel.value) return;
-    const precio = parseFloat(sel.selectedOptions[0]?.dataset.precio || 0);
-    const nombre = sel.selectedOptions[0]?.text.split(' - ')[0] || '';
-    const id = parseInt(sel.value);
+    const id   = parseInt(hid?.value || 0);
+    const precio = parseFloat(hid?.dataset.precio || 0);
+    const nombre = hid?.dataset.nombre || '';
+    if (!id || !precio) { mostrarMensaje('❌ Selecciona un producto de la lista'); return; }
     const existe = _noItems.find(i => i.id_producto === id);
     if (existe) { existe.cantidad += cant; }
     else { _noItems.push({ id_producto: id, nombre, cantidad: cant, precio }); }
+    document.getElementById('noBuscarProd').value = '';
+    hid.value = ''; hid.dataset.precio = ''; hid.dataset.nombre = '';
     _noRenderItems();
 }
 
@@ -3750,15 +3803,23 @@ function _noRenderItems() {
 
 function _noQuitarItem(i) { _noItems.splice(i, 1); _noRenderItems(); }
 
+function noToggleCobro() {
+    const checked = document.getElementById('noCobrarAhora')?.checked;
+    const opciones = document.getElementById('noCobrarOpciones');
+    if (opciones) opciones.style.display = checked ? 'block' : 'none';
+}
+
 function confirmarNuevaOrden() {
     const nombre = document.getElementById('noNombreOrden')?.value?.trim() || 'Orden';
+    const cobrarAhora = document.getElementById('noCobrarAhora')?.checked || false;
+    const metodo = cobrarAhora ? (document.getElementById('noMetodoPago')?.value || 'EFECTIVO') : 'PENDIENTE';
     const usuario = JSON.parse(localStorage.getItem('usuario'));
     authFetch(`${API}/ventas`, {
         method: 'POST',
         body: JSON.stringify({
             nombre_orden: nombre,
             numero_orden: '000',
-            metodo_pago: 'PENDIENTE',
+            metodo_pago: metodo,
             id_usuario: usuario?.id_usuario || 1,
             productos: _noItems,
             descuento_pct: 0,
@@ -3766,7 +3827,7 @@ function confirmarNuevaOrden() {
         })
     }).then(r => r.json()).then(d => {
         if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
-        mostrarMensaje('✅ Orden creada');
+        mostrarMensaje(cobrarAhora ? '✅ Orden creada y cobrada' : '✅ Orden creada');
         document.getElementById('modalNuevaOrden')?.remove();
         cargarOrdenes();
     });
@@ -3784,10 +3845,18 @@ function abrirAgregarOrden(idVenta) {
       <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;">
         <h3 style="margin:0 0 16px;color:#fff;">Agregar a Orden #${idVenta}</h3>
         <div id="agProductosList" style="max-height:200px;overflow-y:auto;border:1px solid #222;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
-        <div style="display:flex;gap:6px;margin-bottom:10px;">
-            <select id="agSelectProd" style="flex:1;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;"></select>
-            <input id="agSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
-            <button onclick="agAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+        <div style="position:relative;margin-bottom:10px;">
+            <div style="display:flex;gap:6px;">
+                <div style="flex:1;position:relative;">
+                    <input id="agBuscarProd" placeholder="Buscar producto..." autocomplete="off"
+                        oninput="agBuscarProducto(this.value)"
+                        style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
+                    <div id="agSugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e3a;border:1px solid #333;border-radius:6px;z-index:10000;max-height:180px;overflow-y:auto;"></div>
+                </div>
+                <input id="agSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
+                <button onclick="agAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+            </div>
+            <input type="hidden" id="agSelectProd" data-precio="" data-nombre="">
         </div>
         <div style="font-size:13px;color:#aaa;margin-bottom:14px;">A agregar: <strong id="agTotal" style="color:#4ade80;">Q0.00</strong></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -3797,27 +3866,52 @@ function abrirAgregarOrden(idVenta) {
       </div>`;
     document.body.appendChild(modal);
     _agItems = [];
+    _agProductosCatalogo = [];
     _agRenderItems();
     authFetch(`${API}/productos`).then(r => r.json()).then(prods => {
-        const sel = document.getElementById('agSelectProd');
-        if (!sel) return;
-        sel.innerHTML = prods.filter(p => !p.es_ingrediente).map(p =>
-            `<option value="${p.id}" data-precio="${p.precio_venta}">${s(p.nombre)} - Q${parseFloat(p.precio_venta).toFixed(2)}</option>`).join('');
+        _agProductosCatalogo = prods.filter(p => !p.es_ingrediente);
     });
 }
 
 let _agItems = [];
+let _agProductosCatalogo = [];
+
+function agBuscarProducto(q) {
+    const sugs = document.getElementById('agSugerencias');
+    if (!sugs) return;
+    if (!q.trim()) { sugs.style.display = 'none'; return; }
+    const matches = _agProductosCatalogo.filter(p => p.nombre.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+    if (!matches.length) { sugs.style.display = 'none'; return; }
+    sugs.style.display = 'block';
+    sugs.innerHTML = matches.map(p => `
+        <div onclick="agSeleccionarProducto(${p.id},'${p.nombre.replace(/'/g,"\\'")}',${p.precio_venta})"
+            style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #222;display:flex;justify-content:space-between;"
+            onmouseover="this.style.background='#2a2a4a'" onmouseout="this.style.background=''">
+            <span>${s(p.nombre)}</span><span style="color:#4ade80;">Q${parseFloat(p.precio_venta).toFixed(2)}</span>
+        </div>`).join('');
+}
+
+function agSeleccionarProducto(id, nombre, precio) {
+    const inp = document.getElementById('agBuscarProd');
+    const hid = document.getElementById('agSelectProd');
+    const sugs = document.getElementById('agSugerencias');
+    if (inp) inp.value = nombre;
+    if (hid) { hid.value = id; hid.dataset.precio = precio; hid.dataset.nombre = nombre; }
+    if (sugs) sugs.style.display = 'none';
+}
 
 function agAgregarProducto() {
-    const sel = document.getElementById('agSelectProd');
+    const hid  = document.getElementById('agSelectProd');
     const cant = parseInt(document.getElementById('agSelectCant').value || 1);
-    if (!sel || !sel.value) return;
-    const precio = parseFloat(sel.selectedOptions[0]?.dataset.precio || 0);
-    const nombre = sel.selectedOptions[0]?.text.split(' - ')[0] || '';
-    const id = parseInt(sel.value);
+    const id   = parseInt(hid?.value || 0);
+    const precio = parseFloat(hid?.dataset.precio || 0);
+    const nombre = hid?.dataset.nombre || '';
+    if (!id || !precio) { mostrarMensaje('❌ Selecciona un producto de la lista'); return; }
     const existe = _agItems.find(i => i.id_producto === id);
     if (existe) { existe.cantidad += cant; }
     else { _agItems.push({ id_producto: id, nombre, cantidad: cant, precio }); }
+    document.getElementById('agBuscarProd').value = '';
+    hid.value = ''; hid.dataset.precio = ''; hid.dataset.nombre = '';
     _agRenderItems();
 }
 
@@ -3888,6 +3982,16 @@ function confirmarCobrarOrden(idVenta) {
         if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
         mostrarMensaje('✅ Orden cobrada');
         document.getElementById('modalCobrarOrden')?.remove();
+        cargarOrdenes();
+    });
+}
+
+// ── Entregar orden ──────────────────────────────────────────────────
+function entregarOrden(idVenta) {
+    authFetch(`${API}/ventas/${idVenta}/entregar`, { method: 'PATCH' })
+    .then(r => r.json()).then(d => {
+        if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
+        mostrarMensaje('✅ Orden marcada como entregada');
         cargarOrdenes();
     });
 }

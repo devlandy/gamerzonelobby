@@ -224,13 +224,28 @@ namespace GamerZoneAPI.Controllers
             return Ok(new { mensaje = "Venta cancelada" });
         }
 
+        [HttpPatch("{id}/entregar")]
+        public IActionResult EntregarOrden(int id)
+        {
+            var venta = _db.ExecuteQuery("SELECT estado FROM ventas WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+            if (venta.Count == 0) return NotFound(new { error = "Orden no encontrada" });
+            if (venta[0]["estado"].ToString() == "CANCELADO")
+                return BadRequest(new { error = "La orden está cancelada" });
+            _db.ExecuteNonQuery("UPDATE ventas SET entregado=1 WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+            return Ok(new { mensaje = "Orden marcada como entregada" });
+        }
+
         [HttpGet("ordenes")]
         public IActionResult ListarOrdenes([FromQuery] string estado = "TODAS")
         {
-            string where = estado == "TODAS" ? "" : "WHERE v.estado = @estado";
+            string where = estado == "TODAS"
+                ? "WHERE v.estado != 'CANCELADO'"
+                : "WHERE v.estado != 'CANCELADO' AND (v.estado = 'PENDIENTE' OR v.entregado = 0)";
             var rows = _db.ExecuteQuery($@"
                 SELECT v.id_venta, v.numero_orden, v.nombre_orden, v.total, v.estado,
-                       v.metodo_pago, v.fecha, IFNULL(c.nombre,'Sin cliente') AS cliente
+                       v.metodo_pago, v.fecha, v.entregado, IFNULL(c.nombre,'Sin cliente') AS cliente
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
                 {where}
@@ -254,6 +269,7 @@ namespace GamerZoneAPI.Controllers
                 estado       = r["estado"]?.ToString() ?? "",
                 metodo_pago  = r["metodo_pago"]?.ToString() ?? "",
                 fecha        = r["fecha"],
+                entregado    = Convert.ToInt32(r["entregado"]) == 1,
                 productos    = detalles
                     .Where(d => Convert.ToInt32(d["id_venta"]) == Convert.ToInt32(r["id_venta"]))
                     .Select(d => new {
