@@ -51,7 +51,7 @@ namespace GamerZoneAPI.Controllers
             {
                 page.Size(PageSizes.A4);
                 page.Margin(40);
-                page.DefaultTextStyle(x => x.FontSize(10));
+                page.DefaultTextStyle(x => x.FontFamily(Fonts.Lato).FontSize(10).FontColor("#1a1a1a"));
 
                 // ── HEADER ──
                 page.Header().Column(col =>
