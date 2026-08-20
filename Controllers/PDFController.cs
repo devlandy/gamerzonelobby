@@ -251,6 +251,7 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("venta/{id}")]
         public IActionResult GenerarTicketVenta(int id)
         {
+          try {
             var ventas = _db.ExecuteQuery(@"
                 SELECT v.id_venta, v.total, IFNULL(v.metodo_pago,'') AS metodo_pago,
                        v.fecha, IFNULL(v.tipo,'PRODUCTO') AS tipo,
@@ -265,7 +266,10 @@ namespace GamerZoneAPI.Controllers
             var v = ventas[0];
 
             var detalles = _db.ExecuteQuery(@"
-                SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio, d.subtotal
+                SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre,
+                       IFNULL(d.cantidad, 1) AS cantidad,
+                       IFNULL(d.precio, 0) AS precio,
+                       IFNULL(d.subtotal, 0) AS subtotal
                 FROM detalle_ventas d
                 LEFT JOIN productos p ON d.id_producto = p.id_producto
                 WHERE d.id_venta = @id ORDER BY d.id_detalle",
@@ -275,6 +279,9 @@ namespace GamerZoneAPI.Controllers
                 v, detalles, v["cliente"]?.ToString() ?? "Consumidor Final", "")).GeneratePdf();
 
             return File(pdf, "application/pdf", $"Venta_{id}.pdf");
+          } catch (Exception ex) {
+            return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+          }
         }
 
         [HttpGet("factura/{id}")]
@@ -292,7 +299,10 @@ namespace GamerZoneAPI.Controllers
             int idVenta = Convert.ToInt32(f["id_venta"]);
 
             var detalles = _db.ExecuteQuery(@"
-                SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio, d.subtotal
+                SELECT COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre,
+                       IFNULL(d.cantidad, 1) AS cantidad,
+                       IFNULL(d.precio, 0) AS precio,
+                       IFNULL(d.subtotal, 0) AS subtotal
                 FROM detalle_ventas d
                 LEFT JOIN productos p ON d.id_producto = p.id_producto
                 WHERE d.id_venta = @id ORDER BY d.id_detalle",
