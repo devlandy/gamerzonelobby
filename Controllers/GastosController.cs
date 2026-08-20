@@ -133,11 +133,11 @@ namespace GamerZoneAPI.Controllers
                 : $"'{mesFiltrado}'";
 
             var rows = _db.ExecuteQuery($@"
-                SELECT DATE(fecha) AS dia, COUNT(*) AS ventas, SUM(total) AS total
+                SELECT DATE(CONVERT_TZ(fecha, '+00:00', '-06:00')) AS dia, COUNT(*) AS ventas, SUM(total) AS total
                 FROM ventas
-                WHERE DATE_FORMAT(fecha, '%Y-%m') = {filtroMes}
+                WHERE DATE_FORMAT(CONVERT_TZ(fecha, '+00:00', '-06:00'), '%Y-%m') = {filtroMes}
                 AND estado != 'CANCELADO'
-                GROUP BY DATE(fecha)
+                GROUP BY DATE(CONVERT_TZ(fecha, '+00:00', '-06:00'))
                 ORDER BY dia ASC");
 
             return Ok(rows.Select(r => new
@@ -158,7 +158,7 @@ namespace GamerZoneAPI.Controllers
                        v.total, IFNULL(v.metodo_pago,'—') AS metodo_pago, v.estado
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
-                WHERE DATE(v.fecha) = @dia AND v.estado != 'CANCELADO'
+                WHERE DATE(CONVERT_TZ(v.fecha, '+00:00', '-06:00')) = @dia AND v.estado != 'CANCELADO'
                 ORDER BY v.fecha ASC",
                 new MySqlParameter("@dia", dia));
 
