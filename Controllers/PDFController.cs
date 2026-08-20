@@ -61,7 +61,7 @@ namespace GamerZoneAPI.Controllers
                 page.MarginHorizontal(36);
                 page.MarginVertical(28);
                 page.Background(Colors.White);
-                page.DefaultTextStyle(t => t.FontFamily("Arial").FontSize(10).FontColor("#1a1a1a"));
+                page.DefaultTextStyle(t => t.FontSize(10).FontColor("#1a1a1a"));
 
                 // ── HEADER ──────────────────────────────────────────────
                 page.Header().Column(h =>
