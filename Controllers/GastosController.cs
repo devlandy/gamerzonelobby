@@ -148,6 +148,54 @@ namespace GamerZoneAPI.Controllers
             }));
         }
 
+        [HttpGet("ventas-del-dia")]
+        public IActionResult VentasDelDia([FromQuery] string dia)
+        {
+            if (string.IsNullOrWhiteSpace(dia)) return BadRequest(new { error = "Parámetro 'dia' requerido (YYYY-MM-DD)" });
+
+            var ventas = _db.ExecuteQuery(@"
+                SELECT v.id_venta, v.fecha, IFNULL(c.nombre,'Consumidor Final') AS cliente,
+                       v.total, IFNULL(v.metodo_pago,'—') AS metodo_pago, v.estado
+                FROM ventas v
+                LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+                WHERE DATE(v.fecha) = @dia AND v.estado != 'CANCELADO'
+                ORDER BY v.fecha ASC",
+                new MySqlParameter("@dia", dia));
+
+            var ids = ventas.Select(v => Convert.ToInt32(v["id_venta"])).ToList();
+            List<Dictionary<string, object>> detalles = new();
+            if (ids.Count > 0)
+            {
+                string inClause = string.Join(",", ids);
+                detalles = _db.ExecuteQuery($@"
+                    SELECT d.id_venta, COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre,
+                           d.cantidad, d.precio, d.subtotal
+                    FROM detalle_ventas d
+                    LEFT JOIN productos p ON d.id_producto = p.id_producto
+                    WHERE d.id_venta IN ({inClause})
+                    ORDER BY d.id_venta, d.id_detalle");
+            }
+
+            return Ok(ventas.Select(v => {
+                int idV = Convert.ToInt32(v["id_venta"]);
+                return new {
+                    id_venta    = idV,
+                    fecha       = v["fecha"],
+                    cliente     = v["cliente"]?.ToString() ?? "",
+                    total       = Convert.ToDecimal(v["total"]),
+                    metodo_pago = v["metodo_pago"]?.ToString() ?? "",
+                    estado      = v["estado"]?.ToString() ?? "",
+                    productos   = detalles.Where(d => Convert.ToInt32(d["id_venta"]) == idV)
+                                         .Select(d => new {
+                                             nombre   = d["nombre"]?.ToString() ?? "",
+                                             cantidad = Convert.ToInt32(d["cantidad"]),
+                                             precio   = Convert.ToDecimal(d["precio"]),
+                                             subtotal = Convert.ToDecimal(d["subtotal"])
+                                         }).ToList()
+                };
+            }));
+        }
+
         [HttpPost]
         public IActionResult RegistrarGasto([FromBody] GastoRequest request)
         {

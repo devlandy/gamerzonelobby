@@ -20,8 +20,20 @@ function fmtFecha(f) {
         day: "2-digit", month: "2-digit", year: "numeric",
         hour: "2-digit", minute: "2-digit", hour12: true
     });
+}
 
-
+function fmtSoloFecha(f) {
+    if (!f) return "—";
+    // Si viene como "YYYY-MM-DD" solo (sin hora), parsear directo para evitar offset UTC
+    if (typeof f === "string" && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
+        const [y, m, d] = f.split("-");
+        return `${d}/${m}/${y}`;
+    }
+    const d = new Date(f);
+    return d.toLocaleDateString("es-GT", {
+        timeZone: "America/Guatemala",
+        day: "2-digit", month: "2-digit", year: "numeric"
+    });
 }
 
 // ======================
@@ -227,6 +239,13 @@ function verDetalleVentasDash() {
 function verDetalleVentasCierre() {
     const modal = _dashModal('Ventas del período (cierre)', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
     authFetch(`${API}/cierres/detalle-ventas`).then(r => r.json())
+        .then(rows => _renderVentasDetalle(rows, modal))
+        .catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
+}
+
+function verVentasDia(dia) {
+    const modal = _dashModal('Ventas del ' + fmtSoloFecha(dia), '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    authFetch(`${API}/gastos/ventas-del-dia?dia=${encodeURIComponent(dia)}`).then(r => r.json())
         .then(rows => _renderVentasDetalle(rows, modal))
         .catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
 }
@@ -4506,15 +4525,16 @@ function cargarFinanzas() {
             lista.innerHTML = '<p style="color:#555;font-size:13px;padding:16px 18px;">Sin ventas este mes.</p>';
             return;
         }
-        lista.innerHTML = data.map(d =>
-            '<div style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #131313;">'
+        lista.innerHTML = data.map(d => {
+            const diaStr = typeof d.dia === 'string' ? d.dia.split('T')[0] : d.dia;
+            return '<div onclick="verVentasDia(\'' + diaStr + '\')" style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #131313;cursor:pointer;transition:background .15s;" onmouseover="this.style.background=\'#0f172a\'" onmouseout="this.style.background=\'\'">'
             + '<div style="flex:1;">'
-            +   '<div style="font-size:13px;font-weight:600;color:#e2e2e2;">' + fmtFecha(d.dia) + '</div>'
-            +   '<div style="font-size:11px;color:#444;margin-top:2px;">' + d.ventas + ' venta' + (d.ventas !== 1 ? 's' : '') + '</div>'
+            +   '<div style="font-size:13px;font-weight:600;color:#e2e2e2;">' + fmtSoloFecha(diaStr) + '</div>'
+            +   '<div style="font-size:11px;color:#555;margin-top:2px;">' + d.ventas + ' venta' + (d.ventas !== 1 ? 's' : '') + ' · click para ver detalle</div>'
             + '</div>'
             + '<div style="font-size:14px;font-weight:700;color:#4ade80;white-space:nowrap;">+Q' + parseFloat(d.total).toFixed(2) + '</div>'
-            + '</div>'
-        ).join('');
+            + '</div>';
+        }).join('');
     })
     .catch(() => {});
 }
