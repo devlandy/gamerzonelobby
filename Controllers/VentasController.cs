@@ -240,9 +240,11 @@ namespace GamerZoneAPI.Controllers
         [HttpGet("ordenes")]
         public IActionResult ListarOrdenes([FromQuery] string estado = "TODAS")
         {
+            // Solo mostrar órdenes que tienen al menos un producto físico (no solo consola)
+            // id_producto > 0 identifica productos del catálogo (comida, bebidas, etc.)
             string where = estado == "TODAS"
-                ? "WHERE v.estado != 'CANCELADO'"
-                : "WHERE v.estado != 'CANCELADO' AND NOT (v.estado = 'PAGADO' AND v.entregado = 1)";
+                ? "WHERE v.estado != 'CANCELADO' AND EXISTS (SELECT 1 FROM detalle_ventas d WHERE d.id_venta = v.id_venta AND d.id_producto > 0)"
+                : "WHERE v.estado != 'CANCELADO' AND NOT (v.estado = 'PAGADO' AND v.entregado = 1) AND EXISTS (SELECT 1 FROM detalle_ventas d WHERE d.id_venta = v.id_venta AND d.id_producto > 0)";
             var rows = _db.ExecuteQuery($@"
                 SELECT v.id_venta, v.numero_orden, v.nombre_orden, v.total, v.estado,
                        v.metodo_pago, v.fecha, v.entregado, IFNULL(c.nombre,'Sin cliente') AS cliente
