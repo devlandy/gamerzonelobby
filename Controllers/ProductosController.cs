@@ -234,7 +234,7 @@ namespace GamerZoneAPI.Controllers
         public IActionResult ProductosSubcategoria(int id)
         {
             var rows = _db.ExecuteQuery(
-                "SELECT * FROM productos WHERE id_subcategoria=@id",
+                "SELECT * FROM productos WHERE id_subcategoria=@id AND activo=1",
                 new MySqlParameter("@id", id));
 
             return Ok(rows.Select(r => new
