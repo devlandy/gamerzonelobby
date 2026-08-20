@@ -363,7 +363,7 @@ function crearCliente() {
 // RECALCULAR PUNTOS HISTÓRICOS
 // ===========================
 async function recalcularPuntos() {
-    if (!await confirmarDialog("Recalcular puntos", "¿Recalcular puntos de TODOS los clientes basado en su historial de ventas? Esto reemplazará los puntos actuales.", "danger")) return;
+    if (!await confirmarDialog("Recalcular puntos", "¿Recalcular puntos de TODOS los clientes basado en su historial de ventas? Esto reemplazará los puntos actuales.", "info")) return;
     authFetch(`${API}/clientes/recalcular-puntos`, { method: 'POST' })
     .then(r => r.json())
     .then(d => mostrarMensaje(`✅ ${d.mensaje} — ${d.clientes_actualizados} clientes actualizados`))
