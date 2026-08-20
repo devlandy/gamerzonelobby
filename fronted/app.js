@@ -4257,9 +4257,22 @@ function cargarCierre(){
         const g = document.getElementById("gastosDia");
         const b = document.getElementById("balanceDia");
 
-        if(v) v.innerText = "Q" + (data.ventas || 0);
-        if(g) g.innerText = "Q" + (data.gastos || 0);
-        if(b) b.innerText = "Q" + (data.balance || 0);
+        if(v) v.innerText = "Q" + Number(data.ventas || 0).toFixed(2);
+        if(g) g.innerText = "Q" + Number(data.gastos || 0).toFixed(2);
+        if(b) b.innerText = "Q" + Number(data.balance || 0).toFixed(2);
+
+        // Desglose por método de pago
+        const cont = document.getElementById("metodosDesglose");
+        if(cont && data.por_metodo && data.por_metodo.length > 0){
+            cont.innerHTML = data.por_metodo.map(m => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e293b;border-radius:6px;margin-bottom:6px;">
+                    <span style="font-size:13px;color:#94a3b8;">${m.metodo || 'Sin método'}</span>
+                    <span style="font-size:14px;font-weight:bold;color:#38bdf8;">Q${Number(m.total).toFixed(2)}</span>
+                </div>
+            `).join('');
+        } else if(cont) {
+            cont.innerHTML = '<p style="color:#555;font-size:12px;">Sin ventas en este período.</p>';
+        }
     })
 
     .catch(error => console.log(error));

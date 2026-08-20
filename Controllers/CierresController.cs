@@ -33,7 +33,16 @@ namespace GamerZoneAPI.Controllers
                 "SELECT IFNULL(SUM(monto),0) FROM gastos WHERE fecha > @desde",
                 new MySqlParameter("@desde", desde)));
 
-            return Ok(new { ventas, gastos, balance = ventas - gastos });
+            var porMetodo = _db.ExecuteQuery(
+                "SELECT IFNULL(metodo_pago,'Sin método') AS metodo, SUM(total) AS total FROM ventas WHERE estado != 'CANCELADO' AND fecha > @desde GROUP BY metodo_pago",
+                new MySqlParameter("@desde", desde));
+
+            var metodos = porMetodo.Select(r => new {
+                metodo = r["metodo"]?.ToString() ?? "",
+                total  = Convert.ToDecimal(r["total"])
+            }).ToList();
+
+            return Ok(new { ventas, gastos, balance = ventas - gastos, por_metodo = metodos });
         }
 
         [Authorize(Roles = "ADMIN")]
