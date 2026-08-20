@@ -59,6 +59,54 @@ namespace GamerZoneAPI.Controllers
             return desde.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
+        [HttpGet("pendientes-cobro")]
+        public IActionResult PendientesCobro()
+        {
+            var rows = _db.ExecuteQuery(@"
+                SELECT v.id_venta, v.fecha, IFNULL(c.nombre,'Sin cliente') AS cliente,
+                       v.total, IFNULL(v.metodo_pago,'—') AS metodo_pago, v.tipo,
+                       IFNULL(u.nombre,'—') AS usuario
+                FROM ventas v
+                LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+                LEFT JOIN usuarios u ON v.id_usuario = u.id_usuario
+                WHERE v.forma_cobro = 'PENDIENTE' AND v.estado != 'CANCELADO'
+                ORDER BY v.fecha DESC");
+
+            var ids = rows.Select(r => Convert.ToInt32(r["id_venta"])).ToList();
+            List<Dictionary<string, object>> detalles = new();
+            if (ids.Count > 0)
+            {
+                string inClause = string.Join(",", ids);
+                detalles = _db.ExecuteQuery($@"
+                    SELECT d.id_venta, COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre,
+                           d.cantidad, d.precio, d.subtotal
+                    FROM detalle_ventas d
+                    LEFT JOIN productos p ON d.id_producto = p.id_producto
+                    WHERE d.id_venta IN ({inClause})
+                    ORDER BY d.id_venta, d.id_detalle");
+            }
+
+            return Ok(rows.Select(r => {
+                int idV = Convert.ToInt32(r["id_venta"]);
+                return new {
+                    id_venta    = idV,
+                    fecha       = r["fecha"],
+                    cliente     = r["cliente"]?.ToString() ?? "",
+                    total       = Convert.ToDecimal(r["total"]),
+                    metodo_pago = r["metodo_pago"]?.ToString() ?? "",
+                    usuario     = r["usuario"]?.ToString() ?? "",
+                    tipo        = r["tipo"]?.ToString() ?? "",
+                    productos   = detalles.Where(d => Convert.ToInt32(d["id_venta"]) == idV)
+                                         .Select(d => new {
+                                             nombre   = d["nombre"]?.ToString() ?? "",
+                                             cantidad = Convert.ToInt32(d["cantidad"]),
+                                             precio   = Convert.ToDecimal(d["precio"]),
+                                             subtotal = Convert.ToDecimal(d["subtotal"])
+                                         }).ToList()
+                };
+            }));
+        }
+
         [HttpGet("detalle-ventas")]
         public IActionResult DetalleVentas()
         {

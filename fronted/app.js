@@ -177,9 +177,10 @@ function cargarDashboard() {
                 <div style="font-size:22px;font-weight:700;color:#4ade80;">Q${ventas}</div>
                 <div style="font-size:11px;color:#555;margin-top:4px;">👆 Click para ver detalle</div>
             </div>
-            <div class="card" style="cursor:default;">
+            <div class="card" onclick="verPendientesCobro()" style="cursor:pointer;transition:background .15s;" title="Ver pendientes de cobro">
                 <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Pendientes de cobro</div>
                 <div style="font-size:22px;font-weight:700;color:#fcd34d;">${data.pedidos_pendientes || 0}</div>
+                <div style="font-size:11px;color:#555;margin-top:4px;">👆 Click para ver detalle</div>
             </div>
             <div class="card" onclick="verDetalleGastosDash()" style="cursor:pointer;transition:background .15s;" title="Ver detalle de gastos">
                 <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Gastos del período</div>
@@ -227,6 +228,38 @@ function _renderVentasDetalle(rows, modal) {
         `<div style="text-align:right;padding:8px 4px;color:#4ade80;font-weight:700;font-size:15px;border-top:1px solid #222;margin-top:4px;">
           TOTAL: Q${rows.reduce((a,v)=>a+parseFloat(v.total),0).toFixed(2)}
          </div>`;
+}
+
+function verPendientesCobro() {
+    const modal = _dashModal('Pendientes de cobro', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    authFetch(`${API}/dashboard/pendientes-cobro`).then(r => r.json()).then(rows => {
+        if (!rows.length) { modal.body.innerHTML = '<p style="color:#555;text-align:center;padding:20px;">Sin pendientes de cobro.</p>'; return; }
+        modal.body.innerHTML = rows.map(v => `
+            <div style="background:#111;border-radius:8px;margin-bottom:10px;overflow:hidden;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1c1400;cursor:pointer;"
+                   onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                <div>
+                  <span style="color:#94a3b8;font-size:11px;">${fmtFecha(v.fecha)}</span>
+                  <span style="color:#e2e2e2;font-size:13px;margin-left:8px;font-weight:600;">${s(v.cliente)}</span>
+                  ${v.usuario ? `<span style="color:#64748b;font-size:11px;margin-left:6px;">· ${s(v.usuario)}</span>` : ''}
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                  <span style="background:#713f12;color:#fcd34d;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;">PENDIENTE</span>
+                  <span style="color:#fcd34d;font-weight:700;font-size:14px;">Q${parseFloat(v.total).toFixed(2)}</span>
+                </div>
+              </div>
+              <div style="display:none;padding:8px 12px;">
+                ${v.productos && v.productos.length ? v.productos.map(p => `
+                  <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e293b;font-size:12px;">
+                    <span style="color:#cbd5e1;">${p.cantidad}x ${s(p.nombre)}</span>
+                    <span style="color:#94a3b8;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
+                  </div>`).join('') : '<p style="color:#555;font-size:12px;">Sin productos registrados.</p>'}
+              </div>
+            </div>`).join('') +
+            `<div style="text-align:right;padding:8px 4px;color:#fcd34d;font-weight:700;font-size:15px;border-top:1px solid #222;margin-top:4px;">
+              TOTAL PENDIENTE: Q${rows.reduce((a,v)=>a+parseFloat(v.total),0).toFixed(2)}
+             </div>`;
+    }).catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar pendientes</p>'; });
 }
 
 function verDetalleVentasDash() {
