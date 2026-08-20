@@ -70,6 +70,50 @@ namespace GamerZoneAPI.Controllers
             return Ok(new { mensaje = "Cierre registrado" });
         }
 
+        [HttpGet("detalle-ventas")]
+        public IActionResult DetalleVentas()
+        {
+            string desde = GetDesdeStr();
+            var ventas = _db.ExecuteQuery(@"
+                SELECT v.id_venta, v.fecha, IFNULL(c.nombre, 'Consumidor Final') AS cliente, v.total, IFNULL(v.metodo_pago,'—') AS metodo_pago
+                FROM ventas v
+                LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+                WHERE v.fecha > @desde AND v.estado != 'CANCELADO'
+                ORDER BY v.fecha DESC",
+                new MySqlParameter("@desde", desde));
+
+            var ids = ventas.Select(v => Convert.ToInt32(v["id_venta"])).ToList();
+            List<Dictionary<string, object>> detalles = new();
+            if (ids.Count > 0)
+            {
+                string inClause = string.Join(",", ids);
+                detalles = _db.ExecuteQuery($@"
+                    SELECT d.id_venta, COALESCE(p.nombre, d.nombre, 'Servicio') AS nombre, d.cantidad, d.precio, d.subtotal
+                    FROM detalle_ventas d
+                    LEFT JOIN productos p ON d.id_producto = p.id_producto
+                    WHERE d.id_venta IN ({inClause})
+                    ORDER BY d.id_venta, d.id_detalle");
+            }
+
+            return Ok(ventas.Select(v => {
+                int idV = Convert.ToInt32(v["id_venta"]);
+                return new {
+                    id_venta   = idV,
+                    fecha      = v["fecha"],
+                    cliente    = v["cliente"]?.ToString() ?? "",
+                    total      = Convert.ToDecimal(v["total"]),
+                    metodo_pago= v["metodo_pago"]?.ToString() ?? "",
+                    productos  = detalles.Where(d => Convert.ToInt32(d["id_venta"]) == idV)
+                                        .Select(d => new {
+                                            nombre   = d["nombre"]?.ToString() ?? "",
+                                            cantidad = Convert.ToInt32(d["cantidad"]),
+                                            precio   = Convert.ToDecimal(d["precio"]),
+                                            subtotal = Convert.ToDecimal(d["subtotal"])
+                                        }).ToList()
+                };
+            }));
+        }
+
         [HttpGet]
         public IActionResult Historial()
         {

@@ -189,33 +189,46 @@ function cargarDashboard() {
     .catch(err => console.error(err));
 }
 
+function _renderVentasDetalle(rows, modal) {
+    if (!rows.length) { modal.body.innerHTML = '<p style="color:#555;text-align:center;padding:20px;">Sin ventas en este período.</p>'; return; }
+    modal.body.innerHTML = rows.map(v => `
+        <div style="background:#111;border-radius:8px;margin-bottom:10px;overflow:hidden;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1a1a2e;cursor:pointer;"
+               onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+            <div>
+              <span style="color:#94a3b8;font-size:11px;">${fmtFecha(v.fecha)}</span>
+              <span style="color:#e2e2e2;font-size:13px;margin-left:8px;font-weight:600;">${s(v.cliente)}</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <span style="color:#64748b;font-size:11px;">${s(v.metodo_pago||'—')}</span>
+              <span style="color:#4ade80;font-weight:700;font-size:14px;">Q${parseFloat(v.total).toFixed(2)}</span>
+            </div>
+          </div>
+          <div style="display:none;padding:8px 12px;">
+            ${v.productos && v.productos.length ? v.productos.map(p => `
+              <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e293b;font-size:12px;">
+                <span style="color:#cbd5e1;">${p.cantidad}x ${s(p.nombre)}</span>
+                <span style="color:#94a3b8;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
+              </div>`).join('') : '<p style="color:#555;font-size:12px;">Sin productos registrados.</p>'}
+          </div>
+        </div>`).join('') +
+        `<div style="text-align:right;padding:8px 4px;color:#4ade80;font-weight:700;font-size:15px;border-top:1px solid #222;margin-top:4px;">
+          TOTAL: Q${rows.reduce((a,v)=>a+parseFloat(v.total),0).toFixed(2)}
+         </div>`;
+}
+
 function verDetalleVentasDash() {
     const modal = _dashModal('Ventas del período', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
-    authFetch(`${API}/dashboard/detalle-ventas`).then(r => r.json()).then(rows => {
-        if (!rows.length) { modal.body.innerHTML = '<p style="color:#555;text-align:center;padding:20px;">Sin ventas en este período.</p>'; return; }
-        modal.body.innerHTML = `
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead><tr style="color:#888;border-bottom:1px solid #222;">
-            <th style="padding:6px 8px;text-align:left;">Fecha</th>
-            <th style="padding:6px 8px;text-align:left;">Cliente</th>
-            <th style="padding:6px 8px;text-align:right;">Total</th>
-            <th style="padding:6px 8px;text-align:left;">Método</th>
-          </tr></thead>
-          <tbody>${rows.map(v => `
-            <tr style="border-bottom:1px solid #111;">
-              <td style="padding:6px 8px;color:#aaa;">${fmtFecha(v.fecha)}</td>
-              <td style="padding:6px 8px;color:#e2e2e2;">${s(v.cliente)}</td>
-              <td style="padding:6px 8px;text-align:right;color:#4ade80;font-weight:600;">Q${parseFloat(v.total).toFixed(2)}</td>
-              <td style="padding:6px 8px;color:#888;">${s(v.metodo_pago||'—')}</td>
-            </tr>`).join('')}
-          </tbody>
-          <tfoot><tr>
-            <td colspan="2" style="padding:8px;color:#aaa;font-weight:600;">TOTAL</td>
-            <td style="padding:8px;text-align:right;color:#4ade80;font-weight:700;">Q${rows.reduce((a,v)=>a+parseFloat(v.total),0).toFixed(2)}</td>
-            <td></td>
-          </tr></tfoot>
-        </table>`;
-    }).catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
+    authFetch(`${API}/dashboard/detalle-ventas`).then(r => r.json())
+        .then(rows => _renderVentasDetalle(rows, modal))
+        .catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
+}
+
+function verDetalleVentasCierre() {
+    const modal = _dashModal('Ventas del período (cierre)', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    authFetch(`${API}/cierres/detalle-ventas`).then(r => r.json())
+        .then(rows => _renderVentasDetalle(rows, modal))
+        .catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
 }
 
 function verDetalleGastosDash() {
