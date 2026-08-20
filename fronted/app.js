@@ -3659,10 +3659,11 @@ function renderOrdenes(data) {
         const badgeEntrega  = `<span style="background:${entregado?'#4ade80':'#f59e0b'};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${entregado?'ENTREGADO':'POR ENTREGAR'}</span>`;
         const badgeCancelado= `<span style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CANCELADO</span>`;
 
-        const botones = cancelado ? '' : `
+        const completa = pagado && entregado;
+        const botones = cancelado || completa ? '' : `
             ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta},${parseFloat(o.total).toFixed(2)})">💳 Cobrar</button>` : ''}
             ${!entregado ? `<button class="cli-btn" style="background:#7c3aed;" onclick="entregarOrden(${o.id_venta})">✅ Entregar</button>` : ''}
-            <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
+            ${!pagado    ? `<button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>` : ''}
             <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>`;
 
         return `

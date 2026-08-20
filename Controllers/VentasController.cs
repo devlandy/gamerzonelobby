@@ -242,7 +242,7 @@ namespace GamerZoneAPI.Controllers
         {
             string where = estado == "TODAS"
                 ? "WHERE v.estado != 'CANCELADO'"
-                : "WHERE v.estado != 'CANCELADO' AND (v.estado = 'PENDIENTE' OR v.entregado = 0)";
+                : "WHERE v.estado != 'CANCELADO' AND NOT (v.estado = 'PAGADO' AND v.entregado = 1)";
             var rows = _db.ExecuteQuery($@"
                 SELECT v.id_venta, v.numero_orden, v.nombre_orden, v.total, v.estado,
                        v.metodo_pago, v.fecha, v.entregado, IFNULL(c.nombre,'Sin cliente') AS cliente
