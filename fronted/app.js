@@ -2477,7 +2477,7 @@ function aplicarPermisos() {
 
     if (esCajero()) {
         // Cajero: Ventas, Productos, Inventario, Torneos, Clientes, Finanzas (solo gastos) y Cerrar Sesión
-        const permitidosCajero = ["'ventas'", "'productos'", "'inventario'", "'torneos'", "'clientes'", "'finanzas'", "logout"];
+        const permitidosCajero = ["'ventas'", "'productos'", "'inventario'", "'torneos'", "'clientes'", "'finanzas'", "'ordenes'", "logout"];
         document.querySelectorAll(".sidebar button").forEach(btn => {
             const accion = btn.getAttribute("onclick") || "";
             if (!permitidosCajero.some(p => accion.includes(p))) btn.style.display = "none";
