@@ -26,7 +26,7 @@ namespace GamerZoneAPI.Controllers
             string mesFiltrado = MesSafe(mes);
             string filtroWhere = string.IsNullOrEmpty(mesFiltrado)
                 ? "WHERE v.estado != 'CANCELADO'"
-                : $"WHERE DATE_FORMAT(v.fecha, '%Y-%m') = '{mesFiltrado}' AND v.estado != 'CANCELADO'";
+                : $"WHERE DATE_FORMAT(CONVERT_TZ(v.fecha, '+00:00', '-06:00'), '%Y-%m') = '{mesFiltrado}' AND v.estado != 'CANCELADO'";
 
             string[] meses = { "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre" };
             string tituloMes = "Todas las ventas";
@@ -54,10 +54,11 @@ namespace GamerZoneAPI.Controllers
             // ── HOJA 1: VENTAS ──────────────────────────────────────────────
             var ventas = _db.ExecuteQuery($@"
                 SELECT v.id_venta, v.fecha, v.total, v.descuento_pct, v.forma_cobro, v.metodo_pago,
-                       c.nombre AS cliente, u.nombre AS usuario
+                       IFNULL(c.nombre, 'Consumidor Final') AS cliente,
+                       IFNULL(u.nombre, '—') AS usuario
                 FROM ventas v
-                JOIN clientes c ON v.id_cliente = c.id_cliente
-                JOIN usuarios u ON v.id_usuario = u.id_usuario
+                LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+                LEFT JOIN usuarios u ON v.id_usuario = u.id_usuario
                 {filtroWhere}
                 ORDER BY v.fecha DESC");
 
