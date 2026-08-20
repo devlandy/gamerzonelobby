@@ -15,11 +15,23 @@ namespace GamerZoneAPI.Controllers
 
         public CierresController(DbManager db) => _db = db;
 
+        private string GetDesdeStr()
+        {
+            var raw = _db.ExecuteScalar("SELECT IFNULL(MAX(fecha), DATE(NOW())) FROM cierre_diario");
+            DateTime desde = (raw != null && raw != DBNull.Value) ? Convert.ToDateTime(raw) : DateTime.Today;
+            return desde.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
         [HttpGet("resumen")]
         public IActionResult Resumen()
         {
-            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado='PAGADO' AND DATE(fecha) = CURDATE()"));
-            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE DATE(fecha) = CURDATE()"));
+            string desde = GetDesdeStr();
+            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar(
+                "SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado != 'CANCELADO' AND fecha > @desde",
+                new MySqlParameter("@desde", desde)));
+            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar(
+                "SELECT IFNULL(SUM(monto),0) FROM gastos WHERE fecha > @desde",
+                new MySqlParameter("@desde", desde)));
 
             return Ok(new { ventas, gastos, balance = ventas - gastos });
         }
@@ -28,8 +40,13 @@ namespace GamerZoneAPI.Controllers
         [HttpPost]
         public IActionResult Registrar([FromBody] CierreRequest request)
         {
-            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado='PAGADO' AND DATE(fecha) = CURDATE()"));
-            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE DATE(fecha) = CURDATE()"));
+            string desde = GetDesdeStr();
+            decimal ventas = Convert.ToDecimal(_db.ExecuteScalar(
+                "SELECT IFNULL(SUM(total),0) FROM ventas WHERE estado != 'CANCELADO' AND fecha > @desde",
+                new MySqlParameter("@desde", desde)));
+            decimal gastos = Convert.ToDecimal(_db.ExecuteScalar(
+                "SELECT IFNULL(SUM(monto),0) FROM gastos WHERE fecha > @desde",
+                new MySqlParameter("@desde", desde)));
             decimal balance = ventas - gastos;
 
             _db.ExecuteNonQuery(@"
