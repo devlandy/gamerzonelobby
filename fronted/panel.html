@@ -38,6 +38,7 @@
         <button id="inventarioBtn" onclick="mostrar('inventario')">Inventario</button>
         <button id="productosBtn" onclick="mostrar('productos')">Productos</button>
         <button id="reportesBtn" onclick="mostrar('reportes')">Reportes</button>
+        <button onclick="mostrar('ordenes')">Órdenes</button>
         <button onclick="mostrar('torneos')">Torneos</button>
         <button onclick="mostrar('finanzas')">Finanzas</button>
         <button onclick="mostrar('cierre')">Cierre Día</button>
@@ -386,6 +387,22 @@
                 </div>
                 <div id="listaVentasReporte"></div>
             </div>
+        </div>
+
+        <!-- ÓRDENES -->
+        <div id="ordenes" class="seccion" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+                <h2 style="margin:0;">🍽️ Órdenes</h2>
+                <button class="btn" onclick="abrirNuevaOrden()">+ Nueva Orden</button>
+            </div>
+
+            <!-- Filtro estado -->
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                <button class="btn" id="filtroOrdenPendiente" onclick="filtrarOrdenes('PENDIENTE')" style="background:#1e40af;">Pendientes</button>
+                <button class="btn" id="filtroOrdenTodas"    onclick="filtrarOrdenes('TODAS')"    style="background:#333;">Todas</button>
+            </div>
+
+            <div id="ordenesLista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>
         </div>
 
         <!-- TORNEOS -->

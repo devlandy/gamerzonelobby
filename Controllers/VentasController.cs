@@ -224,6 +224,112 @@ namespace GamerZoneAPI.Controllers
             return Ok(new { mensaje = "Venta cancelada" });
         }
 
+        [HttpGet("ordenes")]
+        public IActionResult ListarOrdenes([FromQuery] string estado = "TODAS")
+        {
+            string where = estado == "TODAS" ? "" : "WHERE v.estado = @estado";
+            var rows = _db.ExecuteQuery($@"
+                SELECT v.id_venta, v.numero_orden, v.nombre_orden, v.total, v.estado,
+                       v.metodo_pago, v.fecha, IFNULL(c.nombre,'Sin cliente') AS cliente
+                FROM ventas v
+                LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+                {where}
+                ORDER BY v.fecha DESC
+                LIMIT 100",
+                estado != "TODAS" ? new MySqlParameter[] { new MySqlParameter("@estado", estado) } : new MySqlParameter[0]);
+
+            var ids = rows.Select(r => Convert.ToInt32(r["id_venta"])).ToList();
+            var detalles = ids.Count > 0 ? _db.ExecuteQuery($@"
+                SELECT d.id_venta, IFNULL(p.nombre, d.nombre) AS nombre, d.cantidad, d.precio, d.subtotal
+                FROM detalle_ventas d
+                LEFT JOIN productos p ON d.id_producto = p.id_producto
+                WHERE d.id_venta IN ({string.Join(",", ids)})") : new List<Dictionary<string, object>>();
+
+            return Ok(rows.Select(r => new {
+                id_venta     = Convert.ToInt32(r["id_venta"]),
+                nombre_orden = r["nombre_orden"]?.ToString() ?? "",
+                numero_orden = r["numero_orden"]?.ToString() ?? "",
+                cliente      = r["cliente"]?.ToString() ?? "",
+                total        = Convert.ToDecimal(r["total"]),
+                estado       = r["estado"]?.ToString() ?? "",
+                metodo_pago  = r["metodo_pago"]?.ToString() ?? "",
+                fecha        = r["fecha"],
+                productos    = detalles
+                    .Where(d => Convert.ToInt32(d["id_venta"]) == Convert.ToInt32(r["id_venta"]))
+                    .Select(d => new {
+                        nombre   = d["nombre"]?.ToString() ?? "",
+                        cantidad = Convert.ToInt32(d["cantidad"]),
+                        precio   = Convert.ToDecimal(d["precio"]),
+                        subtotal = Convert.ToDecimal(d["subtotal"])
+                    })
+            }));
+        }
+
+        [HttpPost("{id}/agregar")]
+        public IActionResult AgregarAOrden(int id, [FromBody] AgregarOrdenRequest req)
+        {
+            var venta = _db.ExecuteQuery("SELECT estado, total FROM ventas WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+            if (venta.Count == 0) return NotFound(new { error = "Orden no encontrada" });
+            if (venta[0]["estado"].ToString() == "CANCELADO")
+                return BadRequest(new { error = "La orden está cancelada" });
+
+            using var conn = _db.GetConnection();
+            conn.Open();
+            var tr = conn.BeginTransaction();
+            try
+            {
+                decimal nuevoCosto = 0;
+                foreach (var p in req.productos)
+                {
+                    object idProd = p.id_producto > 0 ? p.id_producto : DBNull.Value;
+                    var cmd = new MySqlCommand(@"
+                        INSERT INTO detalle_ventas (id_venta, id_producto, nombre, cantidad, precio, subtotal)
+                        VALUES (@v, @p, @n, @c, @pr, @s)", conn, tr);
+                    cmd.Parameters.AddWithValue("@v", id);
+                    cmd.Parameters.AddWithValue("@p", idProd);
+                    cmd.Parameters.AddWithValue("@n", p.nombre ?? "");
+                    cmd.Parameters.AddWithValue("@c", p.cantidad);
+                    cmd.Parameters.AddWithValue("@pr", p.precio);
+                    cmd.Parameters.AddWithValue("@s", p.precio * p.cantidad);
+                    cmd.ExecuteNonQuery();
+
+                    if (p.id_producto > 0)
+                    {
+                        var upd = new MySqlCommand("UPDATE productos SET stock = stock - @c WHERE id_producto=@p AND controla_stock=1", conn, tr);
+                        upd.Parameters.AddWithValue("@c", p.cantidad);
+                        upd.Parameters.AddWithValue("@p", p.id_producto);
+                        upd.ExecuteNonQuery();
+                    }
+                    nuevoCosto += p.precio * p.cantidad;
+                }
+                var upTotal = new MySqlCommand("UPDATE ventas SET total = total + @extra WHERE id_venta=@id", conn, tr);
+                upTotal.Parameters.AddWithValue("@extra", nuevoCosto);
+                upTotal.Parameters.AddWithValue("@id", id);
+                upTotal.ExecuteNonQuery();
+                tr.Commit();
+                return Ok(new { mensaje = "Productos agregados a la orden" });
+            }
+            catch { tr.Rollback(); return BadRequest(new { error = "Error al agregar productos" }); }
+        }
+
+        [HttpPatch("{id}/cobrar")]
+        public IActionResult CobrarOrden(int id, [FromBody] CobrarOrdenRequest req)
+        {
+            var venta = _db.ExecuteQuery("SELECT estado FROM ventas WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+            if (venta.Count == 0) return NotFound(new { error = "Orden no encontrada" });
+            if (venta[0]["estado"].ToString() == "CANCELADO")
+                return BadRequest(new { error = "La orden está cancelada" });
+
+            _db.ExecuteNonQuery(@"
+                UPDATE ventas SET estado='PAGADO', forma_cobro='PAGADO', metodo_pago=@metodo WHERE id_venta=@id",
+                new MySqlParameter("@metodo", req.metodo_pago ?? "EFECTIVO"),
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Orden cobrada" });
+        }
+
         [HttpPatch("{id}/reactivar")]
         public IActionResult ReactivarVenta(int id)
         {
@@ -284,5 +390,23 @@ namespace GamerZoneAPI.Controllers
     public class CancelarVentaRequest
     {
         public string? motivo { get; set; }
+    }
+
+    public class AgregarOrdenRequest
+    {
+        public List<ProductoItem> productos { get; set; } = new();
+    }
+
+    public class ProductoItem
+    {
+        public int id_producto { get; set; }
+        public string? nombre { get; set; }
+        public int cantidad { get; set; }
+        public decimal precio { get; set; }
+    }
+
+    public class CobrarOrdenRequest
+    {
+        public string? metodo_pago { get; set; }
     }
 }

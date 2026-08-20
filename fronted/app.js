@@ -115,6 +115,11 @@ function mostrar(seccion) {
         cargarCierre();
     }
 
+    // ÓRDENES
+    if(seccion === "ordenes"){
+        filtrarOrdenes('PENDIENTE');
+    }
+
     // TORNEOS
     if(seccion === "torneos"){
         cargarTorneos();
@@ -3606,6 +3611,297 @@ function guardarEditarPrecios(id) {
         mostrarMensaje('✅ Precios actualizados');
         document.getElementById('modalEditarPrecios').remove();
         cargarProductosCatalogo();
+    });
+}
+
+// ==================================================================
+// 🍽️ ÓRDENES
+// ==================================================================
+let _ordenesData = [];
+let _ordenesEstadoActual = 'PENDIENTE';
+
+function filtrarOrdenes(estado) {
+    _ordenesEstadoActual = estado;
+    ['PENDIENTE','TODAS'].forEach(e => {
+        const btn = document.getElementById(`filtroOrden${e === 'PENDIENTE' ? 'Pendiente' : 'Todas'}`);
+        if (btn) btn.style.background = e === estado ? '#1e40af' : '#333';
+    });
+    cargarOrdenes();
+}
+
+function cargarOrdenes() {
+    const qs = _ordenesEstadoActual === 'TODAS' ? 'TODAS' : 'PENDIENTE';
+    authFetch(`${API}/ventas/ordenes?estado=${qs}`)
+    .then(r => r.json())
+    .then(data => {
+        _ordenesData = data;
+        renderOrdenes(data);
+    }).catch(() => mostrarMensaje('❌ Error al cargar órdenes'));
+}
+
+function renderOrdenes(data) {
+    const el = document.getElementById('ordenesLista');
+    if (!el) return;
+    if (!data.length) { el.innerHTML = '<p style="color:#555;grid-column:1/-1;">Sin órdenes.</p>'; return; }
+
+    el.innerHTML = data.map(o => {
+        const estadoColor = o.estado === 'PENDIENTE' ? '#f59e0b' : o.estado === 'PAGADO' ? '#4ade80' : '#ef4444';
+        const esPendiente = o.estado === 'PENDIENTE';
+        const fecha = new Date(o.fecha).toLocaleString('es-GT', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'});
+        const items = (o.productos || []).map(p =>
+            `<div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0;">
+                <span>${s(p.nombre)} x${p.cantidad}</span>
+                <span style="color:#aaa;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
+            </div>`).join('');
+
+        return `
+        <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:10px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div>
+                    <span style="font-weight:700;font-size:15px;">${s(o.nombre_orden || 'Orden #' + o.id_venta)}</span>
+                    <span style="font-size:11px;color:#666;margin-left:6px;">${fecha}</span>
+                </div>
+                <span style="background:${estadoColor};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${o.estado}</span>
+            </div>
+            <div style="color:#aaa;font-size:12px;margin-bottom:8px;">👤 ${s(o.cliente)}</div>
+            <div style="border-top:1px solid #222;padding-top:8px;margin-bottom:8px;">${items || '<span style="color:#555;font-size:12px;">Sin productos</span>'}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="color:#aaa;font-size:12px;">Total</span>
+                <span style="font-weight:700;font-size:16px;color:#4ade80;">Q${parseFloat(o.total).toFixed(2)}</span>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                ${esPendiente ? `
+                <button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta}, ${parseFloat(o.total).toFixed(2)})">💳 Cobrar</button>
+                <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
+                <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>
+                ` : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Nueva orden ────────────────────────────────────────────────────
+function abrirNuevaOrden() {
+    const prev = document.getElementById('modalNuevaOrden');
+    if (prev) prev.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modalNuevaOrden';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;">
+        <h3 style="margin:0 0 16px;color:#fff;">Nueva Orden</h3>
+        <input id="noNombreOrden" placeholder="Nombre de la orden (ej: Mesa 1, Juan)" style="width:100%;margin-bottom:10px;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
+        <div id="noProductosList" style="max-height:250px;overflow-y:auto;border:1px solid #222;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <select id="noSelectProd" style="flex:1;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;"></select>
+            <input id="noSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
+            <button onclick="noAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+        </div>
+        <div style="font-size:13px;color:#aaa;margin-bottom:14px;">Total: <strong id="noTotal" style="color:#4ade80;">Q0.00</strong></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="document.getElementById('modalNuevaOrden').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarNuevaOrden()" style="padding:8px 16px;background:#15803d;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Crear Orden</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    _noItems = [];
+    _noRenderItems();
+    // Cargar productos en select
+    authFetch(`${API}/productos`).then(r => r.json()).then(prods => {
+        const sel = document.getElementById('noSelectProd');
+        if (!sel) return;
+        sel.innerHTML = prods.filter(p => !p.es_ingrediente).map(p =>
+            `<option value="${p.id}" data-precio="${p.precio_venta}">${s(p.nombre)} - Q${parseFloat(p.precio_venta).toFixed(2)}</option>`).join('');
+    });
+}
+
+let _noItems = [];
+
+function noAgregarProducto() {
+    const sel = document.getElementById('noSelectProd');
+    const cant = parseInt(document.getElementById('noSelectCant').value || 1);
+    if (!sel || !sel.value) return;
+    const precio = parseFloat(sel.selectedOptions[0]?.dataset.precio || 0);
+    const nombre = sel.selectedOptions[0]?.text.split(' - ')[0] || '';
+    const id = parseInt(sel.value);
+    const existe = _noItems.find(i => i.id_producto === id);
+    if (existe) { existe.cantidad += cant; }
+    else { _noItems.push({ id_producto: id, nombre, cantidad: cant, precio }); }
+    _noRenderItems();
+}
+
+function _noRenderItems() {
+    const el = document.getElementById('noProductosList');
+    const totalEl = document.getElementById('noTotal');
+    if (!el) return;
+    if (!_noItems.length) { el.innerHTML = '<p style="color:#555;font-size:12px;text-align:center;">Sin productos</p>'; if(totalEl) totalEl.textContent = 'Q0.00'; return; }
+    el.innerHTML = _noItems.map((p, i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #222;">
+            <span style="font-size:13px;">${s(p.nombre)}</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span style="color:#aaa;font-size:12px;">x${p.cantidad} · Q${(p.precio*p.cantidad).toFixed(2)}</span>
+                <button onclick="_noQuitarItem(${i})" style="background:#7f1d1d;border:none;border-radius:4px;color:#fff;cursor:pointer;padding:2px 7px;font-size:12px;">✕</button>
+            </div>
+        </div>`).join('');
+    const total = _noItems.reduce((s,p) => s + p.precio*p.cantidad, 0);
+    if (totalEl) totalEl.textContent = 'Q' + total.toFixed(2);
+}
+
+function _noQuitarItem(i) { _noItems.splice(i, 1); _noRenderItems(); }
+
+function confirmarNuevaOrden() {
+    const nombre = document.getElementById('noNombreOrden')?.value?.trim() || 'Orden';
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    authFetch(`${API}/ventas`, {
+        method: 'POST',
+        body: JSON.stringify({
+            nombre_orden: nombre,
+            numero_orden: '000',
+            metodo_pago: 'PENDIENTE',
+            id_usuario: usuario?.id_usuario || 1,
+            productos: _noItems,
+            descuento_pct: 0,
+            observacion: ''
+        })
+    }).then(r => r.json()).then(d => {
+        if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
+        mostrarMensaje('✅ Orden creada');
+        document.getElementById('modalNuevaOrden')?.remove();
+        cargarOrdenes();
+    });
+}
+
+// ── Agregar a orden existente ───────────────────────────────────────
+function abrirAgregarOrden(idVenta) {
+    const prev = document.getElementById('modalAgregarOrden');
+    if (prev) prev.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modalAgregarOrden';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;">
+        <h3 style="margin:0 0 16px;color:#fff;">Agregar a Orden #${idVenta}</h3>
+        <div id="agProductosList" style="max-height:200px;overflow-y:auto;border:1px solid #222;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <select id="agSelectProd" style="flex:1;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;"></select>
+            <input id="agSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
+            <button onclick="agAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+        </div>
+        <div style="font-size:13px;color:#aaa;margin-bottom:14px;">A agregar: <strong id="agTotal" style="color:#4ade80;">Q0.00</strong></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="document.getElementById('modalAgregarOrden').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarAgregarOrden(${idVenta})" style="padding:8px 16px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Agregar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    _agItems = [];
+    _agRenderItems();
+    authFetch(`${API}/productos`).then(r => r.json()).then(prods => {
+        const sel = document.getElementById('agSelectProd');
+        if (!sel) return;
+        sel.innerHTML = prods.filter(p => !p.es_ingrediente).map(p =>
+            `<option value="${p.id}" data-precio="${p.precio_venta}">${s(p.nombre)} - Q${parseFloat(p.precio_venta).toFixed(2)}</option>`).join('');
+    });
+}
+
+let _agItems = [];
+
+function agAgregarProducto() {
+    const sel = document.getElementById('agSelectProd');
+    const cant = parseInt(document.getElementById('agSelectCant').value || 1);
+    if (!sel || !sel.value) return;
+    const precio = parseFloat(sel.selectedOptions[0]?.dataset.precio || 0);
+    const nombre = sel.selectedOptions[0]?.text.split(' - ')[0] || '';
+    const id = parseInt(sel.value);
+    const existe = _agItems.find(i => i.id_producto === id);
+    if (existe) { existe.cantidad += cant; }
+    else { _agItems.push({ id_producto: id, nombre, cantidad: cant, precio }); }
+    _agRenderItems();
+}
+
+function _agRenderItems() {
+    const el = document.getElementById('agProductosList');
+    const totalEl = document.getElementById('agTotal');
+    if (!el) return;
+    if (!_agItems.length) { el.innerHTML = '<p style="color:#555;font-size:12px;text-align:center;">Sin productos</p>'; if(totalEl) totalEl.textContent = 'Q0.00'; return; }
+    el.innerHTML = _agItems.map((p, i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #222;">
+            <span style="font-size:13px;">${s(p.nombre)}</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span style="color:#aaa;font-size:12px;">x${p.cantidad} · Q${(p.precio*p.cantidad).toFixed(2)}</span>
+                <button onclick="_agQuitarItem(${i})" style="background:#7f1d1d;border:none;border-radius:4px;color:#fff;cursor:pointer;padding:2px 7px;font-size:12px;">✕</button>
+            </div>
+        </div>`).join('');
+    const total = _agItems.reduce((s,p) => s + p.precio*p.cantidad, 0);
+    if (totalEl) totalEl.textContent = 'Q' + total.toFixed(2);
+}
+
+function _agQuitarItem(i) { _agItems.splice(i, 1); _agRenderItems(); }
+
+function confirmarAgregarOrden(idVenta) {
+    if (!_agItems.length) { mostrarMensaje('❌ Agrega al menos un producto'); return; }
+    authFetch(`${API}/ventas/${idVenta}/agregar`, {
+        method: 'POST',
+        body: JSON.stringify({ productos: _agItems })
+    }).then(r => r.json()).then(d => {
+        if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
+        mostrarMensaje('✅ Productos agregados');
+        document.getElementById('modalAgregarOrden')?.remove();
+        cargarOrdenes();
+    });
+}
+
+// ── Cobrar orden ────────────────────────────────────────────────────
+function abrirCobrarOrden(idVenta, total) {
+    const prev = document.getElementById('modalCobrarOrden');
+    if (prev) prev.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modalCobrarOrden';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
+        <h3 style="margin:0 0 8px;color:#fff;">Cobrar Orden #${idVenta}</h3>
+        <p style="color:#4ade80;font-size:22px;font-weight:700;margin:0 0 16px;">Q${parseFloat(total).toFixed(2)}</p>
+        <label style="color:#ccc;font-size:13px;">Método de pago</label>
+        <select id="cobrarMetodo" style="width:100%;margin:6px 0 16px;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="TARJETA">Tarjeta</option>
+            <option value="TRANSFERENCIA">Transferencia</option>
+        </select>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="document.getElementById('modalCobrarOrden').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarCobrarOrden(${idVenta})" style="padding:8px 16px;background:#15803d;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Confirmar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+}
+
+function confirmarCobrarOrden(idVenta) {
+    const metodo = document.getElementById('cobrarMetodo')?.value || 'EFECTIVO';
+    authFetch(`${API}/ventas/${idVenta}/cobrar`, {
+        method: 'PATCH',
+        body: JSON.stringify({ metodo_pago: metodo })
+    }).then(r => r.json()).then(d => {
+        if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
+        mostrarMensaje('✅ Orden cobrada');
+        document.getElementById('modalCobrarOrden')?.remove();
+        cargarOrdenes();
+    });
+}
+
+// ── Cancelar orden ──────────────────────────────────────────────────
+async function cancelarOrden(idVenta) {
+    if (!await confirmarDialog('Cancelar orden', '¿Seguro que deseas cancelar esta orden?', 'danger')) return;
+    authFetch(`${API}/ventas/${idVenta}/cancelar`, {
+        method: 'PATCH',
+        body: JSON.stringify({ motivo: 'Cancelada desde Órdenes' })
+    }).then(r => r.json()).then(d => {
+        if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
+        mostrarMensaje('✅ Orden cancelada');
+        cargarOrdenes();
     });
 }
 
