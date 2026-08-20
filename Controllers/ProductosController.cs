@@ -256,25 +256,30 @@ namespace GamerZoneAPI.Controllers
             stockCmd.Parameters.AddWithValue("@id", id);
             int stockActual = Convert.ToInt32(stockCmd.ExecuteScalar());
 
-            var updateCmd = new MySqlCommand("UPDATE productos SET precio_venta=@precio, precio_compra=COALESCE(@compra, precio_compra), stock=@stock WHERE id_producto=@id", conn);
+            string sql = req.stock >= 0
+                ? "UPDATE productos SET precio_venta=@precio, precio_compra=COALESCE(@compra, precio_compra), stock=@stock WHERE id_producto=@id"
+                : "UPDATE productos SET precio_venta=@precio, precio_compra=COALESCE(@compra, precio_compra) WHERE id_producto=@id";
+            var updateCmd = new MySqlCommand(sql, conn);
             updateCmd.Parameters.AddWithValue("@precio", req.precio_venta);
             updateCmd.Parameters.AddWithValue("@compra", req.precio_compra.HasValue ? (object)req.precio_compra.Value : DBNull.Value);
-            updateCmd.Parameters.AddWithValue("@stock", req.stock);
+            if (req.stock >= 0) updateCmd.Parameters.AddWithValue("@stock", req.stock);
             updateCmd.Parameters.AddWithValue("@id", id);
             updateCmd.ExecuteNonQuery();
 
-            int diferencia = req.stock - stockActual;
-            string tipo = diferencia >= 0 ? "ENTRADA" : "SALIDA";
-
-            var histCmd = new MySqlCommand(@"
-                INSERT INTO historial_inventario (id_producto, tipo_movimiento, cantidad, observacion, usuario, fecha)
-                VALUES (@producto, @tipo, @cantidad, @obs, @usuario, NOW())", conn);
-            histCmd.Parameters.AddWithValue("@producto", id);
-            histCmd.Parameters.AddWithValue("@tipo", tipo);
-            histCmd.Parameters.AddWithValue("@cantidad", Math.Abs(diferencia));
-            histCmd.Parameters.AddWithValue("@obs", "Edición inventario");
-            histCmd.Parameters.AddWithValue("@usuario", req.usuario);
-            histCmd.ExecuteNonQuery();
+            if (req.stock >= 0)
+            {
+                int diferencia = req.stock - stockActual;
+                string tipo = diferencia >= 0 ? "ENTRADA" : "SALIDA";
+                var histCmd = new MySqlCommand(@"
+                    INSERT INTO historial_inventario (id_producto, tipo_movimiento, cantidad, observacion, usuario, fecha)
+                    VALUES (@producto, @tipo, @cantidad, @obs, @usuario, NOW())", conn);
+                histCmd.Parameters.AddWithValue("@producto", id);
+                histCmd.Parameters.AddWithValue("@tipo", tipo);
+                histCmd.Parameters.AddWithValue("@cantidad", Math.Abs(diferencia));
+                histCmd.Parameters.AddWithValue("@obs", "Edición inventario");
+                histCmd.Parameters.AddWithValue("@usuario", req.usuario);
+                histCmd.ExecuteNonQuery();
+            }
 
             return Ok(new { mensaje = "Producto actualizado" });
         }

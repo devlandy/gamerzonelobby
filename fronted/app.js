@@ -3508,6 +3508,7 @@ function cargarProductosCatalogo() {
                     <td style="text-align:center; color:${p.stock==0?'#ef4444':p.stock<=5?'#f59e0b':'#aaa'};">${p.controla_stock ? p.stock : '∞'}</td>
                     <td style="text-align:center; display:flex; gap:4px; justify-content:center;">
                       <button class="cli-btn" onclick="abrirEntradaStock(${p.id},'${s(p.nombre)}',${parseFloat(p.precio_compra||0)},false)">+ Stock</button>
+                      <button class="cli-btn" style="background:#1e40af;" onclick="abrirEditarPrecios(${p.id},'${s(p.nombre)}',${parseFloat(p.precio_compra||0)},${parseFloat(p.precio_venta||0)})">Editar</button>
                       <button class="cli-btn" style="background:#7f1d1d;" onclick="eliminarProducto(${p.id})">Eliminar</button>
                     </td>
                   </tr>`;
@@ -3550,6 +3551,60 @@ function confirmarEntradaStock() {
             : '✅ Stock actualizado';
         mostrarMensaje(msg);
         cerrarModal('modalEntradaStock');
+        cargarProductosCatalogo();
+    });
+}
+
+// ==================================================================
+// ✏️ EDITAR PRECIOS DE PRODUCTO
+// ==================================================================
+function abrirEditarPrecios(id, nombre, precioCompra, precioVenta) {
+    // Si ya existe el modal lo eliminamos para recrearlo limpio
+    const anterior = document.getElementById('modalEditarPrecios');
+    if (anterior) anterior.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modalEditarPrecios';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    modal.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;min-width:300px;max-width:360px;width:90%;">
+        <h3 style="margin:0 0 4px;color:#fff;">Editar precios</h3>
+        <p style="margin:0 0 16px;color:#aaa;font-size:13px;">${nombre}</p>
+        <label style="color:#ccc;font-size:13px;">P. Compra (Q)</label>
+        <input id="epCompra" type="number" step="0.01" min="0" value="${precioCompra || ''}" placeholder="Opcional"
+          style="width:100%;margin:4px 0 12px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
+        <label style="color:#ccc;font-size:13px;">P. Venta (Q) *</label>
+        <input id="epVenta" type="number" step="0.01" min="0" value="${precioVenta || ''}"
+          style="width:100%;margin:4px 0 16px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button onclick="document.getElementById('modalEditarPrecios').remove()"
+            style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+          <button onclick="guardarEditarPrecios(${id})"
+            style="padding:8px 16px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('epVenta').focus();
+}
+
+function guardarEditarPrecios(id) {
+    const compra = parseFloat(document.getElementById('epCompra').value || 0);
+    const venta  = parseFloat(document.getElementById('epVenta').value  || 0);
+    if (!venta || venta <= 0) { mostrarMensaje('❌ Ingresa un precio de venta válido'); return; }
+
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    authFetch(`${API}/productos/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            precio_compra: compra > 0 ? compra : null,
+            precio_venta: venta,
+            stock: -1,
+            usuario: usuario ? usuario.nombre : 'ADMIN'
+        })
+    }).then(r => r.json()).then(d => {
+        if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
+        mostrarMensaje('✅ Precios actualizados');
+        document.getElementById('modalEditarPrecios').remove();
         cargarProductosCatalogo();
     });
 }
