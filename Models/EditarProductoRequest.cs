@@ -2,6 +2,8 @@
 {
     public class EditarProductoRequest
     {
+        public decimal? precio_compra { get; set; }
+
         public decimal precio_venta { get; set; }
 
         public int stock { get; set; }

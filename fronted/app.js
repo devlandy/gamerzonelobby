@@ -1175,8 +1175,13 @@ function listarProductos(){
                 <hr>
 
                 <input
+                id="precioCompra${p.id}"
+                placeholder="P. Compra (Q)"
+                value="${p.precio_compra || ''}">
+
+                <input
                 id="precio${p.id}"
-                placeholder="Nuevo precio"
+                placeholder="P. Venta (Q)"
                 value="${p.precio_venta}">
 
                 <input
@@ -1219,6 +1224,9 @@ function editarProducto(id){
     let usuario =
     JSON.parse(localStorage.getItem("usuario"));
 
+    let precioCompra =
+    document.getElementById(`precioCompra${id}`).value;
+
     let precio =
     document.getElementById(`precio${id}`).value;
 
@@ -1230,6 +1238,8 @@ function editarProducto(id){
         method: "PUT",
 
         body: JSON.stringify({
+
+            precio_compra: precioCompra ? parseFloat(precioCompra) : null,
 
             precio_venta: precio,
 

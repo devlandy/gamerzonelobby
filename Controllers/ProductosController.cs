@@ -256,8 +256,9 @@ namespace GamerZoneAPI.Controllers
             stockCmd.Parameters.AddWithValue("@id", id);
             int stockActual = Convert.ToInt32(stockCmd.ExecuteScalar());
 
-            var updateCmd = new MySqlCommand("UPDATE productos SET precio_venta=@precio, stock=@stock WHERE id_producto=@id", conn);
+            var updateCmd = new MySqlCommand("UPDATE productos SET precio_venta=@precio, precio_compra=COALESCE(@compra, precio_compra), stock=@stock WHERE id_producto=@id", conn);
             updateCmd.Parameters.AddWithValue("@precio", req.precio_venta);
+            updateCmd.Parameters.AddWithValue("@compra", req.precio_compra.HasValue ? (object)req.precio_compra.Value : DBNull.Value);
             updateCmd.Parameters.AddWithValue("@stock", req.stock);
             updateCmd.Parameters.AddWithValue("@id", id);
             updateCmd.ExecuteNonQuery();
