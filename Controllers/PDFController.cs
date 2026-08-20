@@ -49,8 +49,8 @@ namespace GamerZoneAPI.Controllers
             var logo = CargarLogo();
             decimal subtotalBruto = detalles.Where(d => Convert.ToDecimal(d["precio"]) > 0)
                                             .Sum(d => Convert.ToDecimal(d["subtotal"]));
-            decimal totalFinal   = Convert.ToDecimal(venta["total"]);
-            decimal descuentoPct = Convert.ToDecimal(venta["descuento_pct"]);
+            decimal totalFinal   = venta["total"] != DBNull.Value ? Convert.ToDecimal(venta["total"]) : 0;
+            decimal descuentoPct = venta.ContainsKey("descuento_pct") && venta["descuento_pct"] != DBNull.Value ? Convert.ToDecimal(venta["descuento_pct"]) : 0;
             decimal descuento    = subtotalBruto - totalFinal;
             var numDoc = venta.ContainsKey("id_venta") ? venta["id_venta"] : venta["id_factura"];
             var fechaDoc = Convert.ToDateTime(venta["fecha"]).AddHours(-6);
@@ -252,7 +252,9 @@ namespace GamerZoneAPI.Controllers
         public IActionResult GenerarTicketVenta(int id)
         {
             var ventas = _db.ExecuteQuery(@"
-                SELECT v.id_venta, v.total, v.metodo_pago, v.fecha, v.tipo, v.descuento_pct,
+                SELECT v.id_venta, v.total, IFNULL(v.metodo_pago,'') AS metodo_pago,
+                       v.fecha, IFNULL(v.tipo,'PRODUCTO') AS tipo,
+                       IFNULL(v.descuento_pct,0) AS descuento_pct,
                        COALESCE(c.nombre, 'Consumidor Final') AS cliente
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
