@@ -229,7 +229,7 @@ namespace GamerZoneAPI.Controllers
                             .AlignCenter().Text($"Q{subtotalBruto:F2}").FontSize(10);
                         t.Cell().Background(descuento > 0 ? "#fff0f0" : "#f0f0f0").PaddingVertical(9).PaddingHorizontal(6)
                             .AlignCenter()
-                            .Text(descuento > 0 ? $"-Q{descuento:F2} ({descuentoPct:G29}%)" : "—")
+                            .Text(descuento > 0 ? $"-Q{descuento:F2} ({descuentoPct:F1}%)" : "—")
                             .FontSize(9).FontColor(descuento > 0 ? "#cc0000" : "#777");
                         t.Cell().Background("#f0f0f0").PaddingVertical(9).PaddingHorizontal(6)
                             .AlignCenter().Text(venta["metodo_pago"]?.ToString() ?? "").FontSize(9);
