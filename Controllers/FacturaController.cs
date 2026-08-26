@@ -60,8 +60,8 @@ namespace GamerZoneAPI.Controllers
         public IActionResult CrearFactura([FromBody] FacturaRequest request)
         {
             var idFactura = _db.ExecuteScalar(@"
-                INSERT INTO facturas (id_venta, nit, nombre, direccion)
-                VALUES (@id_venta, @nit, @nombre, @direccion);
+                INSERT INTO facturas (id_venta, nit, nombre, direccion, fecha)
+                VALUES (@id_venta, @nit, @nombre, @direccion, NOW());
                 SELECT LAST_INSERT_ID();",
                 new MySqlParameter("@id_venta", request.id_venta),
                 new MySqlParameter("@nit", request.nit),
@@ -77,11 +77,11 @@ namespace GamerZoneAPI.Controllers
             try
             {
                 var rows = _db.ExecuteQuery(@"
-                    SELECT f.id_factura, f.fecha, f.nit, f.nombre, v.total, v.id_venta,
+                    SELECT f.id_factura, v.fecha, f.nit, f.nombre, v.total, v.id_venta,
                            f.sat_estado, f.sat_numero, v.estado AS estado_venta
                     FROM facturas f
                     JOIN ventas v ON f.id_venta = v.id_venta
-                    ORDER BY f.fecha DESC");
+                    ORDER BY v.fecha DESC");
 
                 return Ok(rows.Select(r => new
                 {
@@ -100,10 +100,10 @@ namespace GamerZoneAPI.Controllers
             {
                 // Fallback sin columnas SAT (antes de ejecutar ALTER TABLE)
                 var rows = _db.ExecuteQuery(@"
-                    SELECT f.id_factura, f.fecha, f.nit, f.nombre, v.total, v.id_venta
+                    SELECT f.id_factura, v.fecha, f.nit, f.nombre, v.total, v.id_venta
                     FROM facturas f
                     JOIN ventas v ON f.id_venta = v.id_venta
-                    ORDER BY f.fecha DESC");
+                    ORDER BY v.fecha DESC");
 
                 return Ok(rows.Select(r => new
                 {

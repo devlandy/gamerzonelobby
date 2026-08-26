@@ -321,7 +321,8 @@ namespace GamerZoneAPI.Controllers
                     }
                     nuevoCosto += p.precio * p.cantidad;
                 }
-                var upTotal = new MySqlCommand("UPDATE ventas SET total = total + @extra WHERE id_venta=@id", conn, tr);
+                // Actualizar total y resetear entregado=0 para que vuelva a aparecer como POR ENTREGAR
+                var upTotal = new MySqlCommand("UPDATE ventas SET total = total + @extra, entregado = 0 WHERE id_venta=@id", conn, tr);
                 upTotal.Parameters.AddWithValue("@extra", nuevoCosto);
                 upTotal.Parameters.AddWithValue("@id", id);
                 upTotal.ExecuteNonQuery();
