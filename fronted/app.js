@@ -3717,7 +3717,7 @@ function renderOrdenes(data) {
         const items = (o.productos || []).map(p =>
             `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;">
                 <span style="display:flex;align-items:center;gap:6px;">
-                    ${!cancelado ? `<button onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle},this)" style="background:none;border:1px solid ${p.entregado?'#4ade80':'#555'};border-radius:4px;width:18px;height:18px;cursor:pointer;color:${p.entregado?'#4ade80':'transparent'};font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="${p.entregado?'Entregado':'Marcar entregado'}">${p.entregado?'✓':''}</button>` : ''}
+                    ${!cancelado ? (() => { const ent = p.entregado || entregado; return `<button ${ent ? 'disabled' : `onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle})"`} style="background:${ent?'#4ade80':'none'};border:1px solid ${ent?'#4ade80':'#555'};border-radius:4px;width:18px;height:18px;cursor:${ent?'default':'pointer'};color:${ent?'#000':'#aaa'};font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="${ent?'Entregado':'Marcar entregado'}">${ent?'✓':''}</button>`; })() : ''}
                     <span style="${p.entregado?'text-decoration:line-through;color:#555;':''}">  ${s(p.nombre)} x${p.cantidad}</span>
                 </span>
                 <span style="display:flex;align-items:center;gap:6px;">
@@ -3905,8 +3905,7 @@ function confirmarNuevaOrden() {
 }
 
 // ── Entregar producto individual ────────────────────────────────────
-async function entregarProductoOrden(idVenta, idDetalle, btn) {
-    if (btn.textContent === '✓') return; // ya entregado
+async function entregarProductoOrden(idVenta, idDetalle) {
     const r = await fetch(`/api/ventas/${idVenta}/detalle/${idDetalle}/entregar`, { method: 'PATCH', headers: { Authorization: 'Bearer ' + token } });
     if (r.ok) cargarOrdenes();
     else alert('Error al marcar producto');
