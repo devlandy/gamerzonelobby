@@ -3714,17 +3714,17 @@ function renderOrdenes(data) {
         const entregado = o.entregado;
         const cancelado = o.estado === 'CANCELADO';
         const fecha = new Date(o.fecha).toLocaleString('es-GT', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'});
-        const items = (o.productos || []).map(p =>
-            `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;">
-                <span style="display:flex;align-items:center;gap:6px;">
-                    ${!cancelado ? (() => { const ent = p.entregado || entregado; return `<button ${ent ? 'disabled' : `onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle})"`} style="background:${ent?'#4ade80':'none'};border:1px solid ${ent?'#4ade80':'#555'};border-radius:4px;width:18px;height:18px;cursor:${ent?'default':'pointer'};color:${ent?'#000':'#aaa'};font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="${ent?'Entregado':'Marcar entregado'}">${ent?'✓':''}</button>`; })() : ''}
-                    <span style="${p.entregado?'text-decoration:line-through;color:#555;':''}">  ${s(p.nombre)} x${p.cantidad}</span>
-                </span>
-                <span style="display:flex;align-items:center;gap:6px;">
-                    <span style="color:#aaa;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
-                    ${!cancelado ? `<button onclick="eliminarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;" title="Eliminar">✕</button>` : ''}
-                </span>
-            </div>`).join('');
+        const items = (o.productos || []).map(p => {
+            const pEnt = p.entregado || entregado;
+            const chk = cancelado ? '' : pEnt
+                ? `<button disabled style="background:#4ade80;border:1px solid #4ade80;border-radius:4px;width:18px;height:18px;cursor:default;color:#000;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;">✓</button>`
+                : `<button onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:1px solid #555;border-radius:4px;width:18px;height:18px;cursor:pointer;color:#aaa;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="Marcar entregado"></button>`;
+            const del = cancelado ? '' : `<button onclick="eliminarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;" title="Eliminar">✕</button>`;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;">
+                <span style="display:flex;align-items:center;gap:6px;">${chk}<span style="${pEnt?'text-decoration:line-through;color:#555;':''}">${s(p.nombre)} x${p.cantidad}</span></span>
+                <span style="display:flex;align-items:center;gap:6px;"><span style="color:#aaa;">Q${parseFloat(p.subtotal).toFixed(2)}</span>${del}</span>
+            </div>`;
+        }).join('');
 
         const badgePago     = `<span style="background:${pagado?'#4ade80':'#f59e0b'};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${pagado?'PAGADO':'SIN COBRAR'}</span>`;
         const badgeEntrega  = `<span style="background:${entregado?'#4ade80':'#f59e0b'};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${entregado?'ENTREGADO':'POR ENTREGAR'}</span>`;
