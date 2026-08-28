@@ -3740,7 +3740,7 @@ function renderOrdenes(data) {
         <div style="background:#1a1a2e;border:1px solid ${cancelado?'#4a1a1a':'#2a2a4a'};border-radius:10px;padding:16px;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;">
                 <div>
-                    <span style="font-weight:700;font-size:15px;">${s(o.nombre_orden || 'Orden #' + o.id_venta)}</span>
+                    <span style="font-weight:700;font-size:15px;">Orden #${o.numero_orden || o.id_venta}</span>
                     <span style="font-size:11px;color:#666;margin-left:6px;">${fecha}</span>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
