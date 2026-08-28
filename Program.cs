@@ -95,8 +95,11 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GamerZoneAPI.Data.DbManager>();
     try { db.ExecuteNonQuery("ALTER TABLE detalle_ventas ADD COLUMN entregado TINYINT(1) NOT NULL DEFAULT 0"); } catch { }
+    try { db.ExecuteNonQuery("ALTER TABLE detalle_ventas ADD COLUMN cobrado TINYINT(1) NOT NULL DEFAULT 0"); } catch { }
     // Sincronizar productos de órdenes ya entregadas
     try { db.ExecuteNonQuery("UPDATE detalle_ventas SET entregado=1 WHERE id_venta IN (SELECT id_venta FROM ventas WHERE entregado=1)"); } catch { }
+    // Sincronizar productos de órdenes ya pagadas
+    try { db.ExecuteNonQuery("UPDATE detalle_ventas SET cobrado=1 WHERE id_venta IN (SELECT id_venta FROM ventas WHERE estado='PAGADO')"); } catch { }
 }
 
 app.Run();

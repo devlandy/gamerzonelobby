@@ -262,7 +262,7 @@ namespace GamerZoneAPI.Controllers
 
             var ids = rows.Select(r => Convert.ToInt32(r["id_venta"])).ToList();
             var detalles = ids.Count > 0 ? _db.ExecuteQuery($@"
-                SELECT d.id_detalle, d.id_venta, IFNULL(p.nombre, d.nombre) AS nombre, d.cantidad, d.precio, d.subtotal, d.entregado
+                SELECT d.id_detalle, d.id_venta, IFNULL(p.nombre, d.nombre) AS nombre, d.cantidad, d.precio, d.subtotal, d.entregado, d.cobrado
                 FROM detalle_ventas d
                 LEFT JOIN productos p ON d.id_producto = p.id_producto
                 WHERE d.id_venta IN ({string.Join(",", ids)})") : new List<Dictionary<string, object>>();
@@ -285,7 +285,8 @@ namespace GamerZoneAPI.Controllers
                         cantidad   = Convert.ToInt32(d["cantidad"]),
                         precio     = Convert.ToDecimal(d["precio"]),
                         subtotal   = Convert.ToDecimal(d["subtotal"]),
-                        entregado  = Convert.ToInt32(d["entregado"]) == 1
+                        entregado  = Convert.ToInt32(d["entregado"]) == 1,
+                        cobrado    = Convert.ToInt32(d["cobrado"]) == 1
                     })
             }));
         }
@@ -347,6 +348,14 @@ namespace GamerZoneAPI.Controllers
             var tr = conn.BeginTransaction();
             try
             {
+                // Si la orden ya estaba pagada, marcar productos existentes como cobrados
+                if (venta[0]["estado"].ToString() == "PAGADO")
+                {
+                    var markCobrado = new MySqlCommand("UPDATE detalle_ventas SET cobrado=1 WHERE id_venta=@v", conn, tr);
+                    markCobrado.Parameters.AddWithValue("@v", id);
+                    markCobrado.ExecuteNonQuery();
+                }
+
                 decimal nuevoCosto = 0;
                 foreach (var p in req.productos)
                 {
@@ -394,6 +403,9 @@ namespace GamerZoneAPI.Controllers
             _db.ExecuteNonQuery(@"
                 UPDATE ventas SET estado='PAGADO', forma_cobro='PAGADO', metodo_pago=@metodo WHERE id_venta=@id",
                 new MySqlParameter("@metodo", req.metodo_pago ?? "EFECTIVO"),
+                new MySqlParameter("@id", id));
+
+            _db.ExecuteNonQuery("UPDATE detalle_ventas SET cobrado=1 WHERE id_venta=@id",
                 new MySqlParameter("@id", id));
 
             return Ok(new { mensaje = "Orden cobrada" });

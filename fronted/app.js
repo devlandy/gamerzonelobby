@@ -3731,7 +3731,7 @@ function renderOrdenes(data) {
         const badgeCancelado= `<span style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CANCELADO</span>`;
 
         const botones = cancelado ? '' : `
-            ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta},${parseFloat(o.total).toFixed(2)})">💳 Cobrar</button>` : ''}
+            ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta})">💳 Cobrar</button>` : ''}
             ${!entregado ? `<button class="cli-btn" style="background:#7c3aed;" onclick="entregarOrden(${o.id_venta})">✅ Entregar</button>` : ''}
             <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
             <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>`;
@@ -4034,17 +4034,27 @@ function confirmarAgregarOrden(idVenta) {
 }
 
 // ── Cobrar orden ────────────────────────────────────────────────────
-function abrirCobrarOrden(idVenta, total) {
+function abrirCobrarOrden(idVenta) {
     const prev = document.getElementById('modalCobrarOrden');
     if (prev) prev.remove();
+
+    // Buscar la orden en el estado actual para obtener productos no cobrados
+    const ordenEl = document.querySelector(`[data-id-venta="${idVenta}"]`);
+    const orden = _ordenesData?.find(o => o.id_venta === idVenta);
+    const pendientes = orden ? (orden.productos || []).filter(p => !p.cobrado) : [];
+    const total = pendientes.reduce((s, p) => s + parseFloat(p.subtotal), 0);
+    const listaHtml = pendientes.length > 0
+        ? pendientes.map(p => `<div style="display:flex;justify-content:space-between;font-size:13px;color:#ccc;padding:2px 0;"><span>${s(p.nombre)} x${p.cantidad}</span><span>Q${parseFloat(p.subtotal).toFixed(2)}</span></div>`).join('')
+        : '<p style="color:#aaa;font-size:12px;">Sin productos pendientes de cobro</p>';
 
     const modal = document.createElement('div');
     modal.id = 'modalCobrarOrden';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
-        <h3 style="margin:0 0 8px;color:#fff;">Cobrar Orden #${idVenta}</h3>
-        <p style="color:#4ade80;font-size:22px;font-weight:700;margin:0 0 16px;">Q${parseFloat(total).toFixed(2)}</p>
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:340px;">
+        <h3 style="margin:0 0 12px;color:#fff;">Cobrar Orden #${idVenta}</h3>
+        <div style="border:1px solid #222;border-radius:6px;padding:10px;margin-bottom:12px;">${listaHtml}</div>
+        <p style="color:#4ade80;font-size:22px;font-weight:700;margin:0 0 16px;">Total: Q${total.toFixed(2)}</p>
         <label style="color:#ccc;font-size:13px;">Método de pago</label>
         <select id="cobrarMetodo" style="width:100%;margin:6px 0 16px;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
             <option value="EFECTIVO">Efectivo</option>
