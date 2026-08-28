@@ -185,6 +185,14 @@ namespace GamerZoneAPI.Controllers
                 new MySqlParameter("@obs", request.motivo ?? ""),
                 new MySqlParameter("@id", id));
 
+            // Devolver stock de productos cancelados
+            _db.ExecuteNonQuery(@"
+                UPDATE productos p
+                JOIN detalle_ventas d ON p.id_producto = d.id_producto
+                SET p.stock = p.stock + d.cantidad
+                WHERE d.id_venta = @id AND p.controla_stock = 1",
+                new MySqlParameter("@id", id));
+
             // Descontar puntos al cliente si tiene uno asignado
             var ventaData = _db.ExecuteQuery("SELECT id_cliente FROM ventas WHERE id_venta=@id",
                 new MySqlParameter("@id", id));
