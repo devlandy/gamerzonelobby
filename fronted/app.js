@@ -3718,7 +3718,7 @@ function renderOrdenes(data) {
             const pEnt = p.entregado || entregado;
             const chk = cancelado ? '' : pEnt
                 ? `<button disabled style="background:#4ade80;border:1px solid #4ade80;border-radius:4px;width:18px;height:18px;cursor:default;color:#000;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;">✓</button>`
-                : `<button onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:1px solid #555;border-radius:4px;width:18px;height:18px;cursor:pointer;color:#aaa;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="Marcar entregado"></button>`;
+                : `<button onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:1px solid #555;border-radius:4px;width:18px;height:18px;cursor:pointer;color:#555;font-size:11px;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="Marcar entregado">○</button>`;
             const del = cancelado ? '' : `<button onclick="eliminarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;" title="Eliminar">✕</button>`;
             return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;">
                 <span style="display:flex;align-items:center;gap:6px;">${chk}<span style="${pEnt?'text-decoration:line-through;color:#555;':''}">${s(p.nombre)} x${p.cantidad}</span></span>
@@ -3908,7 +3908,7 @@ function confirmarNuevaOrden() {
 async function entregarProductoOrden(idVenta, idDetalle) {
     const r = await fetch(`/api/ventas/${idVenta}/detalle/${idDetalle}/entregar`, { method: 'PATCH', headers: { Authorization: 'Bearer ' + token } });
     if (r.ok) cargarOrdenes();
-    else alert('Error al marcar producto');
+    else { const txt = await r.text(); alert('Error ' + r.status + ': ' + txt); }
 }
 
 // ── Eliminar producto de orden ──────────────────────────────────────
