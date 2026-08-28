@@ -257,7 +257,7 @@ namespace GamerZoneAPI.Controllers
 
             var ids = rows.Select(r => Convert.ToInt32(r["id_venta"])).ToList();
             var detalles = ids.Count > 0 ? _db.ExecuteQuery($@"
-                SELECT d.id_detalle, d.id_venta, IFNULL(p.nombre, d.nombre) AS nombre, d.cantidad, d.precio, d.subtotal
+                SELECT d.id_detalle, d.id_venta, IFNULL(p.nombre, d.nombre) AS nombre, d.cantidad, d.precio, d.subtotal, d.entregado
                 FROM detalle_ventas d
                 LEFT JOIN productos p ON d.id_producto = p.id_producto
                 WHERE d.id_venta IN ({string.Join(",", ids)})") : new List<Dictionary<string, object>>();
@@ -276,12 +276,33 @@ namespace GamerZoneAPI.Controllers
                     .Where(d => Convert.ToInt32(d["id_venta"]) == Convert.ToInt32(r["id_venta"]))
                     .Select(d => new {
                         id_detalle = Convert.ToInt32(d["id_detalle"]),
-                        nombre   = d["nombre"]?.ToString() ?? "",
-                        cantidad = Convert.ToInt32(d["cantidad"]),
-                        precio   = Convert.ToDecimal(d["precio"]),
-                        subtotal = Convert.ToDecimal(d["subtotal"])
+                        nombre     = d["nombre"]?.ToString() ?? "",
+                        cantidad   = Convert.ToInt32(d["cantidad"]),
+                        precio     = Convert.ToDecimal(d["precio"]),
+                        subtotal   = Convert.ToDecimal(d["subtotal"]),
+                        entregado  = Convert.ToInt32(d["entregado"]) == 1
                     })
             }));
+        }
+
+        [HttpPatch("{id}/detalle/{idDetalle}/entregar")]
+        public IActionResult EntregarProducto(int id, int idDetalle)
+        {
+            _db.ExecuteNonQuery(
+                "UPDATE detalle_ventas SET entregado = 1 WHERE id_detalle=@d AND id_venta=@v",
+                new MySqlParameter("@d", idDetalle),
+                new MySqlParameter("@v", id));
+
+            // Si todos los productos están entregados, marcar la orden como entregada
+            int pendientes = Convert.ToInt32(_db.ExecuteScalar(
+                "SELECT COUNT(*) FROM detalle_ventas WHERE id_venta=@v AND entregado=0",
+                new MySqlParameter("@v", id)));
+
+            if (pendientes == 0)
+                _db.ExecuteNonQuery("UPDATE ventas SET entregado=1 WHERE id_venta=@v",
+                    new MySqlParameter("@v", id));
+
+            return Ok(new { mensaje = "Producto entregado", orden_entregada = pendientes == 0 });
         }
 
         [HttpDelete("{id}/detalle/{idDetalle}")]

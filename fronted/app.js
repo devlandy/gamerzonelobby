@@ -3715,8 +3715,11 @@ function renderOrdenes(data) {
         const cancelado = o.estado === 'CANCELADO';
         const fecha = new Date(o.fecha).toLocaleString('es-GT', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'});
         const items = (o.productos || []).map(p =>
-            `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 0;">
-                <span>${s(p.nombre)} x${p.cantidad}</span>
+            `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;">
+                <span style="display:flex;align-items:center;gap:6px;">
+                    ${!cancelado ? `<button onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle},this)" style="background:none;border:1px solid ${p.entregado?'#4ade80':'#555'};border-radius:4px;width:18px;height:18px;cursor:pointer;color:${p.entregado?'#4ade80':'transparent'};font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="${p.entregado?'Entregado':'Marcar entregado'}">${p.entregado?'✓':''}</button>` : ''}
+                    <span style="${p.entregado?'text-decoration:line-through;color:#555;':''}">  ${s(p.nombre)} x${p.cantidad}</span>
+                </span>
                 <span style="display:flex;align-items:center;gap:6px;">
                     <span style="color:#aaa;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
                     ${!cancelado ? `<button onclick="eliminarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;" title="Eliminar">✕</button>` : ''}
@@ -3899,6 +3902,14 @@ function confirmarNuevaOrden() {
         document.getElementById('modalNuevaOrden')?.remove();
         cargarOrdenes();
     });
+}
+
+// ── Entregar producto individual ────────────────────────────────────
+async function entregarProductoOrden(idVenta, idDetalle, btn) {
+    if (btn.textContent === '✓') return; // ya entregado
+    const r = await fetch(`/api/ventas/${idVenta}/detalle/${idDetalle}/entregar`, { method: 'PATCH', headers: { Authorization: 'Bearer ' + token } });
+    if (r.ok) cargarOrdenes();
+    else alert('Error al marcar producto');
 }
 
 // ── Eliminar producto de orden ──────────────────────────────────────
