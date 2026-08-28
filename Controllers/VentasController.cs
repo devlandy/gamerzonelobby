@@ -246,7 +246,12 @@ namespace GamerZoneAPI.Controllers
                 ? "WHERE v.estado != 'CANCELADO' AND EXISTS (SELECT 1 FROM detalle_ventas d WHERE d.id_venta = v.id_venta AND d.id_producto > 0)"
                 : "WHERE v.estado != 'CANCELADO' AND NOT (v.estado = 'PAGADO' AND v.entregado = 1) AND EXISTS (SELECT 1 FROM detalle_ventas d WHERE d.id_venta = v.id_venta AND d.id_producto > 0)";
             var rows = _db.ExecuteQuery($@"
-                SELECT v.id_venta, v.numero_orden, v.nombre_orden, v.total, v.estado,
+                SELECT v.id_venta,
+                       (SELECT COUNT(*) FROM ventas v2
+                        WHERE v2.id_venta <= v.id_venta
+                        AND EXISTS (SELECT 1 FROM detalle_ventas d2 WHERE d2.id_venta = v2.id_venta AND d2.id_producto > 0)
+                       ) AS numero_orden,
+                       v.nombre_orden, v.total, v.estado,
                        v.metodo_pago, v.fecha, v.entregado, IFNULL(c.nombre,'Sin cliente') AS cliente
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
