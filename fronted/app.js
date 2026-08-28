@@ -3906,7 +3906,7 @@ function confirmarNuevaOrden() {
 
 // ── Entregar producto individual ────────────────────────────────────
 async function entregarProductoOrden(idVenta, idDetalle) {
-    const r = await fetch(`/api/ventas/${idVenta}/detalle/${idDetalle}/entregar`, { method: 'PATCH', headers: { Authorization: 'Bearer ' + token } });
+    const r = await fetch(`/api/ventas/${idVenta}/detalle/${idDetalle}/entregar`, { method: 'PATCH', headers: { Authorization: 'Bearer ' + getToken() } });
     if (r.ok) cargarOrdenes();
     else { const txt = await r.text(); alert('Error ' + r.status + ': ' + txt); }
 }
@@ -3914,7 +3914,7 @@ async function entregarProductoOrden(idVenta, idDetalle) {
 // ── Eliminar producto de orden ──────────────────────────────────────
 async function eliminarProductoOrden(idVenta, idDetalle) {
     if (!confirm('¿Eliminar este producto de la orden?')) return;
-    const r = await fetch(`/api/ventas/${idVenta}/detalle/${idDetalle}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+    const r = await fetch(`/api/ventas/${idVenta}/detalle/${idDetalle}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + getToken() } });
     if (r.ok) cargarOrdenes();
     else alert('Error al eliminar producto');
 }
