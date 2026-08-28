@@ -257,7 +257,7 @@ namespace GamerZoneAPI.Controllers
 
             var ids = rows.Select(r => Convert.ToInt32(r["id_venta"])).ToList();
             var detalles = ids.Count > 0 ? _db.ExecuteQuery($@"
-                SELECT d.id_venta, IFNULL(p.nombre, d.nombre) AS nombre, d.cantidad, d.precio, d.subtotal
+                SELECT d.id_detalle, d.id_venta, IFNULL(p.nombre, d.nombre) AS nombre, d.cantidad, d.precio, d.subtotal
                 FROM detalle_ventas d
                 LEFT JOIN productos p ON d.id_producto = p.id_producto
                 WHERE d.id_venta IN ({string.Join(",", ids)})") : new List<Dictionary<string, object>>();
@@ -275,12 +275,36 @@ namespace GamerZoneAPI.Controllers
                 productos    = detalles
                     .Where(d => Convert.ToInt32(d["id_venta"]) == Convert.ToInt32(r["id_venta"]))
                     .Select(d => new {
+                        id_detalle = Convert.ToInt32(d["id_detalle"]),
                         nombre   = d["nombre"]?.ToString() ?? "",
                         cantidad = Convert.ToInt32(d["cantidad"]),
                         precio   = Convert.ToDecimal(d["precio"]),
                         subtotal = Convert.ToDecimal(d["subtotal"])
                     })
             }));
+        }
+
+        [HttpDelete("{id}/detalle/{idDetalle}")]
+        public IActionResult EliminarProductoOrden(int id, int idDetalle)
+        {
+            var row = _db.ExecuteQuery(
+                "SELECT subtotal FROM detalle_ventas WHERE id_detalle=@d AND id_venta=@v",
+                new MySqlParameter("@d", idDetalle),
+                new MySqlParameter("@v", id));
+
+            if (row.Count == 0) return NotFound();
+            decimal subtotal = Convert.ToDecimal(row[0]["subtotal"]);
+
+            _db.ExecuteNonQuery(
+                "DELETE FROM detalle_ventas WHERE id_detalle=@d",
+                new MySqlParameter("@d", idDetalle));
+
+            _db.ExecuteNonQuery(
+                "UPDATE ventas SET total = GREATEST(0, total - @s) WHERE id_venta=@v",
+                new MySqlParameter("@s", subtotal),
+                new MySqlParameter("@v", id));
+
+            return Ok(new { mensaje = "Producto eliminado" });
         }
 
         [HttpPost("{id}/agregar")]
