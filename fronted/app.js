@@ -2539,6 +2539,14 @@ function aplicarRestriccionesCajero() {
     const tabHist = document.getElementById("tabHistorial");
     if (tabHist) tabHist.style.display = "none";
 
+    // Cierre: ocultar historial de cierres anteriores
+    const histCierres = document.getElementById("historialCierres");
+    if (histCierres) {
+        histCierres.style.display = "none";
+        const h3 = histCierres.previousElementSibling;
+        if (h3 && h3.tagName === "H3") h3.style.display = "none";
+    }
+
     // Productos: ocultar tabs de Categorías y Subcategorías
     const tabCat = document.getElementById("tabCat");
     const tabSub = document.getElementById("tabSub");
