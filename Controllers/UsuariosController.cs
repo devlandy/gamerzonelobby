@@ -113,6 +113,25 @@ namespace GamerZoneAPI.Controllers
         }
 
         [Authorize(Roles = "ADMIN")]
+        [HttpPut("{id}")]
+        public IActionResult Editar(int id, [FromBody] EditarUsuarioRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.nombre) || string.IsNullOrWhiteSpace(request.usuario))
+                return BadRequest(new { mensaje = "Nombre y usuario son requeridos" });
+
+            int afectados = _db.ExecuteNonQuery(
+                "UPDATE usuarios SET nombre=@nombre, usuario=@usuario WHERE id_usuario=@id",
+                new MySqlParameter("@nombre", request.nombre.Trim()),
+                new MySqlParameter("@usuario", request.usuario.Trim()),
+                new MySqlParameter("@id", id));
+
+            if (afectados == 0)
+                return NotFound(new { mensaje = "Usuario no encontrado" });
+
+            return Ok(new { mensaje = "Usuario actualizado correctamente" });
+        }
+
+        [Authorize(Roles = "ADMIN")]
         [HttpPatch("{id}/activo")]
         public IActionResult ToggleActivo(int id)
         {
@@ -125,6 +144,12 @@ namespace GamerZoneAPI.Controllers
                 new MySqlParameter("@id", id));
             return Ok(new { activo = nuevoEstado == 1 });
         }
+    }
+
+    public class EditarUsuarioRequest
+    {
+        public string nombre { get; set; } = "";
+        public string usuario { get; set; } = "";
     }
 
     public class CambiarPasswordRequest

@@ -4831,6 +4831,7 @@ function cargarUsuarios() {
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${u.activo?'#4ade80':'#ef4444'};color:#000;">${u.activo?'ACTIVO':'INACTIVO'}</span>
                 <button onclick="toggleUsuario(${u.id})" style="padding:6px 12px;border:none;border-radius:6px;background:${u.activo?'#7f1d1d':'#14532d'};color:#fff;cursor:pointer;font-size:12px;">${u.activo?'Desactivar':'Activar'}</button>
+                <button onclick="abrirEditarUsuario(${u.id},'${s(u.nombre)}','${s(u.usuario)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#0f766e;color:#fff;cursor:pointer;font-size:12px;">✏️ Editar</button>
                 <button onclick="abrirCambiarPassword(${u.id},'${s(u.nombre)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-size:12px;">🔑 Contraseña</button>
             </div>
         </div>`).join('');
@@ -4844,6 +4845,41 @@ function toggleUsuario(id) {
         mostrarMensaje(d.activo ? '✅ Usuario activado' : '🔒 Usuario desactivado');
         cargarUsuarios();
     }).catch(() => mostrarMensaje('❌ Error al cambiar estado'));
+}
+
+function abrirEditarUsuario(id, nombre, usuario) {
+    const prev = document.getElementById('modalEditarUsuario');
+    if (prev) prev.remove();
+    const modal = document.createElement('div');
+    modal.id = 'modalEditarUsuario';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
+        <h3 style="margin:0 0 16px;color:#fff;">✏️ Editar usuario</h3>
+        <label style="color:#aaa;font-size:12px;">Nombre</label>
+        <input id="editNombre" type="text" value="${s(nombre)}" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:12px;box-sizing:border-box;">
+        <label style="color:#aaa;font-size:12px;">Usuario (login)</label>
+        <input id="editUsuario" type="text" value="${s(usuario)}" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:16px;box-sizing:border-box;">
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="document.getElementById('modalEditarUsuario').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarEditarUsuario(${id})" style="padding:8px 16px;background:#0f766e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+}
+
+function confirmarEditarUsuario(id) {
+    const nombre = document.getElementById('editNombre')?.value.trim() || '';
+    const usuario = document.getElementById('editUsuario')?.value.trim() || '';
+    if (!nombre || !usuario) { mostrarMensaje('❌ Nombre y usuario son requeridos'); return; }
+    authFetch(`${API}/usuarios/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ nombre, usuario })
+    }).then(r => r.json()).then(d => {
+        mostrarMensaje('✅ ' + (d.mensaje || 'Usuario actualizado'));
+        document.getElementById('modalEditarUsuario')?.remove();
+        cargarUsuarios();
+    }).catch(() => mostrarMensaje('❌ Error al actualizar usuario'));
 }
 
 function abrirCambiarPassword(id, nombre) {
