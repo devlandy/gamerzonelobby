@@ -2035,6 +2035,9 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
 
         carrito = [];
         totalVenta = 0;
+        clienteSeleccionado = null;
+        const descEl = document.getElementById("descuentoPct");
+        if (descEl) descEl.value = "0";
         renderCarrito();
         cargarDashboard();
         cargarPendientes();
