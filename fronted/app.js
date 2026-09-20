@@ -2485,15 +2485,14 @@ function finalizarConsola(id){
 }
 
 // ==================================================================
-// 🔐 PERMISOS POR ROL  (Fase 1)
+// 🔐 PERMISOS POR ROL
 // ------------------------------------------------------------------
-// Julio y Cristian (rol ADMIN) ven todo.
-// Ludwin (CAJERO) tiene acceso parcial controlado.
-// El resto solo puede cobrar: ve Ventas y Cerrar Sesión.
+// ADMIN: acceso total.
+// CAJERO: Principal, Clientes, Inventario (solo productos), Órdenes, Torneos, Cierre Día.
+// Otros: solo Ventas y Cerrar Sesión.
 // ==================================================================
 const ROLES_ADMIN  = ["ADMIN", "ADMINISTRADOR"];
 const NOMBRES_ADMIN  = ["julio", "cristian"];
-const NOMBRES_CAJERO = ["ludwin"];
 
 function esAdmin() {
     const usuario = JSON.parse(localStorage.getItem("usuario"));
@@ -2506,21 +2505,21 @@ function esAdmin() {
 function esCajero() {
     const usuario = JSON.parse(localStorage.getItem("usuario"));
     if (!usuario) return false;
-    const nombre = (usuario.nombre || "").toString().toLowerCase();
-    return NOMBRES_CAJERO.some(n => nombre.includes(n));
+    const rol = (usuario.rol || "").toString().toUpperCase();
+    return rol === "CAJERO";
 }
 
 function aplicarPermisos() {
     if (esAdmin()) return;
 
     if (esCajero()) {
-        // Cajero: Ventas, Productos, Inventario, Torneos, Clientes, Finanzas (solo gastos) y Cerrar Sesión
-        const permitidosCajero = ["'ventas'", "'productos'", "'inventario'", "'torneos'", "'clientes'", "'finanzas'", "'ordenes'", "'dashboard'", "logout"];
+        // Cajero: Principal, Clientes, Inventario (solo productos), Órdenes, Torneos, Cierre Día, Cerrar Sesión
+        const permitidosCajero = ["'dashboard'", "'clientes'", "'inventario'", "'ordenes'", "'torneos'", "'cierre'", "logout()"];
         document.querySelectorAll(".sidebar button").forEach(btn => {
             const accion = btn.getAttribute("onclick") || "";
             if (!permitidosCajero.some(p => accion.includes(p))) btn.style.display = "none";
         });
-        mostrar("ventas");
+        mostrar("dashboard");
         return;
     }
 
