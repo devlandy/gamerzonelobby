@@ -42,6 +42,7 @@
         <button onclick="mostrar('torneos')">Torneos</button>
         <button onclick="mostrar('finanzas')">Finanzas</button>
         <button onclick="mostrar('cierre')">Cierre Día</button>
+        <button id="usuariosBtn" onclick="mostrar('usuarios')">Usuarios</button>
         <button onclick="logout()">Cerrar Sesión</button>
     </nav>
 
@@ -800,6 +801,14 @@
                 <button id="modalConfirmOk" style="flex:1;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;"></button>
             </div>
         </div>
+    </div>
+
+        <!-- USUARIOS -->
+        <div id="usuarios" class="seccion" style="display:none;">
+            <h2>👥 Usuarios</h2>
+            <div id="usuariosLista" style="display:grid;gap:12px;margin-top:16px;"></div>
+        </div>
+
     </div>
 
     <style>

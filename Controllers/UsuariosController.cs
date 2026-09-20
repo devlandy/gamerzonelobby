@@ -35,6 +35,11 @@ namespace GamerZoneAPI.Controllers
                 return Unauthorized(new { mensaje = "Credenciales incorrectas" });
 
             var row = rows[0];
+
+            bool activo = !row.ContainsKey("activo") || Convert.ToInt32(row["activo"]) == 1;
+            if (!activo)
+                return Unauthorized(new { mensaje = "Usuario desactivado. Contacta al administrador." });
+
             string storedPassword = row["password"].ToString()!;
 
             bool passwordValida = storedPassword.StartsWith("$2")
@@ -96,14 +101,29 @@ namespace GamerZoneAPI.Controllers
         [HttpGet]
         public IActionResult Listar()
         {
-            var rows = _db.ExecuteQuery("SELECT id_usuario, nombre, usuario, rol FROM usuarios");
+            var rows = _db.ExecuteQuery("SELECT id_usuario, nombre, usuario, rol, IFNULL(activo,1) AS activo FROM usuarios");
             return Ok(rows.Select(r => new
             {
-                id = r["id_usuario"],
+                id     = r["id_usuario"],
                 nombre = r["nombre"],
-                usuario = r["usuario"],
-                rol = r["rol"]
+                usuario= r["usuario"],
+                rol    = r["rol"],
+                activo = Convert.ToInt32(r["activo"]) == 1
             }));
+        }
+
+        [Authorize(Roles = "ADMIN")]
+        [HttpPatch("{id}/activo")]
+        public IActionResult ToggleActivo(int id)
+        {
+            var rows = _db.ExecuteQuery("SELECT IFNULL(activo,1) AS activo FROM usuarios WHERE id_usuario=@id",
+                new MySqlParameter("@id", id));
+            if (rows.Count == 0) return NotFound();
+            int nuevoEstado = Convert.ToInt32(rows[0]["activo"]) == 1 ? 0 : 1;
+            _db.ExecuteNonQuery("UPDATE usuarios SET activo=@a WHERE id_usuario=@id",
+                new MySqlParameter("@a", nuevoEstado),
+                new MySqlParameter("@id", id));
+            return Ok(new { activo = nuevoEstado == 1 });
         }
     }
 

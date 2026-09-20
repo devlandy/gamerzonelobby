@@ -127,6 +127,11 @@ function mostrar(seccion) {
         cargarCierre();
     }
 
+    // USUARIOS
+    if(seccion === "usuarios"){
+        cargarUsuarios();
+    }
+
     // ÓRDENES
     if(seccion === "ordenes"){
         filtrarOrdenes('PENDIENTE');
@@ -4808,4 +4813,69 @@ async function eliminarIngresoExtra(id) {
         cargarFinanzas();
     })
     .catch(() => mostrarMensaje("❌ Error eliminando ingreso"));
+}
+
+// ── Usuarios ─────────────────────────────────────────────────────────
+function cargarUsuarios() {
+    authFetch(`${API}/usuarios`)
+    .then(r => r.json())
+    .then(data => {
+        const el = document.getElementById('usuariosLista');
+        if (!el) return;
+        el.innerHTML = data.map(u => `
+        <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+                <div style="font-weight:700;font-size:15px;color:#fff;">${s(u.nombre)}</div>
+                <div style="font-size:12px;color:#aaa;">@${s(u.usuario)} · <span style="color:#a78bfa;">${s(u.rol)}</span></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${u.activo?'#4ade80':'#ef4444'};color:#000;">${u.activo?'ACTIVO':'INACTIVO'}</span>
+                <button onclick="toggleUsuario(${u.id})" style="padding:6px 12px;border:none;border-radius:6px;background:${u.activo?'#7f1d1d':'#14532d'};color:#fff;cursor:pointer;font-size:12px;">${u.activo?'Desactivar':'Activar'}</button>
+                <button onclick="abrirCambiarPassword(${u.id},'${s(u.nombre)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-size:12px;">🔑 Contraseña</button>
+            </div>
+        </div>`).join('');
+    }).catch(() => mostrarMensaje('❌ Error al cargar usuarios'));
+}
+
+function toggleUsuario(id) {
+    authFetch(`${API}/usuarios/${id}/activo`, { method: 'PATCH' })
+    .then(r => r.json())
+    .then(d => {
+        mostrarMensaje(d.activo ? '✅ Usuario activado' : '🔒 Usuario desactivado');
+        cargarUsuarios();
+    }).catch(() => mostrarMensaje('❌ Error al cambiar estado'));
+}
+
+function abrirCambiarPassword(id, nombre) {
+    const prev = document.getElementById('modalPassword');
+    if (prev) prev.remove();
+    const modal = document.createElement('div');
+    modal.id = 'modalPassword';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
+        <h3 style="margin:0 0 16px;color:#fff;">🔑 Cambiar contraseña</h3>
+        <p style="color:#aaa;font-size:13px;margin:0 0 12px;">${s(nombre)}</p>
+        <input id="pwNueva" type="password" placeholder="Nueva contraseña (mín. 6 caracteres)" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;">
+        <input id="pwConfirm" type="password" placeholder="Confirmar contraseña" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:16px;box-sizing:border-box;">
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="document.getElementById('modalPassword').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarCambiarPassword(${id})" style="padding:8px 16px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+}
+
+function confirmarCambiarPassword(id) {
+    const nueva = document.getElementById('pwNueva')?.value || '';
+    const confirm = document.getElementById('pwConfirm')?.value || '';
+    if (nueva.length < 6) { mostrarMensaje('❌ Mínimo 6 caracteres'); return; }
+    if (nueva !== confirm) { mostrarMensaje('❌ Las contraseñas no coinciden'); return; }
+    authFetch(`${API}/usuarios/${id}/password`, {
+        method: 'PUT',
+        body: JSON.stringify({ nueva_password: nueva })
+    }).then(r => r.json()).then(d => {
+        mostrarMensaje('✅ ' + (d.mensaje || 'Contraseña actualizada'));
+        document.getElementById('modalPassword')?.remove();
+    }).catch(() => mostrarMensaje('❌ Error al cambiar contraseña'));
 }
