@@ -1787,6 +1787,7 @@ function renderCarrito(){
     totalVenta = subtotalBruto - descuento;
 
     // Cliente
+    const nombreLibreActual = document.getElementById("nombreClienteLibre")?.value || "";
     const clienteHtml = clienteSeleccionado
         ? '<div style="display:flex;align-items:center;gap:8px;background:#0d2a0d;border:1px solid #22c55e;border-radius:8px;padding:8px 12px;">'
           + '<span style="font-size:18px;">👤</span>'
@@ -1794,8 +1795,9 @@ function renderCarrito(){
           + '<button onclick="clienteSeleccionado=null;renderCarrito()" style="background:transparent;border:none;color:#555;cursor:pointer;font-size:15px;" title="Quitar">✕</button>'
           + '</div>'
         : '<div>'
-          + '<input id="buscarClientePOS" placeholder="Buscar cliente..." style="width:100%;padding:8px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);" oninput="buscarClientePOSFn()">'
-          + '<div id="resultadosClientePOS" style="margin-top:4px;"></div>'
+          + '<input id="buscarClientePOS" placeholder="Buscar cliente registrado..." style="width:100%;padding:8px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);margin-bottom:6px;" oninput="buscarClientePOSFn()">'
+          + '<div id="resultadosClientePOS" style="margin-bottom:4px;"></div>'
+          + '<input id="nombreClienteLibre" placeholder="O escribe el nombre aquí..." value="' + s(nombreLibreActual) + '" style="width:100%;padding:8px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);">'
           + '</div>';
 
     // Descuento badge
@@ -1992,6 +1994,8 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
 
         mesa: document.getElementById("mesaSeleccion")?.value || null,
 
+        nombre_orden: document.getElementById("nombreClienteLibre")?.value?.trim() || nombreOrden,
+
         productos: expandirCarritoParaVenta(carrito)
     };
 
@@ -2053,6 +2057,8 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
         if (descEl) descEl.value = "0";
         const mesaEl = document.getElementById("mesaSeleccion");
         if (mesaEl) mesaEl.value = "";
+        const nombreLibreEl = document.getElementById("nombreClienteLibre");
+        if (nombreLibreEl) nombreLibreEl.value = "";
         renderCarrito();
         cargarDashboard();
         cargarPendientes();
@@ -3778,7 +3784,7 @@ function renderOrdenes(data) {
                     ${!cancelado ? badgeEntrega : ''}
                 </div>
             </div>
-            <div style="color:#aaa;font-size:12px;margin-bottom:8px;">👤 ${s(o.cliente)}</div>
+            <div style="color:#aaa;font-size:12px;margin-bottom:8px;">👤 ${o.nombre_orden && o.nombre_orden !== 'POS' && o.nombre_orden !== 'ORDEN POS' ? s(o.nombre_orden) : s(o.cliente)}</div>
             <div style="border-top:1px solid #222;padding-top:8px;margin-bottom:8px;">${items || '<span style="color:#555;font-size:12px;">Sin productos</span>'}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <span style="color:#aaa;font-size:12px;">Total</span>
