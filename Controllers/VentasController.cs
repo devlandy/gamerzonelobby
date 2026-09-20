@@ -33,8 +33,8 @@ namespace GamerZoneAPI.Controllers
                 string formaCobro = estado == "PENDIENTE" ? "PENDIENTE" : "PAGADO";
 
                 var cmdVenta = new MySqlCommand(@"
-                    INSERT INTO ventas (id_cliente, id_usuario, tipo, numero_orden, nombre_orden, forma_cobro, metodo_pago, total, descuento_pct, estado, observacion, fecha)
-                    VALUES (@cliente, @usuario, 'PRODUCTO', @numero, @nombre, @forma, @metodo, @total, @descuento, @estado, @obs, NOW());
+                    INSERT INTO ventas (id_cliente, id_usuario, tipo, numero_orden, nombre_orden, forma_cobro, metodo_pago, total, descuento_pct, estado, observacion, mesa, fecha)
+                    VALUES (@cliente, @usuario, 'PRODUCTO', @numero, @nombre, @forma, @metodo, @total, @descuento, @estado, @obs, @mesa, NOW());
                     SELECT LAST_INSERT_ID();", conn, transaction);
 
                 cmdVenta.Parameters.AddWithValue("@cliente", (object?)request.id_cliente ?? DBNull.Value);
@@ -47,6 +47,7 @@ namespace GamerZoneAPI.Controllers
                 cmdVenta.Parameters.AddWithValue("@descuento", request.descuento_pct);
                 cmdVenta.Parameters.AddWithValue("@estado", estado);
                 cmdVenta.Parameters.AddWithValue("@obs", request.observacion ?? "");
+                cmdVenta.Parameters.AddWithValue("@mesa", (object?)request.mesa ?? DBNull.Value);
 
                 int idVenta = Convert.ToInt32(cmdVenta.ExecuteScalar());
 
@@ -137,7 +138,7 @@ namespace GamerZoneAPI.Controllers
         public IActionResult VentasPendientes()
         {
             var rows = _db.ExecuteQuery(@"
-                SELECT v.id_venta, v.numero_orden, v.nombre_orden, v.tipo, v.total, v.estado, v.fecha, c.nombre AS cliente
+                SELECT v.id_venta, v.numero_orden, v.nombre_orden, v.tipo, v.total, v.estado, v.fecha, v.mesa, c.nombre AS cliente
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
                 WHERE v.estado='PENDIENTE'
@@ -152,7 +153,8 @@ namespace GamerZoneAPI.Controllers
                 total = r["total"],
                 estado = r["estado"],
                 cliente = r["cliente"],
-                fecha = r["fecha"]
+                fecha = r["fecha"],
+                mesa = r["mesa"]?.ToString() ?? ""
             }));
         }
 
@@ -260,7 +262,7 @@ namespace GamerZoneAPI.Controllers
                         AND EXISTS (SELECT 1 FROM detalle_ventas d2 WHERE d2.id_venta = v2.id_venta AND d2.id_producto > 0)
                        ) AS numero_orden,
                        v.nombre_orden, v.total, v.estado,
-                       v.metodo_pago, v.fecha, v.entregado, IFNULL(c.nombre,'Sin cliente') AS cliente
+                       v.metodo_pago, v.fecha, v.entregado, v.mesa, IFNULL(c.nombre,'Sin cliente') AS cliente
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
                 {where}
@@ -285,6 +287,7 @@ namespace GamerZoneAPI.Controllers
                 metodo_pago  = r["metodo_pago"]?.ToString() ?? "",
                 fecha        = r["fecha"],
                 entregado    = Convert.ToInt32(r["entregado"]) == 1,
+                mesa         = r["mesa"]?.ToString() ?? "",
                 productos    = detalles
                     .Where(d => Convert.ToInt32(d["id_venta"]) == Convert.ToInt32(r["id_venta"]))
                     .Select(d => new {

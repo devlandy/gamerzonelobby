@@ -94,6 +94,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GamerZoneAPI.Data.DbManager>();
+    try { db.ExecuteNonQuery("ALTER TABLE ventas ADD COLUMN mesa VARCHAR(50) NULL"); } catch { }
     try { db.ExecuteNonQuery("ALTER TABLE detalle_ventas ADD COLUMN entregado TINYINT(1) NOT NULL DEFAULT 0"); } catch { }
     try { db.ExecuteNonQuery("ALTER TABLE usuarios ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1"); } catch { }
     try { db.ExecuteNonQuery("ALTER TABLE detalle_ventas ADD COLUMN cobrado TINYINT(1) NOT NULL DEFAULT 0"); } catch { }

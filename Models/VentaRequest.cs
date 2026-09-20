@@ -20,6 +20,8 @@ namespace GamerZoneAPI.Models
 
         public string observacion { get; set; }
 
+        public string? mesa { get; set; }
+
         [Range(0, 100, ErrorMessage = "El descuento debe estar entre 0 y 100")]
         public decimal descuento_pct { get; set; }
 

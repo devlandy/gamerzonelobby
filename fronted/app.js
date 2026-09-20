@@ -1823,6 +1823,17 @@ function renderCarrito(){
         + '<span style="font-size:14px;font-weight:700;color:var(--text);">Total</span>'
         + '<span style="font-size:20px;font-weight:800;color:#4ade80;">Q' + totalVenta.toFixed(2) + '</span>'
         + '</div>'
+        // mesa
+        + '<div style="margin-bottom:10px;">'
+        + '<div style="font-size:11px;color:#666;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Mesa</div>'
+        + '<select id="mesaSeleccion" style="width:100%;padding:8px;background:var(--surface-1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">'
+        + '<option value="">— Sin mesa —</option>'
+        + '<option value="Mesa 1">Mesa 1</option>'
+        + '<option value="Mesa 2">Mesa 2</option>'
+        + '<option value="Mesa 3">Mesa 3</option>'
+        + '<option value="Mesa 4">Mesa 4</option>'
+        + '</select>'
+        + '</div>'
         // cliente
         + '<div style="margin-bottom:12px;">'
         + '<div style="font-size:11px;color:#666;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Cliente</div>'
@@ -1979,6 +1990,8 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
 
         descuento_pct: parseFloat(document.getElementById("descuentoPct")?.value) || 0,
 
+        mesa: document.getElementById("mesaSeleccion")?.value || null,
+
         productos: expandirCarritoParaVenta(carrito)
     };
 
@@ -2038,6 +2051,8 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
         clienteSeleccionado = null;
         const descEl = document.getElementById("descuentoPct");
         if (descEl) descEl.value = "0";
+        const mesaEl = document.getElementById("mesaSeleccion");
+        if (mesaEl) mesaEl.value = "";
         renderCarrito();
         cargarDashboard();
         cargarPendientes();
@@ -3755,7 +3770,7 @@ function renderOrdenes(data) {
         <div style="background:#1a1a2e;border:1px solid ${cancelado?'#4a1a1a':'#2a2a4a'};border-radius:10px;padding:16px;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;">
                 <div>
-                    <span style="font-weight:700;font-size:15px;">Orden #${o.numero_orden || o.id_venta}</span>
+                    <span style="font-weight:700;font-size:15px;">${o.mesa ? s(o.mesa) : 'Orden #' + (o.numero_orden || o.id_venta)}</span>
                     <span style="font-size:11px;color:#666;margin-left:6px;">${fecha}</span>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
