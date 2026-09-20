@@ -1787,7 +1787,6 @@ function renderCarrito(){
     totalVenta = subtotalBruto - descuento;
 
     // Cliente
-    const nombreLibreActual = document.getElementById("nombreClienteLibre")?.value || "";
     const clienteHtml = clienteSeleccionado
         ? '<div style="display:flex;align-items:center;gap:8px;background:#0d2a0d;border:1px solid #22c55e;border-radius:8px;padding:8px 12px;">'
           + '<span style="font-size:18px;">👤</span>'
@@ -1795,9 +1794,8 @@ function renderCarrito(){
           + '<button onclick="clienteSeleccionado=null;renderCarrito()" style="background:transparent;border:none;color:#555;cursor:pointer;font-size:15px;" title="Quitar">✕</button>'
           + '</div>'
         : '<div>'
-          + '<input id="buscarClientePOS" placeholder="Buscar cliente registrado..." style="width:100%;padding:8px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);margin-bottom:6px;" oninput="buscarClientePOSFn()">'
-          + '<div id="resultadosClientePOS" style="margin-bottom:4px;"></div>'
-          + '<input id="nombreClienteLibre" placeholder="O escribe el nombre aquí..." value="' + s(nombreLibreActual) + '" style="width:100%;padding:8px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);">'
+          + '<input id="buscarClientePOS" placeholder="Buscar cliente registrado..." style="width:100%;padding:8px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);" oninput="buscarClientePOSFn()">'
+          + '<div id="resultadosClientePOS" style="margin-top:4px;"></div>'
           + '</div>';
 
     // Descuento badge
@@ -1872,9 +1870,7 @@ function toggleCamposFactura(){
 }
 
 function toggleCamposPendiente(){
-    const metodo = document.getElementById("metodoPago").value;
-    const campo = document.getElementById("campoNombrePendiente");
-    if (campo) campo.style.display = metodo === "PENDIENTE" ? "block" : "none";
+    // El campo de nombre siempre está visible; no ocultar
 }
 
 // ======================
@@ -1916,17 +1912,14 @@ function confirmarVenta(){
     const observacion = document.getElementById("observacionVenta").value;
     const requiereFactura = document.getElementById("requiereFactura").checked;
 
-    if (metodo === "PENDIENTE") {
-        const nombreCliente = document.getElementById("nombreClientePendiente").value.trim();
-        if (!nombreCliente) {
-            mostrarMensaje("⚠️ Ingresa el nombre del cliente para la orden pendiente.");
-            return;
-        }
+    const nombreClienteModal = document.getElementById("nombreClientePendiente")?.value.trim() || "";
+
+    if (metodo === "PENDIENTE" && !nombreClienteModal) {
+        mostrarMensaje("⚠️ Ingresa el nombre del cliente para la orden pendiente.");
+        return;
     }
 
-    const nombreOrden = metodo === "PENDIENTE"
-        ? document.getElementById("nombreClientePendiente").value.trim()
-        : "POS";
+    const nombreOrden = nombreClienteModal || "POS";
 
     const datosFactura = requiereFactura ? {
         nit: document.getElementById("nitFacturaPOS").value || "CF",
@@ -1994,8 +1987,6 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
 
         mesa: document.getElementById("mesaSeleccion")?.value || null,
 
-        nombre_orden: document.getElementById("nombreClienteLibre")?.value?.trim() || nombreOrden,
-
         productos: expandirCarritoParaVenta(carrito)
     };
 
@@ -2057,8 +2048,8 @@ function registrarVenta(metodo, observacion, datosFactura = null, nombreOrden = 
         if (descEl) descEl.value = "0";
         const mesaEl = document.getElementById("mesaSeleccion");
         if (mesaEl) mesaEl.value = "";
-        const nombreLibreEl = document.getElementById("nombreClienteLibre");
-        if (nombreLibreEl) nombreLibreEl.value = "";
+        const nombrePendEl = document.getElementById("nombreClientePendiente");
+        if (nombrePendEl) nombrePendEl.value = "";
         renderCarrito();
         cargarDashboard();
         cargarPendientes();
