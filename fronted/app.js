@@ -2529,7 +2529,7 @@ function aplicarPermisos() {
 
     if (esCajero()) {
         // Cajero: Principal, Clientes, Inventario (solo productos), Órdenes, Torneos, Cierre Día, Cerrar Sesión
-        const permitidosCajero = ["'dashboard'", "'clientes'", "'inventario'", "'ordenes'", "'torneos'", "'cierre'", "'finanzas'", "logout()"];
+        const permitidosCajero = ["'dashboard'", "'ventas'", "'clientes'", "'inventario'", "'ordenes'", "'torneos'", "'cierre'", "'finanzas'", "logout()"];
         document.querySelectorAll(".sidebar button").forEach(btn => {
             const accion = btn.getAttribute("onclick") || "";
             if (!permitidosCajero.some(p => accion.includes(p))) btn.style.display = "none";
