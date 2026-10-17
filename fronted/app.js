@@ -3760,6 +3760,7 @@ function renderOrdenes(data) {
         const botones = cancelado ? '' : `
             ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta})">💳 Cobrar</button>` : ''}
             ${!entregado ? `<button class="cli-btn" style="background:#7c3aed;" onclick="entregarOrden(${o.id_venta})">✅ Entregar</button>` : ''}
+            <button class="cli-btn" style="background:#0f766e;" onclick="abrirAsignarClienteOrden(${o.id_venta})">👤 Cliente</button>
             <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
             <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>`;
 
@@ -4130,6 +4131,62 @@ async function cancelarOrden(idVenta) {
         mostrarMensaje('✅ Orden cancelada');
         cargarOrdenes();
     });
+}
+
+// ── Asignar cliente a orden ─────────────────────────────────────────
+function abrirAsignarClienteOrden(idVenta) {
+    const prev = document.getElementById('modalAsignarCliente');
+    if (prev) prev.remove();
+    const modal = document.createElement('div');
+    modal.id = 'modalAsignarCliente';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:340px;">
+        <h3 style="margin:0 0 16px;color:#fff;">👤 Asignar cliente</h3>
+        <input id="buscarClienteOrden" type="text" placeholder="Buscar por nombre o teléfono..."
+          style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;"
+          oninput="buscarClienteParaOrden()">
+        <div id="resultadosClienteOrden" style="max-height:200px;overflow-y:auto;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button onclick="document.getElementById('modalAsignarCliente').remove()"
+            style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+        </div>
+      </div>`;
+    modal.dataset.idVenta = idVenta;
+    document.body.appendChild(modal);
+    document.getElementById('buscarClienteOrden').focus();
+}
+
+function buscarClienteParaOrden() {
+    const q = document.getElementById('buscarClienteOrden')?.value?.trim();
+    const res = document.getElementById('resultadosClienteOrden');
+    if (!res) return;
+    if (!q || q.length < 2) { res.innerHTML = ''; return; }
+    authFetch(`${API}/clientes/buscar?texto=${encodeURIComponent(q)}`)
+    .then(r => r.json()).then(data => {
+        if (!data.length) { res.innerHTML = '<p style="color:#666;font-size:13px;padding:8px;">Sin resultados</p>'; return; }
+        res.innerHTML = data.map(c => `
+          <div onclick="seleccionarClienteParaOrden(${c.id_cliente},'${s(c.nombre)}')"
+            style="padding:10px;border-radius:6px;cursor:pointer;border-bottom:1px solid #222;color:#fff;font-size:13px;"
+            onmouseover="this.style.background='#2a2a4a'" onmouseout="this.style.background=''">
+            👤 ${s(c.nombre)} ${c.telefono ? '· ' + s(c.telefono) : ''}
+          </div>`).join('');
+    }).catch(() => {});
+}
+
+function seleccionarClienteParaOrden(idCliente, nombre) {
+    const modal = document.getElementById('modalAsignarCliente');
+    if (!modal) return;
+    const idVenta = modal.dataset.idVenta;
+    authFetch(`${API}/ventas/${idVenta}/cliente`, {
+        method: 'PATCH',
+        body: JSON.stringify({ id_cliente: idCliente })
+    }).then(r => r.json()).then(d => {
+        if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
+        mostrarMensaje(`✅ Cliente "${nombre}" asignado a la orden`);
+        modal.remove();
+        cargarOrdenes();
+    }).catch(() => mostrarMensaje('❌ Error al asignar cliente'));
 }
 
 // ==================================================================

@@ -247,6 +247,22 @@ namespace GamerZoneAPI.Controllers
             return Ok(new { mensaje = "Orden marcada como entregada" });
         }
 
+        [HttpPatch("{id}/cliente")]
+        public IActionResult AsignarCliente(int id, [FromBody] AsignarClienteRequest request)
+        {
+            var venta = _db.ExecuteQuery("SELECT estado FROM ventas WHERE id_venta=@id",
+                new MySqlParameter("@id", id));
+            if (venta.Count == 0) return NotFound(new { error = "Orden no encontrada" });
+            if (venta[0]["estado"].ToString() == "CANCELADO")
+                return BadRequest(new { error = "La orden está cancelada" });
+
+            _db.ExecuteNonQuery("UPDATE ventas SET id_cliente=@cliente WHERE id_venta=@id",
+                new MySqlParameter("@cliente", request.id_cliente),
+                new MySqlParameter("@id", id));
+
+            return Ok(new { mensaje = "Cliente asignado correctamente" });
+        }
+
         [HttpGet("ordenes")]
         public IActionResult ListarOrdenes([FromQuery] string estado = "TODAS")
         {
@@ -482,6 +498,11 @@ namespace GamerZoneAPI.Controllers
     public class CancelarVentaRequest
     {
         public string? motivo { get; set; }
+    }
+
+    public class AsignarClienteRequest
+    {
+        public int id_cliente { get; set; }
     }
 
     public class AgregarOrdenRequest
