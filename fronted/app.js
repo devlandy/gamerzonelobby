@@ -4142,19 +4142,75 @@ function abrirAsignarClienteOrden(idVenta) {
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
       <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:340px;">
-        <h3 style="margin:0 0 16px;color:#fff;">👤 Asignar cliente</h3>
-        <input id="buscarClienteOrden" type="text" placeholder="Buscar por nombre o teléfono..."
-          style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;"
-          oninput="buscarClienteParaOrden()">
-        <div id="resultadosClienteOrden" style="max-height:200px;overflow-y:auto;margin-bottom:12px;"></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end;">
-          <button onclick="document.getElementById('modalAsignarCliente').remove()"
-            style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+        <h3 style="margin:0 0 14px;color:#fff;">👤 Asignar cliente</h3>
+        <div style="display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid #333;">
+          <button id="tabBuscarCliente" onclick="switchTabCliente('buscar')"
+            style="flex:1;padding:8px;border:none;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">🔍 Buscar</button>
+          <button id="tabNuevoCliente" onclick="switchTabCliente('nuevo')"
+            style="flex:1;padding:8px;border:none;background:#333;color:#aaa;cursor:pointer;font-size:13px;">➕ Nuevo</button>
         </div>
+        <div id="panelBuscarCliente">
+          <input id="buscarClienteOrden" type="text" placeholder="Buscar por nombre o teléfono..."
+            style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;"
+            oninput="buscarClienteParaOrden()">
+          <div id="resultadosClienteOrden" style="max-height:200px;overflow-y:auto;margin-bottom:8px;"></div>
+        </div>
+        <div id="panelNuevoCliente" style="display:none;">
+          <input id="nuevoClienteNombre" type="text" placeholder="Nombre *"
+            style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;">
+          <input id="nuevoClienteTelefono" type="text" placeholder="Teléfono *"
+            style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:12px;box-sizing:border-box;">
+          <button onclick="registrarYAsignarCliente()"
+            style="width:100%;padding:9px;background:#0f766e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;margin-bottom:8px;">
+            Registrar y asignar</button>
+        </div>
+        <button onclick="document.getElementById('modalAsignarCliente').remove()"
+          style="width:100%;padding:8px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
       </div>`;
     modal.dataset.idVenta = idVenta;
     document.body.appendChild(modal);
     document.getElementById('buscarClienteOrden').focus();
+}
+
+function switchTabCliente(tab) {
+    const buscar = document.getElementById('panelBuscarCliente');
+    const nuevo  = document.getElementById('panelNuevoCliente');
+    const btnB   = document.getElementById('tabBuscarCliente');
+    const btnN   = document.getElementById('tabNuevoCliente');
+    if (tab === 'buscar') {
+        buscar.style.display = ''; nuevo.style.display = 'none';
+        btnB.style.background = '#1e40af'; btnB.style.color = '#fff';
+        btnN.style.background = '#333';    btnN.style.color = '#aaa';
+    } else {
+        buscar.style.display = 'none'; nuevo.style.display = '';
+        btnN.style.background = '#0f766e'; btnN.style.color = '#fff';
+        btnB.style.background = '#333';    btnB.style.color = '#aaa';
+    }
+}
+
+function registrarYAsignarCliente() {
+    const modal    = document.getElementById('modalAsignarCliente');
+    const nombre   = document.getElementById('nuevoClienteNombre')?.value.trim();
+    const telefono = document.getElementById('nuevoClienteTelefono')?.value.trim();
+    if (!nombre)   { mostrarMensaje('❌ El nombre es requerido'); return; }
+    if (!telefono) { mostrarMensaje('❌ El teléfono es requerido'); return; }
+    const idVenta  = modal?.dataset.idVenta;
+
+    authFetch(`${API}/clientes`, {
+        method: 'POST',
+        body: JSON.stringify({ nombre, telefono })
+    }).then(r => r.json()).then(d => {
+        const idCliente = d.id;
+        if (!idCliente) { mostrarMensaje('❌ Error al registrar cliente'); return; }
+        return authFetch(`${API}/ventas/${idVenta}/cliente`, {
+            method: 'PATCH',
+            body: JSON.stringify({ id_cliente: idCliente })
+        }).then(r => r.json()).then(() => {
+            mostrarMensaje(`✅ Cliente "${nombre}" registrado y asignado`);
+            modal?.remove();
+            cargarOrdenes();
+        });
+    }).catch(() => mostrarMensaje('❌ Error al registrar cliente'));
 }
 
 function buscarClienteParaOrden() {
