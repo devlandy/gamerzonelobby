@@ -4198,10 +4198,10 @@ function registrarYAsignarCliente() {
 
     authFetch(`${API}/clientes`, {
         method: 'POST',
-        body: JSON.stringify({ nombre, telefono })
+        body: JSON.stringify({ nombre, telefono, apodo: '' })
     }).then(r => r.json()).then(d => {
         const idCliente = d.id;
-        if (!idCliente) { mostrarMensaje('❌ Error al registrar cliente'); return; }
+        if (!idCliente) { mostrarMensaje('❌ ' + (d.error || d.title || 'Error al registrar cliente')); return; }
         return authFetch(`${API}/ventas/${idVenta}/cliente`, {
             method: 'PATCH',
             body: JSON.stringify({ id_cliente: idCliente })
