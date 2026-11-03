@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
+using System.Text.RegularExpressions;
 using GamerZoneAPI.Data;
 using GamerZoneAPI.Models;
 
@@ -115,13 +116,17 @@ namespace GamerZoneAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult Historial()
+        public IActionResult Historial([FromQuery] string? mes)
         {
+            string mesFiltrado = Regex.IsMatch(mes ?? "", @"^\d{4}-\d{2}$") ? mes! : "";
+
             var rows = _db.ExecuteQuery(@"
                 SELECT c.*, u.nombre as usuario
                 FROM cierre_diario c
                 JOIN usuarios u ON c.id_usuario = u.id_usuario
-                ORDER BY c.fecha DESC");
+                WHERE (@mes = '' OR DATE_FORMAT(c.fecha, '%Y-%m') = @mes)
+                ORDER BY c.fecha DESC",
+                new MySqlParameter("@mes", mesFiltrado));
 
             return Ok(rows.Select(r => new
             {

@@ -618,7 +618,10 @@
 
             <hr>
 
-            <h3>📋 Historial</h3>
+            <div id="historialCierresHeader" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <h3>📋 Historial</h3>
+                <input type="month" id="mesCierres" style="width:auto; padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarHistorialCierres()">
+            </div>
             <div id="historialCierres" class="dashboard-cards"></div>
         </div>
 

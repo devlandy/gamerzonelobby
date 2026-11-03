@@ -2558,8 +2558,8 @@ function aplicarRestriccionesCajero() {
     const histCierres = document.getElementById("historialCierres");
     if (histCierres) {
         histCierres.style.display = "none";
-        const h3 = histCierres.previousElementSibling;
-        if (h3 && h3.tagName === "H3") h3.style.display = "none";
+        const histHeader = document.getElementById("historialCierresHeader");
+        if (histHeader) histHeader.style.display = "none";
     }
 
     // Productos: ocultar tabs de Categorías y Subcategorías
@@ -4512,8 +4512,20 @@ function cargarCierre(){
 
     .catch(error => console.log(error));
 
-    // Historial de cierres
-    authFetch(`${API}/cierres`)
+    cargarHistorialCierres();
+}
+
+function cargarHistorialCierres(){
+
+    // Historial de cierres del mes seleccionado (por defecto, el mes actual)
+    const inputMes = document.getElementById("mesCierres");
+    if(inputMes && !inputMes.value){
+        const hoy = new Date();
+        inputMes.value = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
+    }
+    const mes = inputMes ? inputMes.value : "";
+
+    authFetch(`${API}/cierres${mes ? `?mes=${encodeURIComponent(mes)}` : ""}`)
 
     .then(r => r.json())
 
@@ -4522,7 +4534,7 @@ function cargarCierre(){
         let html = "";
 
         if(!data || data.length === 0){
-            html = `<div class="card">Sin cierres registrados</div>`;
+            html = `<div class="card">Sin cierres registrados en este mes</div>`;
         }
 
         data.forEach(c => {
@@ -4571,6 +4583,10 @@ function registrarCierre(){
         mostrarMensaje("✅ Cierre registrado");
 
         document.getElementById("observacionCierre").value = "";
+
+        // Volver al mes actual para que se vea el cierre recién registrado
+        const inputMes = document.getElementById("mesCierres");
+        if(inputMes) inputMes.value = "";
 
         cargarCierre();
     })
