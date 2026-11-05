@@ -233,7 +233,7 @@
     function mostrarBusqueda(msgError) {
         document.getElementById("contenido").innerHTML = `
             <div class="search-card">
-                <h2>🎮 Consulta tus puntos</h2>
+                <h2>Consulta tus puntos</h2>
                 <p>Escribe tu nombre o apodo para ver tu perfil</p>
                 ${msgError ? `<p style="color:#ef4444;font-size:13px;margin-bottom:10px;">${msgError}</p>` : ''}
                 <input id="txtBuscar" class="search-input" placeholder="Nombre o apodo..." maxlength="60" autofocus>
@@ -268,7 +268,7 @@
                 <div class="resultado-item" onclick="cargarPerfil('${c.codigo}')">
                     <div>
                         <div class="res-nombre">${esc(c.nombre)}</div>
-                        ${c.apodo ? `<div class="res-apodo">🎮 ${esc(c.apodo)}</div>` : ''}
+                        ${c.apodo ? `<div class="res-apodo">${esc(c.apodo)}</div>` : ''}
                     </div>
                     <span class="res-arrow">›</span>
                 </div>`).join('');
@@ -287,7 +287,7 @@
         .then(r => { if (!r.ok) throw new Error(); return r.json(); })
         .then(data => {
             const posStr = data.posicion_ranking
-                ? `<div class="ranking-badge">🏆 Posición #${data.posicion_ranking} en el ranking</div>`
+                ? `<div class="ranking-badge">Posición #${data.posicion_ranking} en el ranking</div>`
                 : "";
 
             const histHTML = !(data.historial || []).length
@@ -309,7 +309,7 @@
 
                 <div class="card">
                     <p class="nombre">${esc(data.nombre||'—')}</p>
-                    ${data.apodo ? `<p class="apodo">🎮 ${esc(data.apodo)}</p>` : ''}
+                    ${data.apodo ? `<p class="apodo">${esc(data.apodo)}</p>` : ''}
                     <p class="codigo">${esc(data.codigo||'')}</p>
                     ${posStr}
                 </div>
@@ -329,10 +329,10 @@
 
                 <div class="card">
                     <div class="info-box">
-                        💡 <strong style="color:#f59e0b;">Juego</strong>: 5 pts por hora en consola y torneos.<br>
+                        <strong style="color:#f59e0b;">Juego</strong>: 5 pts por hora en consola y torneos.<br>
                         <strong style="color:#60a5fa;">Consumo</strong>: 0.05 pts por Q1 en productos, canjeables por comida.
                     </div>
-                    <h3>📋 Últimos movimientos</h3>
+                    <h3>Últimos movimientos</h3>
                     ${histHTML}
                 </div>`;
         })

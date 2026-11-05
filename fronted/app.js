@@ -165,6 +165,8 @@ function mostrar(seccion) {
 // DASHBOARD
 // ===========================
 function cargarDashboard() {
+    cargarNotificacionesDash();
+
     authFetch(`${API}/dashboard`)
     .then(r => r.json())
     .then(data => {
@@ -180,22 +182,22 @@ function cargarDashboard() {
             <div class="card" onclick="verDetalleVentasDash()" style="cursor:pointer;transition:background .15s;" title="Ver detalle de ventas">
                 <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Ventas del período</div>
                 <div style="font-size:22px;font-weight:700;color:#4ade80;">Q${ventas}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">👆 Click para ver detalle</div>
+                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
             </div>
             <div class="card" onclick="verPendientesCobro()" style="cursor:pointer;transition:background .15s;" title="Ver pendientes de cobro">
                 <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Pendientes de cobro</div>
                 <div style="font-size:22px;font-weight:700;color:#fcd34d;">${data.pedidos_pendientes || 0}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">👆 Click para ver detalle</div>
+                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
             </div>
             <div class="card" onclick="verDetalleGastosDash()" style="cursor:pointer;transition:background .15s;" title="Ver detalle de gastos">
                 <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Gastos del período</div>
                 <div style="font-size:22px;font-weight:700;color:#f87171;">Q${gastos}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">👆 Click para ver detalle</div>
+                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
             </div>
             <div class="card" onclick="verDetalleBalanceDash()" style="cursor:pointer;transition:background .15s;" title="Ver resumen de balance">
                 <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Balance neto</div>
                 <div style="font-size:22px;font-weight:700;color:${balColor};">Q${balance}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">👆 Click para ver resumen</div>
+                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver resumen</div>
             </div>
         `;
 
@@ -203,6 +205,54 @@ function cargarDashboard() {
         container.dataset.ventas  = ventas;
         container.dataset.gastos  = gastos;
         container.dataset.balance = balance;
+    })
+    .catch(err => console.error(err));
+}
+
+// Recordatorio de productos agotados y por agotarse (solo para los dueños)
+function cargarNotificacionesDash() {
+    const cont = document.getElementById("notificacionesDash");
+    if (!cont || !esAdmin()) return;
+
+    authFetch(`${API}/inventario/alertas`)
+    .then(r => r.json())
+    .then(data => {
+        const agotados = (data.agotados || []).length;
+        const bajos    = (data.por_terminar || []).length;
+        const total    = agotados + bajos;
+
+        const fila = (icono, titulo, detalle, borde) => `
+            <div onclick="mostrar('inventario')" style="display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer;${borde ? 'border-bottom:1px solid #1e1e1e;' : ''}">
+                ${icono}
+                <div>
+                    <div style="font-size:15px;font-weight:700;color:#fff;">${titulo}</div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${detalle}</div>
+                </div>
+            </div>`;
+
+        const iconoAgotado = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>';
+        const iconoBajo    = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+
+        let filas = "";
+        if (agotados > 0) {
+            filas += fila(iconoAgotado, `${agotados} ${agotados === 1 ? 'producto agotado' : 'productos agotados'}`, 'Revisar inventario', bajos > 0);
+        }
+        if (bajos > 0) {
+            filas += fila(iconoBajo, `${bajos} ${bajos === 1 ? 'producto por agotarse' : 'productos por agotarse'}`, 'Necesitan reposición', false);
+        }
+        if (total === 0) {
+            filas = '<p style="color:#94a3b8;font-size:13px;margin:10px 0 0;">Sin productos agotados ni por agotarse.</p>';
+        }
+
+        cont.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;">
+                <span style="font-size:16px;font-weight:700;color:#fff;">Notificaciones</span>
+                ${total > 0 ? `<span style="background:#450a0a;color:#f87171;font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;">${total} ${total === 1 ? 'pendiente' : 'pendientes'}</span>` : ''}
+            </div>
+            ${filas}
+            ${total > 0 ? `<div onclick="mostrar('inventario')" style="text-align:center;font-size:13px;color:#e2e2e2;cursor:pointer;padding-top:12px;border-top:1px solid #1e1e1e;">Ver todas las alertas →</div>` : ''}
+        `;
+        cont.style.display = "block";
     })
     .catch(err => console.error(err));
 }
@@ -423,7 +473,7 @@ function mostrarQRGeneral() {
     const urlGuardada = localStorage.getItem('_baseUrl') || window.location.origin;
     overlay.innerHTML = `
         <div style="background:#181818;border-radius:14px;padding:28px 24px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px #000a;">
-            <h3 style="color:#e2e2e2;margin-bottom:6px;">📱 QR — Consulta de puntos</h3>
+            <h3 style="color:#e2e2e2;margin-bottom:6px;">QR — Consulta de puntos</h3>
             <p style="color:#555;font-size:13px;margin-bottom:16px;">Los clientes escanean para ver sus puntos</p>
 
             <div style="text-align:left;margin-bottom:14px;">
@@ -439,7 +489,7 @@ function mostrarQRGeneral() {
                 <p style="color:#aaa;font-size:13px;padding:20px 10px;">Presiona Generar</p>
             </div>
             <br>
-            <button onclick="imprimirQRGeneral()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">🖨️ Imprimir</button>
+            <button onclick="imprimirQRGeneral()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">Imprimir</button>
             <button onclick="document.getElementById('_qrGeneralOverlay').remove()" style="background:#222;color:#888;border:1px solid #333;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;">Cerrar</button>
         </div>`;
     overlay.style.display = 'flex';
@@ -479,7 +529,7 @@ function imprimirQRGeneral() {
             img { width:260px; height:260px; }
             small { color:#aaa; font-size:11px; margin-top:12px; }
         </style></head><body>
-        <h2>🎮 El Lobby Zone</h2>
+        <h2>El Lobby Zone</h2>
         <p>Escanea para consultar tus puntos</p>
         <img src="${img.src}">
         <small>Apunta con la cámara de tu celular</small>
@@ -545,7 +595,7 @@ function buscarClientes() {
                                         <div id="qrInline-${s(c.codigo)}" class="cli-qr-box"></div>
                                         <div style="font-size:11px;color:#555;margin-top:6px;">${s(c.codigo)}</div>
                                         <button class="cli-btn" style="margin-top:8px;font-size:11px;"
-                                            onclick="descargarQRInline('${s(c.codigo)}','${s(c.nombre)}')">⬇ Descargar</button>
+                                            onclick="descargarQRInline('${s(c.codigo)}','${s(c.nombre)}')">Descargar</button>
                                     </div>
                                     <div style="flex:1;min-width:220px;">
                                         <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Puntos acumulados</div>
@@ -554,9 +604,9 @@ function buscarClientes() {
                                         </div>
                                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                                             <button class="btn" style="font-size:13px;"
-                                                onclick="seleccionarClientePOS(${c.id},'${s(c.nombre)}')">🛒 Usar en POS</button>
+                                                onclick="seleccionarClientePOS(${c.id},'${s(c.nombre)}')">Usar en POS</button>
                                             <button class="btn" style="font-size:13px;background:#1a1a1a;border:1px solid #2a2a2a;"
-                                                onclick="verHistorialCliente(${c.id},'${s(c.nombre)}')">📋 Historial</button>
+                                                onclick="verHistorialCliente(${c.id},'${s(c.nombre)}')">Historial</button>
                                         </div>
                                     </div>
                                 </div>
@@ -2103,7 +2153,7 @@ function mostrarMensaje(texto) {
 
     toast.innerHTML =
         '<span style="font-size:14px;font-weight:700;color:' + color + ';">' + icon + '</span>'
-        + '<span style="flex:1;">' + texto.replace(/^[✅❌⚠️🎮🛒📊🏆🥇🥈🥉]+\s*/, '') + '</span>'
+        + '<span style="flex:1;">' + texto.replace(/^[\p{Extended_Pictographic}️\s]+/u, '') + '</span>'
         + '<button onclick="this.parentNode.remove()" style="background:transparent;border:none;color:#444;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;">✕</button>';
 
     const container = document.getElementById('toastContainer');
@@ -2129,7 +2179,7 @@ function confirmarDialog(titulo, mensaje, tipo) {
         if (!modal) { resolve(window.confirm(mensaje)); return; }
 
         const esDanger = tipo === 'danger';
-        icon.textContent  = esDanger ? '🗑️' : '❓';
+        icon.innerHTML   = esDanger ? '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>' : '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4"/><path d="M12 17h.01"/></svg>';
         titEl.textContent = titulo || '¿Confirmar acción?';
         msgEl.innerHTML = mensaje || '';
         btnOk.textContent = esDanger ? 'Eliminar' : 'Confirmar';
@@ -2652,7 +2702,7 @@ function cargarTopClientes(){
                 mini.innerHTML = `<p style="color:#aaa; font-size:13px;">Sin clientes aún.</p>`;
             } else {
                 mini.innerHTML = data.slice(0, 5).map((c, i) => {
-                    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+                    const medal = `#${i+1}`;
                     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1e1e1e;cursor:pointer;" onclick="verHistorialCliente(' + c.id + ',\'' + s(c.nombre) + '\')">'
                         + '<span style="font-size:15px;min-width:24px;text-align:center;">' + medal + '</span>'
                         + '<span style="flex:1;font-size:13px;font-weight:600;">' + s(c.nombre) + '</span>'
@@ -2710,30 +2760,30 @@ function verHistorialCliente(id, nombre) {
         const totalGastado = compras.reduce((s, v) => s + Number(v.total || 0), 0);
 
         const motivoLabel = {
-            'COMPRA': '🛒 Compra',
-            'CONSOLA': '🎮 Consola',
-            'RECALCULO_HISTORICO': '📊 Recálculo',
-            'TORNEO': '🏆 Torneo',
-            'CAMPEON': '🥇 Campeón',
-            'FINALISTA': '🥈 Finalista',
-            'SEMIFINALISTA': '🥉 Semifinalista'
+            'COMPRA': 'Compra',
+            'CONSOLA': 'Consola',
+            'RECALCULO_HISTORICO': 'Recálculo',
+            'TORNEO': 'Torneo',
+            'CAMPEON': 'Campeón',
+            'FINALISTA': 'Finalista',
+            'SEMIFINALISTA': 'Semifinalista'
         };
 
         // Tab puntos
         const tabPuntos =
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">'
             + '<div style="background:linear-gradient(135deg,#0d47a1,#1565c0);border-radius:12px;padding:16px;text-align:center;">'
-            +   '<div style="font-size:10px;color:#90caf9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">🎮 Pts Juego</div>'
+            +   '<div style="font-size:10px;color:#90caf9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Pts Juego</div>'
             +   '<div style="font-size:26px;font-weight:800;color:#fff;">' + ptsJuego + '</div>'
             +   '<div style="font-size:10px;color:#5c8de0;margin-top:4px;">consola + torneos</div>'
             + '</div>'
             + '<div style="background:linear-gradient(135deg,#145214,#1b5e20);border-radius:12px;padding:16px;text-align:center;">'
-            +   '<div style="font-size:10px;color:#81c784;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">🛒 Pts Consumo</div>'
+            +   '<div style="font-size:10px;color:#81c784;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Pts Consumo</div>'
             +   '<div style="font-size:26px;font-weight:800;color:#fff;">' + ptsConsumo + '</div>'
             +   '<div style="font-size:10px;color:#4c8f4c;margin-top:4px;">0.05 pts / Q1</div>'
             + '</div>'
             + '<div style="background:linear-gradient(135deg,#4a148c,#6a1b9a);border-radius:12px;padding:16px;text-align:center;">'
-            +   '<div style="font-size:10px;color:#ce93d8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">⭐ Total</div>'
+            +   '<div style="font-size:10px;color:#ce93d8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Total</div>'
             +   '<div style="font-size:26px;font-weight:800;color:#fff;">' + ptsTotal + '</div>'
             +   '<div style="font-size:10px;color:#8e4db0;margin-top:4px;">puntos acumulados</div>'
             + '</div>'
@@ -2743,7 +2793,7 @@ function verHistorialCliente(id, nombre) {
                   + '<div style="background:#111;padding:10px 14px;font-size:11px;color:#546e7a;text-transform:uppercase;letter-spacing:.5px;">Movimientos de puntos</div>'
                   + histPuntos.map(h =>
                       '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid #1a1a1a;">'
-                      + '<span style="font-size:14px;">' + (h.tipo === 'JUEGO' ? '🎮' : '🛒') + '</span>'
+                      + '<span style="font-size:11px;color:#888;">' + (h.tipo === 'JUEGO' ? 'Juego' : 'Consumo') + '</span>'
                       + '<span style="flex:1;font-size:13px;color:#ccc;">' + (motivoLabel[h.motivo] || h.motivo) + '</span>'
                       + '<span style="font-size:11px;color:#444;">' + fmtFecha(h.fecha) + '</span>'
                       + '<span style="font-size:13px;font-weight:700;color:' + (h.tipo === 'JUEGO' ? '#42a5f5' : '#66bb6a') + ';min-width:70px;text-align:right;">+' + Number(h.puntos).toFixed(2) + ' pts</span>'
@@ -2787,8 +2837,8 @@ function verHistorialCliente(id, nombre) {
             +   '<div>'
             +     '<label style="font-size:11px;color:#666;display:block;margin-bottom:5px;">Tipo</label>'
             +     '<select id="ajusteTipo" style="width:100%;padding:9px 12px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#e2e2e2;font-size:13px;">'
-            +       '<option value="JUEGO">🎮 Juego</option>'
-            +       '<option value="CONSUMO">🛒 Consumo</option>'
+            +       '<option value="JUEGO">Juego</option>'
+            +       '<option value="CONSUMO">Consumo</option>'
             +     '</select>'
             +   '</div>'
             +   '<div>'
@@ -2808,9 +2858,9 @@ function verHistorialCliente(id, nombre) {
 
         const html =
             '<div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #1e1e1e;">'
-            + '<button id="tabBtnPuntos"  onclick="_switchTabHistorial(\'puntos\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#42a5f5;border-bottom:2px solid #42a5f5;margin-bottom:-2px;">⭐ Puntos</button>'
-            + '<button id="tabBtnCompras" onclick="_switchTabHistorial(\'compras\')" style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#555;border-bottom:2px solid transparent;margin-bottom:-2px;">🛒 Compras (' + compras.length + ')</button>'
-            + '<button id="tabBtnAjuste"  onclick="_switchTabHistorial(\'ajuste\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#555;border-bottom:2px solid transparent;margin-bottom:-2px;">✏️ Editar</button>'
+            + '<button id="tabBtnPuntos"  onclick="_switchTabHistorial(\'puntos\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#42a5f5;border-bottom:2px solid #42a5f5;margin-bottom:-2px;">Puntos</button>'
+            + '<button id="tabBtnCompras" onclick="_switchTabHistorial(\'compras\')" style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#555;border-bottom:2px solid transparent;margin-bottom:-2px;">Compras (' + compras.length + ')</button>'
+            + '<button id="tabBtnAjuste"  onclick="_switchTabHistorial(\'ajuste\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#555;border-bottom:2px solid transparent;margin-bottom:-2px;">Editar</button>'
             + '</div>'
             + '<div id="tabPaneHistPuntos">' + tabPuntos + '</div>'
             + '<div id="tabPaneHistCompras" style="display:none;">' + tabCompras + '</div>'
@@ -2884,14 +2934,14 @@ function cargarTopGamers(){
                 mini.innerHTML = '<p style="color:#555;font-size:13px;">Sin gamers aún.</p>';
             } else {
                 mini.innerHTML = data.slice(0, 5).map((g, i) => {
-                    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1);
+                    const medal = '#' + (i+1);
                     const apodoTxt = (g.apodo && typeof g.apodo === 'string') ? ' · ' + s(g.apodo) : '';
                     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1e1e1e;cursor:pointer;" onclick="_verGamerHistorial(' + g.id + ',\'' + s(g.nombre) + '\')">'
                         + '<span style="font-size:15px;min-width:24px;text-align:center;">' + medal + '</span>'
                         + '<span style="flex:1;font-size:13px;font-weight:600;">' + s(g.nombre) + '<span style="color:#555;font-weight:400;">' + apodoTxt + '</span></span>'
                         + '<div style="text-align:right;">'
                         +   '<div style="font-size:12px;color:#42a5f5;font-weight:700;">' + Number(g.puntos||0).toFixed(0) + ' pts</div>'
-                        +   '<div style="font-size:10px;color:#555;">🎮 ' + Number(g.pts_juego||0).toFixed(0) + ' · 🛒 ' + Number(g.pts_consumo||0).toFixed(0) + '</div>'
+                        +   '<div style="font-size:10px;color:#555;">Juego ' + Number(g.pts_juego||0).toFixed(0) + ' · Consumo ' + Number(g.pts_consumo||0).toFixed(0) + '</div>'
                         + '</div></div>';
                 }).join("");
             }
@@ -2907,7 +2957,7 @@ function cargarTopGamers(){
         }
 
         cont.innerHTML = data.map((g, i) => {
-            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1);
+            const medal = '#' + (i+1);
             const ptsJuego   = Number(g.pts_juego   || 0).toFixed(0);
             const ptsConsumo = Number(g.pts_consumo || 0).toFixed(0);
             const ptsTotal   = Number(g.puntos      || 0).toFixed(0);
@@ -2917,15 +2967,15 @@ function cargarTopGamers(){
                 +   '<div style="font-size:14px;font-weight:700;">' + s(g.nombre) + (g.apodo && typeof g.apodo === 'string' && g.apodo.length ? ' <span style="color:#555;font-weight:400;font-size:12px;">@' + s(g.apodo) + '</span>' : '') + '</div>'
                 +   '<div style="display:flex;gap:14px;margin-top:6px;">'
                 +     '<div style="text-align:center;">'
-                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">🎮 Juego</div>'
+                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">Juego</div>'
                 +       '<div style="font-size:15px;font-weight:700;color:#42a5f5;">' + ptsJuego + '</div>'
                 +     '</div>'
                 +     '<div style="text-align:center;">'
-                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">🛒 Consumo</div>'
+                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">Consumo</div>'
                 +       '<div style="font-size:15px;font-weight:700;color:#66bb6a;">' + ptsConsumo + '</div>'
                 +     '</div>'
                 +     '<div style="text-align:center;">'
-                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">⭐ Total</div>'
+                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">Total</div>'
                 +       '<div style="font-size:15px;font-weight:700;color:#f59e0b;">' + ptsTotal + '</div>'
                 +     '</div>'
                 +   '</div>'
@@ -3064,7 +3114,7 @@ function cargarAlertas(){
 
         html += `
         <div class="card">
-            <h3>🔴 Agotados</h3>
+            <h3>Agotados</h3>
             ${
                 agotados.length === 0
                 ? "<p>Ninguno</p>"
@@ -3073,7 +3123,7 @@ function cargarAlertas(){
         </div>
 
         <div class="card">
-            <h3>🟡 Por terminar</h3>
+            <h3>Por terminar</h3>
             ${
                 porTerminar.length === 0
                 ? "<p>Ninguno</p>"
@@ -3644,8 +3694,8 @@ function confirmarEntradaStock() {
     }).then(r => r.json()).then(d => {
         if (d.error) { mostrarMensaje('❌ ' + d.error); return; }
         const msg = d.gasto_registrado
-            ? `✅ Stock actualizado — gasto Q${(precio*cantidad).toFixed(2)} registrado en finanzas`
-            : '✅ Stock actualizado';
+            ? `Stock actualizado — gasto Q${(precio*cantidad).toFixed(2)} registrado en finanzas`
+            : 'Stock actualizado';
         mostrarMensaje(msg);
         cerrarModal('modalEntradaStock');
         cargarProductosCatalogo();
@@ -3758,9 +3808,9 @@ function renderOrdenes(data) {
         const badgeCancelado= `<span style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CANCELADO</span>`;
 
         const botones = cancelado ? '' : `
-            ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta})">💳 Cobrar</button>` : ''}
-            ${!entregado ? `<button class="cli-btn" style="background:#7c3aed;" onclick="entregarOrden(${o.id_venta})">✅ Entregar</button>` : ''}
-            <button class="cli-btn" style="background:#0f766e;" onclick="abrirAsignarClienteOrden(${o.id_venta})">👤 Cliente</button>
+            ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta})">Cobrar</button>` : ''}
+            ${!entregado ? `<button class="cli-btn" style="background:#7c3aed;" onclick="entregarOrden(${o.id_venta})">Entregar</button>` : ''}
+            <button class="cli-btn" style="background:#0f766e;" onclick="abrirAsignarClienteOrden(${o.id_venta})">Cliente</button>
             <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
             <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>`;
 
@@ -3776,7 +3826,7 @@ function renderOrdenes(data) {
                     ${!cancelado ? badgeEntrega : ''}
                 </div>
             </div>
-            <div style="color:#aaa;font-size:12px;margin-bottom:8px;">👤 ${o.nombre_orden && o.nombre_orden !== 'POS' && o.nombre_orden !== 'ORDEN POS' ? s(o.nombre_orden) : s(o.cliente)}</div>
+            <div style="color:#aaa;font-size:12px;margin-bottom:8px;">${o.nombre_orden && o.nombre_orden !== 'POS' && o.nombre_orden !== 'ORDEN POS' ? s(o.nombre_orden) : s(o.cliente)}</div>
             <div style="border-top:1px solid #222;padding-top:8px;margin-bottom:8px;">${items || '<span style="color:#555;font-size:12px;">Sin productos</span>'}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <span style="color:#aaa;font-size:12px;">Total</span>
@@ -4142,12 +4192,12 @@ function abrirAsignarClienteOrden(idVenta) {
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
       <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:340px;">
-        <h3 style="margin:0 0 14px;color:#fff;">👤 Asignar cliente</h3>
+        <h3 style="margin:0 0 14px;color:#fff;">Asignar cliente</h3>
         <div style="display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid #333;">
           <button id="tabBuscarCliente" onclick="switchTabCliente('buscar')"
-            style="flex:1;padding:8px;border:none;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">🔍 Buscar</button>
+            style="flex:1;padding:8px;border:none;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Buscar</button>
           <button id="tabNuevoCliente" onclick="switchTabCliente('nuevo')"
-            style="flex:1;padding:8px;border:none;background:#333;color:#aaa;cursor:pointer;font-size:13px;">➕ Nuevo</button>
+            style="flex:1;padding:8px;border:none;background:#333;color:#aaa;cursor:pointer;font-size:13px;">Nuevo</button>
         </div>
         <div id="panelBuscarCliente">
           <input id="buscarClienteOrden" type="text" placeholder="Buscar por nombre o teléfono..."
@@ -4225,7 +4275,7 @@ function buscarClienteParaOrden() {
           <div onclick="seleccionarClienteParaOrden(${c.id_cliente},'${s(c.nombre)}')"
             style="padding:10px;border-radius:6px;cursor:pointer;border-bottom:1px solid #222;color:#fff;font-size:13px;"
             onmouseover="this.style.background='#2a2a4a'" onmouseout="this.style.background=''">
-            👤 ${s(c.nombre)} ${c.telefono ? '· ' + s(c.telefono) : ''}
+            ${s(c.nombre)} ${c.telefono ? '· ' + s(c.telefono) : ''}
           </div>`).join('');
     }).catch(() => {});
 }
@@ -4305,12 +4355,12 @@ function cargarTorneosPorTipo(tipo) {
                     <h3 style="margin:0 0 6px;">${s(t.nombre)}</h3>
                     <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#1a1a1a;color:${colorEstado(t.estado)};">${t.estado||"ABIERTO"}</span>
                 </div>
-                <p style="color:#aaa;font-size:13px;margin:2px 0;">🎮 ${s(t.juego)}</p>
+                <p style="color:#aaa;font-size:13px;margin:2px 0;">${s(t.juego)}</p>
                 <p style="font-size:13px;margin:2px 0;">Premio: <strong>Q${parseFloat(t.premio).toFixed(2)}</strong></p>
                 <p style="color:#aaa;font-size:12px;margin:2px 0;">Inscripción: Q${parseFloat(t.inscripcion).toFixed(2)} · Cupos: ${t.cupos}</p>
                 <hr style="border-color:#222;margin:10px 0;">
                 <button class="btn" onclick="verDetalleTorneo(${t.id_torneo})" style="font-size:12px;padding:4px 12px;">
-                    ${t.estado === "FINALIZADO" ? "📊 Ver resultados" : "👥 Gestionar"}
+                    ${t.estado === "FINALIZADO" ? "Ver resultados" : "Gestionar"}
                 </button>
             </div>`).join("");
     })
@@ -4330,7 +4380,7 @@ function verDetalleTorneo(id) {
         if (!t) { cont.innerHTML = `<p>Torneo no encontrado</p>`; return; }
 
         const finalizado = t.estado === "FINALIZADO";
-        const posNombre = pos => pos === 1 ? "🥇 Campeón" : pos === 2 ? "🥈 Finalista" : pos === 3 ? "🥉 Semifinalista" : "🎮 Participante";
+        const posNombre = pos => pos === 1 ? "Campeón" : pos === 2 ? "Finalista" : pos === 3 ? "Semifinalista" : "Participante";
 
         const listaParticipantes = participantes.length
             ? participantes.map(p => `
@@ -4340,9 +4390,9 @@ function verDetalleTorneo(id) {
                     ${!finalizado ? `<td style="padding:7px 6px;">
                         <select id="pos_${p.id_cliente}" style="background:#1a1a1a;color:#ccc;border:1px solid #333;border-radius:4px;padding:3px 6px;font-size:12px;">
                             <option value="0">Sin posición</option>
-                            <option value="1" ${p.posicion==1?"selected":""}>🥇 Campeón (10 pts)</option>
-                            <option value="2" ${p.posicion==2?"selected":""}>🥈 Finalista (5 pts)</option>
-                            <option value="3" ${p.posicion==3?"selected":""}>🥉 Semifinalista (3 pts)</option>
+                            <option value="1" ${p.posicion==1?"selected":""}>Campeón (10 pts)</option>
+                            <option value="2" ${p.posicion==2?"selected":""}>Finalista (5 pts)</option>
+                            <option value="3" ${p.posicion==3?"selected":""}>Semifinalista (3 pts)</option>
                         </select>
                     </td>` : ""}
                 </tr>`).join("")
@@ -4351,13 +4401,13 @@ function verDetalleTorneo(id) {
         const fechaTorneo = t.fecha ? fmtFecha(t.fecha) : '—';
         cont.innerHTML = `
             <h3 style="margin:0 0 4px;">${s(t.nombre)} <span style="font-size:13px;color:#aaa;">(${t.tipo})</span></h3>
-            <p style="color:#aaa;font-size:13px;margin:0 0 4px;">🎮 ${s(t.juego)} · Premio: Q${parseFloat(t.premio).toFixed(2)} · Cupos: ${t.cupos}</p>
-            <p style="color:#555;font-size:12px;margin-bottom:16px;">📅 ${fechaTorneo}</p>
+            <p style="color:#aaa;font-size:13px;margin:0 0 4px;">${s(t.juego)} · Premio: Q${parseFloat(t.premio).toFixed(2)} · Cupos: ${t.cupos}</p>
+            <p style="color:#555;font-size:12px;margin-bottom:16px;">${fechaTorneo}</p>
 
             ${!finalizado ? `
             <div style="display:flex;gap:8px;margin-bottom:8px;">
                 <input id="buscarClienteTorneo" placeholder="Buscar jugador para inscribir..." style="flex:1;font-size:13px;" oninput="buscarParaTorneo(${id})">
-                <button class="btn" onclick="toggleNuevoJugadorTorneo(${id})" style="font-size:12px;padding:4px 10px;background:#333;white-space:nowrap;">➕ Nuevo jugador</button>
+                <button class="btn" onclick="toggleNuevoJugadorTorneo(${id})" style="font-size:12px;padding:4px 10px;background:#333;white-space:nowrap;">Nuevo jugador</button>
             </div>
             <div id="resultadosBusquedaTorneo" style="margin-bottom:8px;"></div>
             <div id="formNuevoJugadorTorneo" style="display:none;background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:16px;">
@@ -4368,7 +4418,7 @@ function verDetalleTorneo(id) {
                 <button class="btn" onclick="crearYInscribirTorneo(${id})" style="font-size:12px;width:100%;">Crear e inscribir</button>
             </div>` : ""}
 
-            <h4 style="margin:0 0 8px;">👥 Participantes (${participantes.length})</h4>
+            <h4 style="margin:0 0 8px;">Participantes (${participantes.length})</h4>
             <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;">
                 <thead><tr style="color:#aaa;border-bottom:1px solid #333;">
                     <th style="padding:7px 6px;text-align:left;">Jugador</th>
@@ -4380,9 +4430,9 @@ function verDetalleTorneo(id) {
 
             ${!finalizado && participantes.length > 0 ? `
             <button class="btn" onclick="finalizarTorneo(${id},[${participantes.map(p=>`${p.id_cliente}`).join(",")}])" style="background:#f59e0b;width:100%;">
-                🏆 Finalizar torneo y asignar puntos
+                Finalizar torneo y asignar puntos
             </button>` : ""}
-            ${finalizado ? `<p style="color:#555;text-align:center;font-size:13px;">✅ Torneo finalizado</p>` : ""}
+            ${finalizado ? `<p style="color:#555;text-align:center;font-size:13px;">Torneo finalizado</p>` : ""}
         `;
     }).catch(() => { cont.innerHTML = `<p style="color:#ef4444;">Error cargando detalle.</p>`; });
 }
@@ -4434,7 +4484,7 @@ function buscarParaTorneo(idTorneo) {
             `<div onclick="inscribirEnTorneo(${idTorneo},${c.id},'${c.nombre.replace(/'/g,"\\'")}')"
                   style="padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px;background:#1a1a1a;margin-top:3px;"
                   onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#1a1a1a'">
-                👤 <strong>${s(c.nombre)}</strong>${c.apodo ? ` · ${s(c.apodo)}` : ""}
+                <strong>${s(c.nombre)}</strong>${c.apodo ? ` · ${s(c.apodo)}` : ""}
             </div>`
         ).join("");
     }).catch(() => {});
@@ -4803,7 +4853,7 @@ function exportarFinanzasExcel() {
 
         // ── Filas de resumen ──
         const resumenFilas =
-            titulo('💰 RESUMEN — ' + nombreMes + ' ' + anio)
+            titulo('RESUMEN — ' + nombreMes + ' ' + anio)
             + cabecera('Concepto', 'Monto (Q)', '', '')
             + filaNum('sVenta', 'Ventas del mes',   '', ingresos,    '')
             + filaNum('sExtra', 'Ingresos extra',   '', extra,       '')
@@ -4813,7 +4863,7 @@ function exportarFinanzasExcel() {
 
         // ── Gastos ──
         const gastosFilas = !gastos.length ? '' :
-            titulo('🔴 GASTOS REGISTRADOS')
+            titulo('GASTOS REGISTRADOS')
             + cabecera('Fecha', 'Descripción', 'Monto (Q)', '')
             + gastos.map(g =>
                 '<Row>'
@@ -4827,7 +4877,7 @@ function exportarFinanzasExcel() {
 
         // ── Ingresos extra ──
         const extraFilas = !ingresosExtra.length ? '' :
-            titulo('🔵 INGRESOS EXTRA')
+            titulo('INGRESOS EXTRA')
             + cabecera('Fecha', 'Descripción', 'Monto (Q)', '')
             + ingresosExtra.map(g =>
                 '<Row>'
@@ -4841,7 +4891,7 @@ function exportarFinanzasExcel() {
 
         // ── Ventas por día ──
         const ventasFilas = !ventasDia.length ? '' :
-            titulo('🟢 VENTAS POR DÍA')
+            titulo('VENTAS POR DÍA')
             + cabecera('Día', 'N° Ventas', 'Total (Q)', '')
             + ventasDia.map(d =>
                 '<Row>'
@@ -4982,8 +5032,8 @@ function cargarUsuarios() {
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${u.activo?'#4ade80':'#ef4444'};color:#000;">${u.activo?'ACTIVO':'INACTIVO'}</span>
                 <button onclick="toggleUsuario(${u.id})" style="padding:6px 12px;border:none;border-radius:6px;background:${u.activo?'#7f1d1d':'#14532d'};color:#fff;cursor:pointer;font-size:12px;">${u.activo?'Desactivar':'Activar'}</button>
-                <button onclick="abrirEditarUsuario(${u.id},'${s(u.nombre)}','${s(u.usuario)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#0f766e;color:#fff;cursor:pointer;font-size:12px;">✏️ Editar</button>
-                <button onclick="abrirCambiarPassword(${u.id},'${s(u.nombre)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-size:12px;">🔑 Contraseña</button>
+                <button onclick="abrirEditarUsuario(${u.id},'${s(u.nombre)}','${s(u.usuario)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#0f766e;color:#fff;cursor:pointer;font-size:12px;">Editar</button>
+                <button onclick="abrirCambiarPassword(${u.id},'${s(u.nombre)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-size:12px;">Contraseña</button>
             </div>
         </div>`).join('');
     }).catch(() => mostrarMensaje('❌ Error al cargar usuarios'));
@@ -5006,7 +5056,7 @@ function abrirEditarUsuario(id, nombre, usuario) {
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
       <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
-        <h3 style="margin:0 0 16px;color:#fff;">✏️ Editar usuario</h3>
+        <h3 style="margin:0 0 16px;color:#fff;">Editar usuario</h3>
         <label style="color:#aaa;font-size:12px;">Nombre</label>
         <input id="editNombre" type="text" value="${s(nombre)}" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:12px;box-sizing:border-box;">
         <label style="color:#aaa;font-size:12px;">Usuario (login)</label>
@@ -5041,7 +5091,7 @@ function abrirCambiarPassword(id, nombre) {
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
       <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
-        <h3 style="margin:0 0 16px;color:#fff;">🔑 Cambiar contraseña</h3>
+        <h3 style="margin:0 0 16px;color:#fff;">Cambiar contraseña</h3>
         <p style="color:#aaa;font-size:13px;margin:0 0 12px;">${s(nombre)}</p>
         <input id="pwNueva" type="password" placeholder="Nueva contraseña (mín. 6 caracteres)" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;">
         <input id="pwConfirm" type="password" placeholder="Confirmar contraseña" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:16px;box-sizing:border-box;">

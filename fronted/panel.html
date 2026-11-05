@@ -22,7 +22,7 @@
 
     <!-- USUARIO -->
     <div class="usuario-box">
-        <div class="avatar">👤</div>
+        <div class="avatar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
         <div>
             <h3 id="usuarioNombre">Cargando...</h3>
             <p id="usuarioRol">...</p>
@@ -31,7 +31,7 @@
 
     <!-- NAV -->
     <nav class="sidebar">
-        <h2>🎮 LOBBY ZONE</h2>
+        <h2>LOBBY ZONE</h2>
         <button onclick="mostrar('dashboard')">Principal</button>
         <button onclick="mostrar('ventas')">Ventas</button>
         <button onclick="mostrar('clientes')">Clientes</button>
@@ -50,19 +50,21 @@
 
         <!-- DASHBOARD -->
         <div id="dashboard" class="seccion">
-            <h2>📊 Principal</h2>
+            <h2>Principal</h2>
+
+            <div id="notificacionesDash" style="display:none; background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:18px 20px; margin-bottom:16px;"></div>
 
             <div id="dashboardData" class="dashboard-cards"></div>
 
             <hr>
 
             <div class="dashboard-header">
-                <h3>📦 Inventario rápido</h3>
+                <h3>Inventario rápido</h3>
             </div>
 
             <div class="dashboard-cards">
                 <div class="card">
-                    <h4>➕ Agregar stock</h4>
+                    <h4>Agregar stock</h4>
                     <select id="productoRapido" style="width:100%; margin-bottom:8px;">
                         <option value="">— Selecciona producto —</option>
                     </select>
@@ -72,7 +74,7 @@
                 </div>
 
                 <div class="card">
-                    <h4>📋 Inventario</h4>
+                    <h4>Inventario</h4>
                     <p>Revisa existencias y movimientos.</p>
                     <button class="btn" onclick="mostrar('inventario')">Ver inventario</button>
                 </div>
@@ -81,17 +83,17 @@
             <hr>
 
             <div class="dashboard-header">
-                <h3>🏆 Rankings y gestión</h3>
+                <h3>Rankings y gestión</h3>
             </div>
 
             <div class="dashboard-cards">
                 <div class="card">
-                    <h4>👑 Clientes frecuentes</h4>
+                    <h4>Clientes frecuentes</h4>
                     <div id="miniTopClientes"><p style="color:#555; font-size:13px;">Sin datos aún.</p></div>
                 </div>
 
                 <div class="card">
-                    <h4>🎮 Top gamers</h4>
+                    <h4>Top gamers</h4>
                     <div id="miniTopGamers"><p style="color:#555; font-size:13px;">Sin datos aún.</p></div>
                 </div>
             </div>
@@ -188,12 +190,12 @@
         <!-- CLIENTES -->
         <div id="clientes" class="seccion" style="display:none;">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
-                <h2 style="margin:0;">👤 Clientes</h2>
-                <button class="btn" style="background:#7c3aed;" onclick="mostrarQRGeneral()">📱 QR Consulta de Puntos</button>
+                <h2 style="margin:0;">Clientes</h2>
+                <button class="btn" style="background:#7c3aed;" onclick="mostrarQRGeneral()">QR Consulta de Puntos</button>
             </div>
 
             <div class="card">
-                <h3>➕ Nuevo cliente</h3>
+                <h3>Nuevo cliente</h3>
                 <input id="nombre" placeholder="Nombre">
                 <input id="telefono" placeholder="Teléfono">
                 <input id="apodo" placeholder="Apodo">
@@ -203,7 +205,7 @@
             <hr>
 
             <div class="card">
-                <h3>🔍 Buscar</h3>
+                <h3>Buscar</h3>
                 <input id="buscar" placeholder="Nombre, teléfono o apodo">
                 <button class="btn" onclick="buscarClientes()">Buscar</button>
                 <button class="btn" style="background:#1a3a5c; margin-left:8px;" onclick="recalcularPuntos()">Recalcular puntos históricos</button>
@@ -214,12 +216,12 @@
 
         <!-- INVENTARIO -->
         <div id="inventario" class="seccion" style="display:none;">
-            <h2>📦 Inventario</h2>
+            <h2>Inventario</h2>
 
             <!-- Tabs -->
             <div style="display:flex; gap:8px; margin-bottom:16px;">
-                <button class="btn" id="tabProductos" onclick="tabInventario('productos')">📦 Productos</button>
-                <button class="btn" id="tabHistorial" onclick="tabInventario('historial')" style="background:#333; color:var(--text);">📋 Historial</button>
+                <button class="btn" id="tabProductos" onclick="tabInventario('productos')">Productos</button>
+                <button class="btn" id="tabHistorial" onclick="tabInventario('historial')" style="background:#333; color:var(--text);">Historial</button>
             </div>
 
             <!-- Vista: Productos contables -->
@@ -238,7 +240,7 @@
                         <option value="SALIDA">Solo salidas</option>
                     </select>
                     <input type="month" id="filtroHistMes" onchange="cargarHistorial()" style="width:auto;">
-                    <button onclick="exportarInventarioExcel()" style="padding:9px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Excel</button>
+                    <button onclick="exportarInventarioExcel()" style="padding:9px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel</button>
                 </div>
                 <div id="historial"></div>
             </div>
@@ -246,7 +248,7 @@
 
         <!-- PRODUCTOS -->
         <div id="productos" class="seccion" style="display:none;">
-            <h2>📦 Gestión de Catálogo</h2>
+            <h2>Gestión de Catálogo</h2>
 
             <!-- Pestañas -->
             <div style="display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid #222; padding-bottom:0;">
@@ -323,20 +325,20 @@
         <div id="reportes" class="seccion" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
                 <div>
-                    <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">📈 Reportes</h2>
+                    <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">Reportes</h2>
                     <p style="margin:4px 0 0; color:#555; font-size:13px;">Estadísticas y ventas por mes</p>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <input type="month" id="mesReporte" style="padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarReportes()">
-                    <button onclick="cargarReportes()" style="padding:9px 16px;border-radius:9px;border:none;background:#1e1e1e;color:#e2e2e2;font-size:13px;font-weight:600;cursor:pointer;">🔍 Buscar</button>
+                    <button onclick="cargarReportes()" style="padding:9px 16px;border-radius:9px;border:none;background:#1e1e1e;color:#e2e2e2;font-size:13px;font-weight:600;cursor:pointer;">Buscar</button>
                 </div>
             </div>
 
             <!-- TABS -->
             <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #222;">
-                <button id="tabRep-stats" class="tab-btn tab-active" onclick="tabReporte('stats')">📊 Estadísticas</button>
-                <button id="tabRep-facturas" class="tab-btn" onclick="tabReporte('facturas')">🧾 Facturas SAT</button>
-                <button id="tabRep-ventas" class="tab-btn" onclick="tabReporte('ventas')">🛒 Ventas</button>
+                <button id="tabRep-stats" class="tab-btn tab-active" onclick="tabReporte('stats')">Estadísticas</button>
+                <button id="tabRep-facturas" class="tab-btn" onclick="tabReporte('facturas')">Facturas SAT</button>
+                <button id="tabRep-ventas" class="tab-btn" onclick="tabReporte('ventas')">Ventas</button>
             </div>
 
             <!-- ESTADÍSTICAS -->
@@ -345,25 +347,25 @@
 
                     <!-- Top productos -->
                     <div class="card">
-                        <h3>🏆 Top 5 productos del mes</h3>
+                        <h3>Top 5 productos del mes</h3>
                         <div id="repTopProductos"><p style="color:#555; font-size:13px;">Sin ventas este mes.</p></div>
                     </div>
 
                     <!-- Métodos de pago -->
                     <div class="card">
-                        <h3>💳 Ingresos por método de pago</h3>
+                        <h3>Ingresos por método de pago</h3>
                         <div id="repMetodosPago"><p style="color:#555; font-size:13px;">Sin ventas este mes.</p></div>
                     </div>
 
                     <!-- Cancelaciones -->
                     <div class="card">
-                        <h3>❌ Cancelaciones del mes</h3>
+                        <h3>Cancelaciones del mes</h3>
                         <div id="repCancelaciones"><p style="color:#555; font-size:13px;">Sin cancelaciones este mes.</p></div>
                     </div>
 
                     <!-- Margen por producto -->
                     <div class="card">
-                        <h3>📉 Margen de ganancia por producto</h3>
+                        <h3>Margen de ganancia por producto</h3>
                         <div id="repMargenes"><p style="color:#555; font-size:13px;">Sin productos.</p></div>
                     </div>
 
@@ -373,8 +375,8 @@
             <!-- FACTURAS SAT -->
             <div id="repFacturas" style="display:none;">
                 <div style="display:flex; gap:8px; margin-bottom:16px;">
-                    <button id="tabSat-pendiente" class="tab-btn tab-active" onclick="tabSAT('pendiente')">⏳ Pendientes SAT</button>
-                    <button id="tabSat-facturada" class="tab-btn" onclick="tabSAT('facturada')">✅ Facturadas en SAT</button>
+                    <button id="tabSat-pendiente" class="tab-btn tab-active" onclick="tabSAT('pendiente')">Pendientes SAT</button>
+                    <button id="tabSat-facturada" class="tab-btn" onclick="tabSAT('facturada')">Facturadas en SAT</button>
                 </div>
                 <div id="listaFacturasPendientesSAT"></div>
                 <div id="listaFacturasFacturadasSAT" style="display:none;"></div>
@@ -383,8 +385,8 @@
             <!-- HISTORIAL VENTAS -->
             <div id="repVentas" style="display:none;">
                 <div style="display:flex; gap:10px; margin-bottom:16px; align-items:center;">
-                    <button onclick="exportarExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Excel mes</button>
-                    <button onclick="exportarExcelTodo()" style="padding:9px 18px;border-radius:9px;border:1px solid #2a2a2a;background:#111;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">📥 Excel todo</button>
+                    <button onclick="exportarExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel mes</button>
+                    <button onclick="exportarExcelTodo()" style="padding:9px 18px;border-radius:9px;border:1px solid #2a2a2a;background:#111;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Excel todo</button>
                 </div>
                 <div id="listaVentasReporte"></div>
             </div>
@@ -393,7 +395,7 @@
         <!-- ÓRDENES -->
         <div id="ordenes" class="seccion" style="display:none;">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
-                <h2 style="margin:0;">🍽️ Órdenes</h2>
+                <h2 style="margin:0;">Órdenes</h2>
             </div>
 
             <!-- Filtro estado -->
@@ -407,19 +409,19 @@
 
         <!-- TORNEOS -->
         <div id="torneos" class="seccion" style="display:none;">
-            <h2>🏆 Torneos</h2>
+            <h2>Torneos</h2>
 
             <!-- TABS tipo -->
             <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #222;">
-                <button id="tabTorneo-microwin" class="tab-btn tab-active" onclick="tabTorneo('microwin')">⚡ Microwin</button>
-                <button id="tabTorneo-flash"    class="tab-btn"            onclick="tabTorneo('flash')">🔥 Flash</button>
+                <button id="tabTorneo-microwin" class="tab-btn tab-active" onclick="tabTorneo('microwin')">Microwin</button>
+                <button id="tabTorneo-flash"    class="tab-btn"            onclick="tabTorneo('flash')">Flash</button>
             </div>
 
             <!-- MICROWIN -->
             <div id="secTorneoMicrowin">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-bottom:24px;">
                     <div class="card">
-                        <h3>➕ Nuevo Microwin</h3>
+                        <h3>Nuevo Microwin</h3>
                         <p style="color:#aaa;font-size:12px;margin-bottom:10px;">Se anuncia con anticipación a los clientes.</p>
                         <input id="mwNombre"      placeholder="Nombre del torneo">
                         <input id="mwJuego"       placeholder="Juego" style="margin-top:8px;">
@@ -429,17 +431,17 @@
                         <button class="btn" onclick="crearTorneo('MICROWIN')" style="margin-top:10px;">Crear Microwin</button>
                     </div>
                     <div class="card">
-                        <h3>🏅 Puntos por posición</h3>
+                        <h3>Puntos por posición</h3>
                         <p style="font-size:13px;color:#aaa;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
                         <table style="width:100%;font-size:13px;border-collapse:collapse;">
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥇 Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥈 Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥉 Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
-                            <tr><td style="padding:6px;">🎮 Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
+                            <tr><td style="padding:6px;">Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
                         </table>
                     </div>
                 </div>
-                <h3>📋 Microwin activos y pasados</h3>
+                <h3>Microwin activos y pasados</h3>
                 <div id="listaMicrowin" class="dashboard-cards"></div>
             </div>
 
@@ -447,7 +449,7 @@
             <div id="secTorneoFlash" style="display:none;">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-bottom:24px;">
                     <div class="card">
-                        <h3>➕ Nuevo torneo Flash</h3>
+                        <h3>Nuevo torneo Flash</h3>
                         <p style="color:#aaa;font-size:12px;margin-bottom:10px;">Se organiza el mismo día, sin anuncio previo.</p>
                         <input id="flNombre"      placeholder="Nombre del torneo">
                         <input id="flJuego"       placeholder="Juego" style="margin-top:8px;">
@@ -457,17 +459,17 @@
                         <button class="btn" onclick="crearTorneo('FLASH')" style="margin-top:10px; background:#ef4444;">Crear Flash</button>
                     </div>
                     <div class="card">
-                        <h3>🏅 Puntos por posición</h3>
+                        <h3>Puntos por posición</h3>
                         <p style="font-size:13px;color:#aaa;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
                         <table style="width:100%;font-size:13px;border-collapse:collapse;">
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥇 Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥈 Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">🥉 Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
-                            <tr><td style="padding:6px;">🎮 Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
+                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
+                            <tr><td style="padding:6px;">Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
                         </table>
                     </div>
                 </div>
-                <h3>📋 Flash activos y pasados</h3>
+                <h3>Flash activos y pasados</h3>
                 <div id="listaFlash" class="dashboard-cards"></div>
             </div>
 
@@ -486,12 +488,12 @@
             <!-- HEADER -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:24px;">
                 <div>
-                    <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">💰 Control Financiero</h2>
+                    <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">Control Financiero</h2>
                     <p style="margin:4px 0 0; color:#555; font-size:13px;">Resumen de ingresos, gastos y balance mensual</p>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;">
                     <input type="month" id="mesFinanzas" style="padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarFinanzas()">
-                    <button id="btnExcelFinanzas" onclick="exportarFinanzasExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Excel</button>
+                    <button id="btnExcelFinanzas" onclick="exportarFinanzasExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel</button>
                 </div>
             </div>
 
@@ -524,7 +526,7 @@
                 <!-- Form Gasto -->
                 <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:20px;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
-                        <span style="font-size:18px;">🔴</span>
+                        <span style="width:10px;height:10px;border-radius:50%;background:#f87171;"></span>
                         <span style="font-size:14px; font-weight:700; color:#f87171;">Registrar gasto</span>
                     </div>
                     <input id="gastoDesc" placeholder="Descripción (ej: Compra de gas, papas...)" style="margin-bottom:10px;">
@@ -534,7 +536,7 @@
                 <!-- Form Ingreso Extra -->
                 <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:20px;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
-                        <span style="font-size:18px;">🟢</span>
+                        <span style="width:10px;height:10px;border-radius:50%;background:#60a5fa;"></span>
                         <span style="font-size:14px; font-weight:700; color:#60a5fa;">Registrar ingreso extra</span>
                     </div>
                     <input id="ingresoDesc" placeholder="Descripción (ej: Premio torneo, Membresía...)" style="margin-bottom:10px;">
@@ -581,28 +583,28 @@
 
         <!-- CIERRE -->
         <div id="cierre" class="seccion" style="display:none;">
-            <h2>🔒 Cierre de caja / día</h2>
+            <h2>Cierre de caja / día</h2>
 
             <div class="dashboard-cards">
                 <div class="card" onclick="verDetalleVentasCierre()" style="cursor:pointer;" title="Ver detalle de ventas">
-                    <h3>💰 Ventas del día</h3>
+                    <h3>Ventas del día</h3>
                     <h1 id="ventasDia">Q0</h1>
-                    <div style="font-size:11px;color:#555;margin-top:4px;">👆 Click para ver detalle</div>
+                    <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
                 </div>
 
                 <div class="card">
-                    <h3>💸 Gastos del día</h3>
+                    <h3>Gastos del día</h3>
                     <h1 id="gastosDia">Q0</h1>
                 </div>
 
                 <div class="card">
-                    <h3>📈 Balance</h3>
+                    <h3>Balance</h3>
                     <h1 id="balanceDia">Q0</h1>
                 </div>
             </div>
 
             <div class="card" style="margin-top:16px;">
-                <h3 style="margin-bottom:10px;">💳 Ventas por método de pago</h3>
+                <h3 style="margin-bottom:10px;">Ventas por método de pago</h3>
                 <div id="metodosDesglose">
                     <p style="color:#555;font-size:12px;">Cargando...</p>
                 </div>
@@ -611,7 +613,7 @@
             <hr>
 
             <div class="card">
-                <h3>📝 Registrar cierre</h3>
+                <h3>Registrar cierre</h3>
                 <input id="observacionCierre" placeholder="Observación">
                 <button class="btn" onclick="registrarCierre()">Registrar cierre</button>
             </div>
@@ -619,7 +621,7 @@
             <hr>
 
             <div id="historialCierresHeader" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <h3>📋 Historial</h3>
+                <h3>Historial</h3>
                 <input type="month" id="mesCierres" style="width:auto; padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarHistorialCierres()">
             </div>
             <div id="historialCierres" class="dashboard-cards"></div>
@@ -631,7 +633,7 @@
     <div id="modalClientes" class="modal-dashboard" style="display:none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>👑 Clientes frecuentes</h3>
+                <h3>Clientes frecuentes</h3>
                 <span class="close-btn" onclick="cerrarModal('modalClientes')">&times;</span>
             </div>
             <div class="modal-body">
@@ -645,7 +647,7 @@
     <div id="modalGamers" class="modal-dashboard" style="display:none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🎮 Top gamers</h3>
+                <h3>Top gamers</h3>
                 <span class="close-btn" onclick="cerrarModal('modalGamers')">&times;</span>
             </div>
             <div class="modal-body">
@@ -726,7 +728,7 @@
     <div id="modalHistorialCliente" class="modal-dashboard" style="display:none;">
         <div class="modal-content" style="max-width:700px; max-height:80vh; overflow-y:auto;">
             <div class="modal-header">
-                <h3 id="tituloHistorialCliente">📋 Historial</h3>
+                <h3 id="tituloHistorialCliente">Historial</h3>
                 <span class="close-btn" onclick="cerrarModal('modalHistorialCliente')">&times;</span>
             </div>
             <div class="modal-body">
@@ -782,7 +784,7 @@
             <div id="qrCanvas" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
             <div id="qrPuntosCliente" style="min-height:36px;margin-bottom:12px;"></div>
             <p style="font-size:11px;color:#555;margin-bottom:16px;">Escanea para ver tus puntos</p>
-            <button class="btn" onclick="descargarQR()" style="width:100%;font-size:13px;">⬇ Descargar QR</button>
+            <button class="btn" onclick="descargarQR()" style="width:100%;font-size:13px;">Descargar QR</button>
         </div>
     </div>
 
@@ -808,7 +810,7 @@
 
         <!-- USUARIOS -->
         <div id="usuarios" class="seccion" style="display:none;">
-            <h2>👥 Usuarios</h2>
+            <h2>Usuarios</h2>
             <div id="usuariosLista" style="display:grid;gap:12px;margin-top:16px;"></div>
         </div>
 
