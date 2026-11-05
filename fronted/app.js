@@ -180,24 +180,24 @@ function cargarDashboard() {
 
         container.innerHTML = `
             <div class="card" onclick="verDetalleVentasDash()" style="cursor:pointer;transition:background .15s;" title="Ver detalle de ventas">
-                <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Ventas del período</div>
+                <div style="font-size:11px;color:#a3a3a3;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Ventas del período</div>
                 <div style="font-size:22px;font-weight:700;color:#4ade80;">Q${ventas}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
+                <div style="font-size:11px;color:#8a8a8a;margin-top:4px;">Click para ver detalle</div>
             </div>
             <div class="card" onclick="verPendientesCobro()" style="cursor:pointer;transition:background .15s;" title="Ver pendientes de cobro">
-                <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Pendientes de cobro</div>
+                <div style="font-size:11px;color:#a3a3a3;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Pendientes de cobro</div>
                 <div style="font-size:22px;font-weight:700;color:#fcd34d;">${data.pedidos_pendientes || 0}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
+                <div style="font-size:11px;color:#8a8a8a;margin-top:4px;">Click para ver detalle</div>
             </div>
             <div class="card" onclick="verDetalleGastosDash()" style="cursor:pointer;transition:background .15s;" title="Ver detalle de gastos">
-                <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Gastos del período</div>
+                <div style="font-size:11px;color:#a3a3a3;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Gastos del período</div>
                 <div style="font-size:22px;font-weight:700;color:#f87171;">Q${gastos}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
+                <div style="font-size:11px;color:#8a8a8a;margin-top:4px;">Click para ver detalle</div>
             </div>
             <div class="card" onclick="verDetalleBalanceDash()" style="cursor:pointer;transition:background .15s;" title="Ver resumen de balance">
-                <div style="font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Balance neto</div>
+                <div style="font-size:11px;color:#a3a3a3;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Balance neto</div>
                 <div style="font-size:22px;font-weight:700;color:${balColor};">Q${balance}</div>
-                <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver resumen</div>
+                <div style="font-size:11px;color:#8a8a8a;margin-top:4px;">Click para ver resumen</div>
             </div>
         `;
 
@@ -222,11 +222,11 @@ function cargarNotificacionesDash() {
         const total    = agotados + bajos;
 
         const fila = (icono, titulo, detalle, borde) => `
-            <div onclick="mostrar('inventario')" style="display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer;${borde ? 'border-bottom:1px solid #1e1e1e;' : ''}">
+            <div onclick="mostrar('inventario')" style="display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer;${borde ? 'border-bottom:1px solid #262626;' : ''}">
                 ${icono}
                 <div>
                     <div style="font-size:15px;font-weight:700;color:#fff;">${titulo}</div>
-                    <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${detalle}</div>
+                    <div style="font-size:12px;color:#a3a3a3;margin-top:2px;">${detalle}</div>
                 </div>
             </div>`;
 
@@ -241,7 +241,7 @@ function cargarNotificacionesDash() {
             filas += fila(iconoBajo, `${bajos} ${bajos === 1 ? 'producto por agotarse' : 'productos por agotarse'}`, 'Necesitan reposición', false);
         }
         if (total === 0) {
-            filas = '<p style="color:#94a3b8;font-size:13px;margin:10px 0 0;">Sin productos agotados ni por agotarse.</p>';
+            filas = '<p style="color:#a3a3a3;font-size:13px;margin:10px 0 0;">Sin productos agotados ni por agotarse.</p>';
         }
 
         cont.innerHTML = `
@@ -250,7 +250,7 @@ function cargarNotificacionesDash() {
                 ${total > 0 ? `<span style="background:#450a0a;color:#f87171;font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;">${total} ${total === 1 ? 'pendiente' : 'pendientes'}</span>` : ''}
             </div>
             ${filas}
-            ${total > 0 ? `<div onclick="mostrar('inventario')" style="text-align:center;font-size:13px;color:#e2e2e2;cursor:pointer;padding-top:12px;border-top:1px solid #1e1e1e;">Ver todas las alertas →</div>` : ''}
+            ${total > 0 ? `<div onclick="mostrar('inventario')" style="text-align:center;font-size:13px;color:#e5e5e5;cursor:pointer;padding-top:12px;border-top:1px solid #262626;">Ver todas las alertas →</div>` : ''}
         `;
         cont.style.display = "block";
     })
@@ -258,45 +258,45 @@ function cargarNotificacionesDash() {
 }
 
 function _renderVentasDetalle(rows, modal) {
-    if (!rows.length) { modal.body.innerHTML = '<p style="color:#555;text-align:center;padding:20px;">Sin ventas en este período.</p>'; return; }
+    if (!rows.length) { modal.body.innerHTML = '<p style="color:#8a8a8a;text-align:center;padding:20px;">Sin ventas en este período.</p>'; return; }
     modal.body.innerHTML = rows.map(v => `
-        <div style="background:#111;border-radius:8px;margin-bottom:10px;overflow:hidden;">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1a1a2e;cursor:pointer;"
+        <div style="background:#0a0a0a;border-radius:8px;margin-bottom:10px;overflow:hidden;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0a0a0a;cursor:pointer;"
                onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
             <div>
-              <span style="color:#94a3b8;font-size:11px;">${fmtFecha(v.fecha)}</span>
-              <span style="color:#e2e2e2;font-size:13px;margin-left:8px;font-weight:600;">${s(v.cliente)}</span>
+              <span style="color:#a3a3a3;font-size:11px;">${fmtFecha(v.fecha)}</span>
+              <span style="color:#e5e5e5;font-size:13px;margin-left:8px;font-weight:600;">${s(v.cliente)}</span>
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
-              <span style="color:#64748b;font-size:11px;">${s(v.metodo_pago||'—')}</span>
+              <span style="color:#a3a3a3;font-size:11px;">${s(v.metodo_pago||'—')}</span>
               <span style="color:#4ade80;font-weight:700;font-size:14px;">Q${parseFloat(v.total).toFixed(2)}</span>
             </div>
           </div>
           <div style="display:none;padding:8px 12px;">
             ${v.productos && v.productos.length ? v.productos.map(p => `
-              <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e293b;font-size:12px;">
-                <span style="color:#cbd5e1;">${p.cantidad}x ${s(p.nombre)}</span>
-                <span style="color:#94a3b8;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
-              </div>`).join('') : '<p style="color:#555;font-size:12px;">Sin productos registrados.</p>'}
+              <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #262626;font-size:12px;">
+                <span style="color:#d4d4d4;">${p.cantidad}x ${s(p.nombre)}</span>
+                <span style="color:#a3a3a3;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
+              </div>`).join('') : '<p style="color:#8a8a8a;font-size:12px;">Sin productos registrados.</p>'}
           </div>
         </div>`).join('') +
-        `<div style="text-align:right;padding:8px 4px;color:#4ade80;font-weight:700;font-size:15px;border-top:1px solid #222;margin-top:4px;">
+        `<div style="text-align:right;padding:8px 4px;color:#4ade80;font-weight:700;font-size:15px;border-top:1px solid #262626;margin-top:4px;">
           TOTAL: Q${rows.reduce((a,v)=>a+parseFloat(v.total),0).toFixed(2)}
          </div>`;
 }
 
 function verPendientesCobro() {
-    const modal = _dashModal('Pendientes de cobro', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    const modal = _dashModal('Pendientes de cobro', '<div style="text-align:center;color:#a3a3a3;padding:20px;">Cargando...</div>');
     authFetch(`${API}/dashboard/pendientes-cobro`).then(r => r.json()).then(rows => {
-        if (!rows.length) { modal.body.innerHTML = '<p style="color:#555;text-align:center;padding:20px;">Sin pendientes de cobro.</p>'; return; }
+        if (!rows.length) { modal.body.innerHTML = '<p style="color:#8a8a8a;text-align:center;padding:20px;">Sin pendientes de cobro.</p>'; return; }
         modal.body.innerHTML = rows.map(v => `
-            <div style="background:#111;border-radius:8px;margin-bottom:10px;overflow:hidden;">
+            <div style="background:#0a0a0a;border-radius:8px;margin-bottom:10px;overflow:hidden;">
               <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1c1400;cursor:pointer;"
                    onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
                 <div>
-                  <span style="color:#94a3b8;font-size:11px;">${fmtFecha(v.fecha)}</span>
-                  <span style="color:#e2e2e2;font-size:13px;margin-left:8px;font-weight:600;">${s(v.cliente)}</span>
-                  ${v.usuario ? `<span style="color:#64748b;font-size:11px;margin-left:6px;">· ${s(v.usuario)}</span>` : ''}
+                  <span style="color:#a3a3a3;font-size:11px;">${fmtFecha(v.fecha)}</span>
+                  <span style="color:#e5e5e5;font-size:13px;margin-left:8px;font-weight:600;">${s(v.cliente)}</span>
+                  ${v.usuario ? `<span style="color:#a3a3a3;font-size:11px;margin-left:6px;">· ${s(v.usuario)}</span>` : ''}
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;">
                   <span style="background:#713f12;color:#fcd34d;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;">PENDIENTE</span>
@@ -305,59 +305,59 @@ function verPendientesCobro() {
               </div>
               <div style="display:none;padding:8px 12px;">
                 ${v.productos && v.productos.length ? v.productos.map(p => `
-                  <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1e293b;font-size:12px;">
-                    <span style="color:#cbd5e1;">${p.cantidad}x ${s(p.nombre)}</span>
-                    <span style="color:#94a3b8;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
-                  </div>`).join('') : '<p style="color:#555;font-size:12px;">Sin productos registrados.</p>'}
+                  <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #262626;font-size:12px;">
+                    <span style="color:#d4d4d4;">${p.cantidad}x ${s(p.nombre)}</span>
+                    <span style="color:#a3a3a3;">Q${parseFloat(p.subtotal).toFixed(2)}</span>
+                  </div>`).join('') : '<p style="color:#8a8a8a;font-size:12px;">Sin productos registrados.</p>'}
               </div>
             </div>`).join('') +
-            `<div style="text-align:right;padding:8px 4px;color:#fcd34d;font-weight:700;font-size:15px;border-top:1px solid #222;margin-top:4px;">
+            `<div style="text-align:right;padding:8px 4px;color:#fcd34d;font-weight:700;font-size:15px;border-top:1px solid #262626;margin-top:4px;">
               TOTAL PENDIENTE: Q${rows.reduce((a,v)=>a+parseFloat(v.total),0).toFixed(2)}
              </div>`;
     }).catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar pendientes</p>'; });
 }
 
 function verDetalleVentasDash() {
-    const modal = _dashModal('Ventas del período', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    const modal = _dashModal('Ventas del período', '<div style="text-align:center;color:#a3a3a3;padding:20px;">Cargando...</div>');
     authFetch(`${API}/dashboard/detalle-ventas`).then(r => r.json())
         .then(rows => _renderVentasDetalle(rows, modal))
         .catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
 }
 
 function verDetalleVentasCierre() {
-    const modal = _dashModal('Ventas del período (cierre)', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    const modal = _dashModal('Ventas del período (cierre)', '<div style="text-align:center;color:#a3a3a3;padding:20px;">Cargando...</div>');
     authFetch(`${API}/cierres/detalle-ventas`).then(r => r.json())
         .then(rows => _renderVentasDetalle(rows, modal))
         .catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
 }
 
 function verVentasDia(dia) {
-    const modal = _dashModal('Ventas del ' + fmtSoloFecha(dia), '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    const modal = _dashModal('Ventas del ' + fmtSoloFecha(dia), '<div style="text-align:center;color:#a3a3a3;padding:20px;">Cargando...</div>');
     authFetch(`${API}/gastos/ventas-del-dia?dia=${encodeURIComponent(dia)}`).then(r => r.json())
         .then(rows => _renderVentasDetalle(rows, modal))
         .catch(() => { modal.body.innerHTML = '<p style="color:#f87171;text-align:center;">Error al cargar ventas</p>'; });
 }
 
 function verDetalleGastosDash() {
-    const modal = _dashModal('Gastos del período', '<div style="text-align:center;color:#888;padding:20px;">Cargando...</div>');
+    const modal = _dashModal('Gastos del período', '<div style="text-align:center;color:#a3a3a3;padding:20px;">Cargando...</div>');
     authFetch(`${API}/dashboard/detalle-gastos`).then(r => r.json()).then(rows => {
-        if (!rows.length) { modal.body.innerHTML = '<p style="color:#555;text-align:center;padding:20px;">Sin gastos en este período.</p>'; return; }
+        if (!rows.length) { modal.body.innerHTML = '<p style="color:#8a8a8a;text-align:center;padding:20px;">Sin gastos en este período.</p>'; return; }
         modal.body.innerHTML = `
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead><tr style="color:#888;border-bottom:1px solid #222;">
+          <thead><tr style="color:#a3a3a3;border-bottom:1px solid #262626;">
             <th style="padding:6px 8px;text-align:left;">Fecha</th>
             <th style="padding:6px 8px;text-align:left;">Descripción</th>
             <th style="padding:6px 8px;text-align:right;">Monto</th>
           </tr></thead>
           <tbody>${rows.map(g => `
             <tr style="border-bottom:1px solid #111;">
-              <td style="padding:6px 8px;color:#aaa;">${fmtFecha(g.fecha)}</td>
-              <td style="padding:6px 8px;color:#e2e2e2;">${s(g.descripcion)}</td>
+              <td style="padding:6px 8px;color:#a3a3a3;">${fmtFecha(g.fecha)}</td>
+              <td style="padding:6px 8px;color:#e5e5e5;">${s(g.descripcion)}</td>
               <td style="padding:6px 8px;text-align:right;color:#f87171;font-weight:600;">Q${parseFloat(g.monto).toFixed(2)}</td>
             </tr>`).join('')}
           </tbody>
           <tfoot><tr>
-            <td colspan="2" style="padding:8px;color:#aaa;font-weight:600;">TOTAL</td>
+            <td colspan="2" style="padding:8px;color:#a3a3a3;font-weight:600;">TOTAL</td>
             <td style="padding:8px;text-align:right;color:#f87171;font-weight:700;">Q${rows.reduce((a,g)=>a+parseFloat(g.monto),0).toFixed(2)}</td>
           </tr></tfoot>
         </table>`;
@@ -374,19 +374,19 @@ function verDetalleBalanceDash() {
     _dashModal('Resumen del período', `
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center;padding:8px 0;">
           <div style="background:#0a1a0a;border-radius:8px;padding:16px;">
-            <div style="font-size:11px;color:#888;margin-bottom:6px;">VENTAS</div>
+            <div style="font-size:11px;color:#a3a3a3;margin-bottom:6px;">VENTAS</div>
             <div style="font-size:20px;font-weight:700;color:#4ade80;">Q${ventas.toFixed(2)}</div>
           </div>
           <div style="background:#1a0a0a;border-radius:8px;padding:16px;">
-            <div style="font-size:11px;color:#888;margin-bottom:6px;">GASTOS</div>
+            <div style="font-size:11px;color:#a3a3a3;margin-bottom:6px;">GASTOS</div>
             <div style="font-size:20px;font-weight:700;color:#f87171;">Q${gastos.toFixed(2)}</div>
           </div>
           <div style="background:#0f0f1a;border-radius:8px;padding:16px;">
-            <div style="font-size:11px;color:#888;margin-bottom:6px;">BALANCE</div>
+            <div style="font-size:11px;color:#a3a3a3;margin-bottom:6px;">BALANCE</div>
             <div style="font-size:20px;font-weight:700;color:${balColor};">Q${balance.toFixed(2)}</div>
           </div>
         </div>
-        <p style="color:#555;font-size:12px;text-align:center;margin-top:12px;">Período desde el último cierre de caja registrado.</p>
+        <p style="color:#8a8a8a;font-size:12px;text-align:center;margin-top:12px;">Período desde el último cierre de caja registrado.</p>
     `);
 }
 
@@ -400,10 +400,10 @@ function _dashModal(titulo, contenidoHtml) {
         document.body.appendChild(overlay);
     }
     overlay.innerHTML = `
-        <div style="background:#181818;border-radius:12px;width:min(700px,95vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 32px #000a;">
-          <div style="padding:16px 20px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-weight:700;font-size:15px;color:#e2e2e2;">${titulo}</span>
-            <button onclick="document.getElementById('_dashModalOverlay').remove()" style="background:none;border:none;color:#555;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+        <div style="background:#0a0a0a;border-radius:12px;width:min(700px,95vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 32px #000a;">
+          <div style="padding:16px 20px;border-bottom:1px solid #262626;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-weight:700;font-size:15px;color:#e5e5e5;">${titulo}</span>
+            <button onclick="document.getElementById('_dashModalOverlay').remove()" style="background:none;border:none;color:#8a8a8a;font-size:20px;cursor:pointer;line-height:1;">✕</button>
           </div>
           <div id="_dashModalBody" style="overflow-y:auto;padding:16px 20px;">${contenidoHtml}</div>
         </div>`;
@@ -472,25 +472,25 @@ function mostrarQRGeneral() {
     }
     const urlGuardada = localStorage.getItem('_baseUrl') || window.location.origin;
     overlay.innerHTML = `
-        <div style="background:#181818;border-radius:14px;padding:28px 24px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px #000a;">
-            <h3 style="color:#e2e2e2;margin-bottom:6px;">QR — Consulta de puntos</h3>
-            <p style="color:#555;font-size:13px;margin-bottom:16px;">Los clientes escanean para ver sus puntos</p>
+        <div style="background:#0a0a0a;border-radius:14px;padding:28px 24px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px #000a;">
+            <h3 style="color:#e5e5e5;margin-bottom:6px;">QR — Consulta de puntos</h3>
+            <p style="color:#8a8a8a;font-size:13px;margin-bottom:16px;">Los clientes escanean para ver sus puntos</p>
 
             <div style="text-align:left;margin-bottom:14px;">
-                <label style="font-size:12px;color:#666;">URL pública</label>
+                <label style="font-size:12px;color:#8a8a8a;">URL pública</label>
                 <div style="display:flex;gap:6px;margin-top:4px;">
                     <input id="_ngrokUrlInput" value="${urlGuardada}" placeholder="https://gamerzonelobby-production.up.railway.app"
-                        style="flex:1;background:#0a0a14;border:1px solid #2a2a3e;border-radius:8px;color:#e2e2e2;font-size:13px;padding:8px 10px;outline:none;">
-                    <button onclick="generarQR()" style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">Generar</button>
+                        style="flex:1;background:#0a0a0a;border:1px solid #262626;border-radius:8px;color:#e5e5e5;font-size:13px;padding:8px 10px;outline:none;">
+                    <button onclick="generarQR()" style="background:#2e2e2e;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">Generar</button>
                 </div>
             </div>
 
             <div id="_qrImg" style="background:#fff;border-radius:10px;padding:12px;display:inline-block;margin-bottom:16px;min-width:120px;min-height:60px;">
-                <p style="color:#aaa;font-size:13px;padding:20px 10px;">Presiona Generar</p>
+                <p style="color:#a3a3a3;font-size:13px;padding:20px 10px;">Presiona Generar</p>
             </div>
             <br>
-            <button onclick="imprimirQRGeneral()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">Imprimir</button>
-            <button onclick="document.getElementById('_qrGeneralOverlay').remove()" style="background:#222;color:#888;border:1px solid #333;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;">Cerrar</button>
+            <button onclick="imprimirQRGeneral()" style="background:#2e2e2e;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">Imprimir</button>
+            <button onclick="document.getElementById('_qrGeneralOverlay').remove()" style="background:#141414;color:#a3a3a3;border:1px solid #262626;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;">Cerrar</button>
         </div>`;
     overlay.style.display = 'flex';
 
@@ -501,7 +501,7 @@ function generarQR() {
     const urlInput = document.getElementById('_ngrokUrlInput')?.value?.trim();
     if (urlInput) localStorage.setItem('_baseUrl', urlInput);
 
-    document.getElementById('_qrImg').innerHTML = '<p style="color:#aaa;font-size:13px;padding:20px 10px;">Generando...</p>';
+    document.getElementById('_qrImg').innerHTML = '<p style="color:#a3a3a3;font-size:13px;padding:20px 10px;">Generando...</p>';
 
     const param = urlInput ? `&baseUrl=${encodeURIComponent(urlInput)}` : '';
     const img = new Image();
@@ -548,7 +548,7 @@ function buscarClientes() {
         const lista = document.getElementById("lista");
         if (!lista) return;
         if (!data.length) {
-            lista.innerHTML = `<p style="color:#555;padding:20px 0;">Sin resultados para "<strong>${s(texto)}</strong>".</p>`;
+            lista.innerHTML = `<p style="color:#8a8a8a;padding:20px 0;">Sin resultados para "<strong>${s(texto)}</strong>".</p>`;
             return;
         }
 
@@ -574,8 +574,8 @@ function buscarClientes() {
                                 <span class="cli-nombre">${s(c.nombre)}</span>
                             </div>
                         </td>
-                        <td style="color:#aaa;font-size:13px;">${c.apodo ? s(c.apodo) : '<span style="color:#333;">—</span>'}</td>
-                        <td style="color:#aaa;font-size:13px;">${c.telefono ? s(c.telefono) : '<span style="color:#333;">—</span>'}</td>
+                        <td style="color:#a3a3a3;font-size:13px;">${c.apodo ? s(c.apodo) : '<span style="color:#8a8a8a;">—</span>'}</td>
+                        <td style="color:#a3a3a3;font-size:13px;">${c.telefono ? s(c.telefono) : '<span style="color:#8a8a8a;">—</span>'}</td>
                         <td style="text-align:right;">
                             <div style="display:flex;gap:6px;justify-content:flex-end;" onclick="event.stopPropagation()">
                                 <button class="cli-btn" title="Ver QR y puntos"
@@ -593,19 +593,19 @@ function buscarClientes() {
                                 <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;">
                                     <div style="text-align:center;">
                                         <div id="qrInline-${s(c.codigo)}" class="cli-qr-box"></div>
-                                        <div style="font-size:11px;color:#555;margin-top:6px;">${s(c.codigo)}</div>
+                                        <div style="font-size:11px;color:#8a8a8a;margin-top:6px;">${s(c.codigo)}</div>
                                         <button class="cli-btn" style="margin-top:8px;font-size:11px;"
                                             onclick="descargarQRInline('${s(c.codigo)}','${s(c.nombre)}')">Descargar</button>
                                     </div>
                                     <div style="flex:1;min-width:220px;">
-                                        <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Puntos acumulados</div>
+                                        <div style="font-size:11px;color:#8a8a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Puntos acumulados</div>
                                         <div id="puntosInline-${s(c.codigo)}" style="margin-bottom:18px;">
-                                            <span style="color:#555;font-size:13px;">Cargando...</span>
+                                            <span style="color:#8a8a8a;font-size:13px;">Cargando...</span>
                                         </div>
                                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                                             <button class="btn" style="font-size:13px;"
                                                 onclick="seleccionarClientePOS(${c.id},'${s(c.nombre)}')">Usar en POS</button>
-                                            <button class="btn" style="font-size:13px;background:#1a1a1a;border:1px solid #2a2a2a;"
+                                            <button class="btn" style="font-size:13px;background:#141414;border:1px solid #262626;"
                                                 onclick="verHistorialCliente(${c.id},'${s(c.nombre)}')">Historial</button>
                                         </div>
                                     </div>
@@ -658,7 +658,7 @@ function toggleClienteDetalle(codigo, nombre, id) {
                     <div class="cli-pts-label">Juego</div>
                 </div>
                 <div class="cli-pts-card" style="border-color:#60a5fa44;">
-                    <div style="font-size:28px;font-weight:800;color:#60a5fa;">${fmt(c2)}</div>
+                    <div style="font-size:28px;font-weight:800;color:#e5e5e5;">${fmt(c2)}</div>
                     <div class="cli-pts-label">Consumo</div>
                 </div>
                 <div class="cli-pts-card" style="border-color:#4ade8044;">
@@ -667,7 +667,7 @@ function toggleClienteDetalle(codigo, nombre, id) {
                 </div>
             </div>`;
     })
-    .catch(() => { if (ptsEl) ptsEl.innerHTML = `<span style="color:#555;font-size:13px;">Sin puntos registrados</span>`; });
+    .catch(() => { if (ptsEl) ptsEl.innerHTML = `<span style="color:#8a8a8a;font-size:13px;">Sin puntos registrados</span>`; });
 }
 
 function descargarQRInline(codigo, nombre) {
@@ -704,7 +704,7 @@ function mostrarQR(codigo, nombre) {
 
     // Cargar puntos del cliente
     const ptsEl = document.getElementById("qrPuntosCliente");
-    if (ptsEl) ptsEl.innerHTML = `<span style="color:#555;font-size:12px;">Cargando puntos...</span>`;
+    if (ptsEl) ptsEl.innerHTML = `<span style="color:#8a8a8a;font-size:12px;">Cargando puntos...</span>`;
 
     const baseUrl = window.location.origin;
     {
@@ -727,12 +727,12 @@ function mostrarQR(codigo, nombre) {
             <div style="display:flex;gap:12px;justify-content:center;margin-top:4px;">
                 <div style="text-align:center;">
                     <div style="font-size:22px;font-weight:800;color:#f59e0b;">${parseFloat(data.puntos_juego||0).toFixed(2).replace(/\.00$/,"")}</div>
-                    <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;">Pts juego</div>
+                    <div style="font-size:10px;color:#8a8a8a;text-transform:uppercase;letter-spacing:1px;">Pts juego</div>
                 </div>
-                <div style="width:1px;background:#222;"></div>
+                <div style="width:1px;background:#141414;"></div>
                 <div style="text-align:center;">
-                    <div style="font-size:22px;font-weight:800;color:#60a5fa;">${parseFloat(data.puntos_consumo||0).toFixed(2).replace(/\.00$/,"")}</div>
-                    <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;">Pts consumo</div>
+                    <div style="font-size:22px;font-weight:800;color:#e5e5e5;">${parseFloat(data.puntos_consumo||0).toFixed(2).replace(/\.00$/,"")}</div>
+                    <div style="font-size:10px;color:#8a8a8a;text-transform:uppercase;letter-spacing:1px;">Pts consumo</div>
                 </div>
             </div>`;
     })
@@ -767,11 +767,11 @@ function buscarClientePOSFn() {
     authFetch(`${API}/clientes/buscar?texto=${encodeURIComponent(q)}`)
     .then(r => r.json())
     .then(data => {
-        if (!data.length) { res.innerHTML = `<p style="color:#555;font-size:12px;padding:4px 0;">Sin resultados</p>`; return; }
+        if (!data.length) { res.innerHTML = `<p style="color:#8a8a8a;font-size:12px;padding:4px 0;">Sin resultados</p>`; return; }
         res.innerHTML = data.slice(0, 5).map(c =>
             `<div onclick="elegirClientePOS(${c.id},'${c.nombre.replace(/'/g,"\\'")}',this.parentElement)"
-                  style="padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px;background:#1a1a1a;margin-top:3px;"
-                  onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#1a1a1a'">
+                  style="padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px;background:#141414;margin-top:3px;"
+                  onmouseover="this.style.background='#1f1f1f'" onmouseout="this.style.background='#141414'">
                 👤 <strong>${s(c.nombre)}</strong>${c.apodo ? ` · ${s(c.apodo)}` : ""}
             </div>`
         ).join("");
@@ -994,7 +994,7 @@ function cargarReportes() {
 
     const sinDatos = (elId, msg) => {
         const el = document.getElementById(elId);
-        if (el) el.innerHTML = `<p style="color:#555;font-size:13px; padding: 4px 0;">${msg}</p>`;
+        if (el) el.innerHTML = `<p style="color:#8a8a8a;font-size:13px; padding: 4px 0;">${msg}</p>`;
     };
 
     // Top productos
@@ -1003,19 +1003,19 @@ function cargarReportes() {
     .then(data => {
         const el = document.getElementById("repTopProductos");
         if (!el) return;
-        if (!data.length) { el.innerHTML = `<p style="color:#555;font-size:13px;">Sin ventas este mes.</p>`; return; }
+        if (!data.length) { el.innerHTML = `<p style="color:#8a8a8a;font-size:13px;">Sin ventas este mes.</p>`; return; }
         el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead><tr style="color:#aaa;border-bottom:1px solid #333;">
+            <thead><tr style="color:#a3a3a3;border-bottom:1px solid #262626;">
                 <th style="padding:7px 6px;text-align:left;">#</th>
                 <th style="padding:7px 6px;text-align:left;">Producto</th>
                 <th style="padding:7px 6px;text-align:center;">Vendidos</th>
                 <th style="padding:7px 6px;text-align:right;">Ingresos</th>
             </tr></thead>
             <tbody>${data.map((p,i) => `
-                <tr style="border-bottom:1px solid #1a1a1a;">
-                    <td style="padding:7px 6px;color:#555;">${i+1}</td>
+                <tr style="border-bottom:1px solid #262626;">
+                    <td style="padding:7px 6px;color:#8a8a8a;">${i+1}</td>
                     <td style="padding:7px 6px;">${s(p.nombre)}</td>
-                    <td style="padding:7px 6px;text-align:center;color:#aaa;">${p.vendidos}</td>
+                    <td style="padding:7px 6px;text-align:center;color:#a3a3a3;">${p.vendidos}</td>
                     <td style="padding:7px 6px;text-align:right;color:#4ade80;font-weight:600;">Q${parseFloat(p.ingresos).toFixed(2)}</td>
                 </tr>`).join("")}
             </tbody></table>`;
@@ -1027,16 +1027,16 @@ function cargarReportes() {
     .then(data => {
         const el = document.getElementById("repMetodosPago");
         if (!el) return;
-        if (!data.length) { el.innerHTML = `<p style="color:#555;font-size:13px;">Sin ventas este mes.</p>`; return; }
+        if (!data.length) { el.innerHTML = `<p style="color:#8a8a8a;font-size:13px;">Sin ventas este mes.</p>`; return; }
         const totalGeneral = data.reduce((s,m) => s + parseFloat(m.total||0), 0);
         el.innerHTML = data.map(m => {
             const pct = totalGeneral > 0 ? (parseFloat(m.total)/totalGeneral*100).toFixed(1) : 0;
             return `<div style="margin-bottom:12px;">
                 <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
                     <span>${s(m.metodo)}</span>
-                    <span style="color:#aaa;">${m.cantidad} ventas · <strong>Q${parseFloat(m.total).toFixed(2)}</strong> (${pct}%)</span>
+                    <span style="color:#a3a3a3;">${m.cantidad} ventas · <strong>Q${parseFloat(m.total).toFixed(2)}</strong> (${pct}%)</span>
                 </div>
-                <div style="height:6px;background:#1a1a1a;border-radius:4px;">
+                <div style="height:6px;background:#141414;border-radius:4px;">
                     <div style="height:100%;width:${pct}%;background:#e2e2e2;border-radius:4px;"></div>
                 </div>
             </div>`;
@@ -1049,20 +1049,20 @@ function cargarReportes() {
     .then(data => {
         const el = document.getElementById("repCancelaciones");
         if (!el) return;
-        if (!data.length) { el.innerHTML = `<p style="color:#555;font-size:13px;">Sin cancelaciones este mes.</p>`; return; }
+        if (!data.length) { el.innerHTML = `<p style="color:#8a8a8a;font-size:13px;">Sin cancelaciones este mes.</p>`; return; }
         el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead><tr style="color:#aaa;border-bottom:1px solid #333;">
+            <thead><tr style="color:#a3a3a3;border-bottom:1px solid #262626;">
                 <th style="padding:7px 6px;">Fecha</th>
                 <th style="padding:7px 6px;">Cliente</th>
                 <th style="padding:7px 6px;text-align:right;">Total</th>
                 <th style="padding:7px 6px;">Motivo</th>
             </tr></thead>
             <tbody>${data.map(c => `
-                <tr style="border-bottom:1px solid #1a1a1a;">
-                    <td style="padding:7px 6px;color:#aaa;white-space:nowrap;">${fmtFecha(c.fecha)}</td>
+                <tr style="border-bottom:1px solid #262626;">
+                    <td style="padding:7px 6px;color:#a3a3a3;white-space:nowrap;">${fmtFecha(c.fecha)}</td>
                     <td style="padding:7px 6px;">${s(c.cliente)||"—"}</td>
                     <td style="padding:7px 6px;text-align:right;color:#ef4444;">Q${parseFloat(c.total).toFixed(2)}</td>
-                    <td style="padding:7px 6px;color:#555;font-size:12px;">${s(c.observacion)||"—"}</td>
+                    <td style="padding:7px 6px;color:#8a8a8a;font-size:12px;">${s(c.observacion)||"—"}</td>
                 </tr>`).join("")}
             </tbody></table>`;
     }).catch(() => sinDatos("repCancelaciones", "Sin cancelaciones este mes."));
@@ -1073,9 +1073,9 @@ function cargarReportes() {
     .then(data => {
         const el = document.getElementById("repMargenes");
         if (!el) return;
-        if (!data.length) { el.innerHTML = `<p style="color:#555;font-size:13px;">Sin productos.</p>`; return; }
+        if (!data.length) { el.innerHTML = `<p style="color:#8a8a8a;font-size:13px;">Sin productos.</p>`; return; }
         el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead><tr style="color:#aaa;border-bottom:1px solid #333;">
+            <thead><tr style="color:#a3a3a3;border-bottom:1px solid #262626;">
                 <th style="padding:7px 6px;">Producto</th>
                 <th style="padding:7px 6px;text-align:right;">Compra</th>
                 <th style="padding:7px 6px;text-align:right;">Venta</th>
@@ -1083,12 +1083,12 @@ function cargarReportes() {
                 <th style="padding:7px 6px;text-align:right;">Margen</th>
             </tr></thead>
             <tbody>${data.map(p => `
-                <tr style="border-bottom:1px solid #1a1a1a;">
+                <tr style="border-bottom:1px solid #262626;">
                     <td style="padding:7px 6px;">${s(p.nombre)}</td>
-                    <td style="padding:7px 6px;text-align:right;color:#aaa;">Q${parseFloat(p.precio_compra||0).toFixed(2)}</td>
+                    <td style="padding:7px 6px;text-align:right;color:#a3a3a3;">Q${parseFloat(p.precio_compra||0).toFixed(2)}</td>
                     <td style="padding:7px 6px;text-align:right;">Q${parseFloat(p.precio_venta||0).toFixed(2)}</td>
                     <td style="padding:7px 6px;text-align:right;color:#4ade80;">Q${parseFloat(p.ganancia||0).toFixed(2)}</td>
-                    <td style="padding:7px 6px;text-align:right;color:#aaa;">${parseFloat(p.margen_pct||0).toFixed(1)}%</td>
+                    <td style="padding:7px 6px;text-align:right;color:#a3a3a3;">${parseFloat(p.margen_pct||0).toFixed(1)}%</td>
                 </tr>`).join("")}
             </tbody></table>`;
     }).catch(() => sinDatos("repMargenes", "Sin productos con precio configurado."));
@@ -1122,7 +1122,7 @@ function cargarVentasReporte(){
     .then(data => {
         const cont = document.getElementById("listaVentasReporte");
         if (!cont) return;
-        if (!data.length) { cont.innerHTML = "<p style='color:#555;'>No hay ventas registradas.</p>"; return; }
+        if (!data.length) { cont.innerHTML = "<p style='color:#8a8a8a;'>No hay ventas registradas.</p>"; return; }
         const btnStyle = "background:transparent;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;";
         const renderFila = (v) => {
             const esCancelada = v.estado === "CANCELADO";
@@ -1130,22 +1130,22 @@ function cargarVentasReporte(){
             const acciones = esCancelada
                 ? `<button onclick="reactivarVenta(${v.id})" style="${btnStyle}border:1px solid #4ade80;color:#4ade80;">Reactivar</button>`
                 : `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
-                    <button onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}','_blank')" style="${btnStyle}border:1px solid #333;color:#aaa;">PDF</button>
-                    <input id="motivo_${v.id}" placeholder="Motivo..." style="padding:3px 6px;font-size:11px;width:110px;border-radius:4px;background:#1a1a1a;color:#ccc;border:1px solid #333;">
+                    <button onclick="window.open('${API}/pdf/venta/${v.id}?token=${getToken()}','_blank')" style="${btnStyle}border:1px solid #262626;color:#a3a3a3;">PDF</button>
+                    <input id="motivo_${v.id}" placeholder="Motivo..." style="padding:3px 6px;font-size:11px;width:110px;border-radius:4px;background:#141414;color:#d4d4d4;border:1px solid #262626;">
                     <button onclick="cancelarVenta(${v.id})" style="${btnStyle}border:1px solid #ef4444;color:#ef4444;">Cancelar</button>
                    </div>`;
-            return `<tr style="border-bottom:1px solid #1a1a1a;${esCancelada ? "opacity:0.5;" : ""}">
-                <td style="padding:8px 6px;color:#555;">${v.id}</td>
-                <td style="padding:8px 6px;color:#aaa;white-space:nowrap;">${fmtFecha(v.fecha)}</td>
+            return `<tr style="border-bottom:1px solid #262626;${esCancelada ? "opacity:0.5;" : ""}">
+                <td style="padding:8px 6px;color:#8a8a8a;">${v.id}</td>
+                <td style="padding:8px 6px;color:#a3a3a3;white-space:nowrap;">${fmtFecha(v.fecha)}</td>
                 <td style="padding:8px 6px;">${s(v.cliente)||"—"}</td>
-                <td style="padding:8px 6px;color:#aaa;">${s(v.metodo_pago)}</td>
+                <td style="padding:8px 6px;color:#a3a3a3;">${s(v.metodo_pago)}</td>
                 <td style="padding:8px 6px;text-align:right;font-weight:600;">Q${parseFloat(v.total).toFixed(2)}</td>
                 <td style="padding:8px 6px;font-size:12px;color:${colorEstado};">${s(v.estado)}</td>
                 <td style="padding:8px 6px;">${acciones}</td>
             </tr>`;
         };
         cont.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead><tr style="color:#aaa;border-bottom:1px solid #333;text-align:left;">
+            <thead><tr style="color:#a3a3a3;border-bottom:1px solid #262626;text-align:left;">
                 <th style="padding:8px 6px;">#</th>
                 <th style="padding:8px 6px;">Fecha</th>
                 <th style="padding:8px 6px;">Cliente</th>
@@ -1207,24 +1207,24 @@ function cargarFacturas(){
                 ? ``
                 : esPendiente
                     ? `<button onclick="marcarSAT(${f.id_factura})" style="${btnStyle}border:1px solid #4ade80;color:#4ade80;">Marcar SAT</button>`
-                    : `<button onclick="revertirSAT(${f.id_factura})" style="${btnStyle}border:1px solid #555;color:#555;">Revertir</button>`;
-            return `<tr style="border-bottom:1px solid #1a1a1a;${esCancelada ? 'opacity:0.5;' : ''}">
-                <td style="padding:8px 6px;color:#aaa;">#${f.id_factura}</td>
-                <td style="padding:8px 6px;color:#aaa;white-space:nowrap;">${fmtFecha(f.fecha)}</td>
+                    : `<button onclick="revertirSAT(${f.id_factura})" style="${btnStyle}border:1px solid #555;color:#8a8a8a;">Revertir</button>`;
+            return `<tr style="border-bottom:1px solid #262626;${esCancelada ? 'opacity:0.5;' : ''}">
+                <td style="padding:8px 6px;color:#a3a3a3;">#${f.id_factura}</td>
+                <td style="padding:8px 6px;color:#a3a3a3;white-space:nowrap;">${fmtFecha(f.fecha)}</td>
                 <td style="padding:8px 6px;">${s(f.nombre)}</td>
-                <td style="padding:8px 6px;color:#aaa;">${s(f.nit)}</td>
+                <td style="padding:8px 6px;color:#a3a3a3;">${s(f.nit)}</td>
                 <td style="padding:8px 6px;text-align:right;font-weight:600;">Q${parseFloat(f.total).toFixed(2)}</td>
                 <td style="padding:8px 6px;">${numSat}</td>
                 <td style="padding:8px 6px;">
-                    ${!esCancelada ? `<button onclick="descargarFactura(${f.id_factura})" style="${btnStyle}border:1px solid #333;color:#aaa;margin-right:4px;">PDF</button>` : ''}
+                    ${!esCancelada ? `<button onclick="descargarFactura(${f.id_factura})" style="${btnStyle}border:1px solid #262626;color:#a3a3a3;margin-right:4px;">PDF</button>` : ''}
                     ${btnSat}
                 </td>
             </tr>`;
         };
         const renderTabla = (lista, esPendiente) => {
-            if (!lista.length) return `<p style="color:#555;font-size:13px;padding:12px 0;">${esPendiente ? "Sin facturas pendientes." : "Sin facturas registradas en SAT."}</p>`;
+            if (!lista.length) return `<p style="color:#8a8a8a;font-size:13px;padding:12px 0;">${esPendiente ? "Sin facturas pendientes." : "Sin facturas registradas en SAT."}</p>`;
             return `<table style="width:100%;border-collapse:collapse;font-size:13px;">
-                <thead><tr style="color:#aaa;border-bottom:1px solid #333;text-align:left;">
+                <thead><tr style="color:#a3a3a3;border-bottom:1px solid #262626;text-align:left;">
                     <th style="padding:8px 6px;">Factura</th>
                     <th style="padding:8px 6px;">Fecha</th>
                     <th style="padding:8px 6px;">Cliente</th>
@@ -1478,7 +1478,7 @@ function cargarCombos(){
             html += `
             <div class="card">
                 <h3>${c.nombre}</h3>
-                <p style="font-size:12px; color:#aaa;">${itemsTexto}</p>
+                <p style="font-size:12px; color:#a3a3a3;">${itemsTexto}</p>
                 <p><strong>Q${c.precio}</strong></p>
                 <button class="btn" onclick="agregarComboAlCarrito(${c.id_combo})">AGREGAR</button>
             </div>`;
@@ -1814,7 +1814,7 @@ function renderCarrito(){
     // Items del carrito
     let itemsHtml = "";
     if (carrito.length === 0) {
-        itemsHtml = '<p style="color:#555;font-size:13px;text-align:center;padding:16px 0;">El carrito está vacío</p>';
+        itemsHtml = '<p style="color:#8a8a8a;font-size:13px;text-align:center;padding:16px 0;">El carrito está vacío</p>';
     } else {
         carrito.forEach((p, index) => {
             const subtotal = p.precio * p.cantidad;
@@ -1823,10 +1823,10 @@ function renderCarrito(){
                 '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">'
                 + '<div style="flex:1;min-width:0;">'
                 + '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s(p.nombre) + '</div>'
-                + '<div style="font-size:12px;color:#888;">' + p.cantidad + ' × Q' + Number(p.precio).toFixed(2) + '</div>'
+                + '<div style="font-size:12px;color:#a3a3a3;">' + p.cantidad + ' × Q' + Number(p.precio).toFixed(2) + '</div>'
                 + '</div>'
-                + '<div style="font-size:13px;font-weight:700;color:#90caf9;white-space:nowrap;">Q' + subtotal.toFixed(2) + '</div>'
-                + '<button onclick="eliminarCarrito(' + index + ')" style="background:transparent;border:none;color:#555;cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;" title="Eliminar">✕</button>'
+                + '<div style="font-size:13px;font-weight:700;color:#e5e5e5;white-space:nowrap;">Q' + subtotal.toFixed(2) + '</div>'
+                + '<button onclick="eliminarCarrito(' + index + ')" style="background:transparent;border:none;color:#8a8a8a;cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;" title="Eliminar">✕</button>'
                 + '</div>';
         });
     }
@@ -1841,7 +1841,7 @@ function renderCarrito(){
         ? '<div style="display:flex;align-items:center;gap:8px;background:#0d2a0d;border:1px solid #22c55e;border-radius:8px;padding:8px 12px;">'
           + '<span style="font-size:18px;">👤</span>'
           + '<span style="flex:1;font-size:13px;font-weight:600;color:#4ade80;">' + s(clienteSeleccionado.nombre) + '</span>'
-          + '<button onclick="clienteSeleccionado=null;renderCarrito()" style="background:transparent;border:none;color:#555;cursor:pointer;font-size:15px;" title="Quitar">✕</button>'
+          + '<button onclick="clienteSeleccionado=null;renderCarrito()" style="background:transparent;border:none;color:#8a8a8a;cursor:pointer;font-size:15px;" title="Quitar">✕</button>'
           + '</div>'
         : '<div>'
           + '<input id="buscarClientePOS" placeholder="Buscar cliente registrado..." style="width:100%;padding:8px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);" oninput="buscarClientePOSFn()">'
@@ -1857,13 +1857,13 @@ function renderCarrito(){
     const footerHtml =
         '<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;">'
         // subtotal row
-        + '<div style="display:flex;justify-content:space-between;font-size:13px;color:#888;margin-bottom:6px;">'
+        + '<div style="display:flex;justify-content:space-between;font-size:13px;color:#a3a3a3;margin-bottom:6px;">'
         + '<span>Subtotal</span><span>Q' + subtotalBruto.toFixed(2) + '</span></div>'
         // descuento
         + descHtml
         // descuento input
         + '<div style="display:flex;align-items:center;gap:8px;margin:8px 0;">'
-        + '<label style="font-size:12px;color:#888;white-space:nowrap;">Desc. %</label>'
+        + '<label style="font-size:12px;color:#a3a3a3;white-space:nowrap;">Desc. %</label>'
         + '<input id="descuentoPct" type="number" min="0" max="100" value="' + descPct + '" placeholder="0"'
         + ' style="width:70px;padding:5px 8px;font-size:13px;border-radius:6px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);"'
         + ' oninput="renderCarrito()">'
@@ -1875,7 +1875,7 @@ function renderCarrito(){
         + '</div>'
         // mesa
         + '<div style="margin-bottom:10px;">'
-        + '<div style="font-size:11px;color:#666;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Mesa</div>'
+        + '<div style="font-size:11px;color:#8a8a8a;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Mesa</div>'
         + '<select id="mesaSeleccion" style="width:100%;padding:8px;background:var(--surface-1);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">'
         + '<option value="">— Sin mesa —</option>'
         + '<option value="Mesa 1">Mesa 1</option>'
@@ -1886,11 +1886,11 @@ function renderCarrito(){
         + '</div>'
         // cliente
         + '<div style="margin-bottom:12px;">'
-        + '<div style="font-size:11px;color:#666;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Cliente</div>'
+        + '<div style="font-size:11px;color:#8a8a8a;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;">Cliente</div>'
         + clienteHtml
         + '</div>'
         // botón
-        + '<button onclick="abrirModalPago()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.03em;">'
+        + '<button onclick="abrirModalPago()" style="width:100%;padding:12px;border-radius:10px;border:none;background:#2e2e2e;color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.03em;">'
         + 'Finalizar Venta</button>'
         + '</div>';
 
@@ -2183,7 +2183,7 @@ function confirmarDialog(titulo, mensaje, tipo) {
         titEl.textContent = titulo || '¿Confirmar acción?';
         msgEl.innerHTML = mensaje || '';
         btnOk.textContent = esDanger ? 'Eliminar' : 'Confirmar';
-        btnOk.style.background = esDanger ? '#dc2626' : 'linear-gradient(135deg,#1565c0,#0d47a1)';
+        btnOk.style.background = esDanger ? '#450a0a' : '#2e2e2e';
         btnOk.style.color = '#fff';
 
         modal.style.display = 'flex';
@@ -2259,10 +2259,10 @@ function seleccionarModoPOS(modo) {
     const btnProductos    = document.getElementById("modoProductosBtn");
 
     const activoStyle = `
-        border:2px solid rgba(41,121,255,0.6);
-        background:linear-gradient(135deg,rgba(21,101,192,0.3),rgba(41,121,255,0.15));
+        border:2px solid rgba(255,255,255,0.12);
+        background:#141414;
         color:var(--text);
-        box-shadow:0 0 24px rgba(41,121,255,0.2);`;
+        box-shadow:none;`;
     const inactivoStyle = `
         border:2px solid transparent;
         background:rgba(255,255,255,0.03);
@@ -2309,20 +2309,20 @@ function renderSelectorConsolas() {
                 min-width:120px;
                 text-align:center;
                 background:${seleccion ? '#0d2137' : 'var(--card)'};
-                border:2px solid ${seleccion ? '#1e88e5' : libre ? '#2a2a2a' : '#1a1a1a'};
+                border:2px solid ${seleccion ? '#1e88e5' : libre ? '#262626' : '#262626'};
                 transition:border .15s, background .15s;
                 position:relative;">
             <div style="font-size:26px; margin-bottom:4px;">${iconoTipo(c.tipo)}</div>
-            <div style="font-weight:700; font-size:13px; color:${seleccion ? '#90caf9' : '#e2e2e2'};">${s(c.nombre)}</div>
-            <div style="font-size:11px; color:#555; margin:2px 0;">Q${c.precio}/hr</div>
+            <div style="font-weight:700; font-size:13px; color:${seleccion ? '#e5e5e5' : '#e5e5e5'};">${s(c.nombre)}</div>
+            <div style="font-size:11px; color:#8a8a8a; margin:2px 0;">Q${c.precio}/hr</div>
             <div style="
                 display:inline-block; margin-top:6px;
                 padding:2px 10px; border-radius:20px; font-size:10px; font-weight:700;
-                background:${libre ? '#14532d' : '#7f1d1d'};
+                background:${libre ? '#14532d' : '#450a0a'};
                 color:${libre ? '#22c55e' : '#f87171'};">
                 ${libre ? 'LIBRE' : 'OCUPADA'}
             </div>
-            ${seleccion ? `<div style="position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#1e88e5;"></div>` : ''}
+            ${seleccion ? `<div style="position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#2e2e2e;"></div>` : ''}
         </div>`;
     }).join('');
 
@@ -2342,22 +2342,22 @@ function renderSelectorConsolas() {
 
     const ctrl = (label, sub, campo) =>
         '<div style="text-align:center;">'
-        + '<div style="font-size:11px;font-weight:600;color:#90caf9;margin-bottom:2px;">' + label + '</div>'
-        + '<div style="font-size:10px;color:#555;margin-bottom:6px;">' + sub + '</div>'
-        + '<div style="display:inline-flex;align-items:center;border:1px solid #2a2a2a;border-radius:10px;overflow:hidden;">'
-        + '<button onclick="cambiarTiempoConsola(\'' + campo + '\',-1)" style="width:34px;height:36px;background:transparent;border:none;color:#90caf9;font-size:20px;cursor:pointer;">−</button>'
-        + '<span style="min-width:28px;text-align:center;font-size:16px;font-weight:700;color:#e2e2e2;">' + _tiempoConsola[campo] + '</span>'
-        + '<button onclick="cambiarTiempoConsola(\'' + campo + '\',1)" style="width:34px;height:36px;background:transparent;border:none;color:#90caf9;font-size:20px;cursor:pointer;">+</button>'
+        + '<div style="font-size:11px;font-weight:600;color:#e5e5e5;margin-bottom:2px;">' + label + '</div>'
+        + '<div style="font-size:10px;color:#8a8a8a;margin-bottom:6px;">' + sub + '</div>'
+        + '<div style="display:inline-flex;align-items:center;border:1px solid #262626;border-radius:10px;overflow:hidden;">'
+        + '<button onclick="cambiarTiempoConsola(\'' + campo + '\',-1)" style="width:34px;height:36px;background:transparent;border:none;color:#e5e5e5;font-size:20px;cursor:pointer;">−</button>'
+        + '<span style="min-width:28px;text-align:center;font-size:16px;font-weight:700;color:#e5e5e5;">' + _tiempoConsola[campo] + '</span>'
+        + '<button onclick="cambiarTiempoConsola(\'' + campo + '\',1)" style="width:34px;height:36px;background:transparent;border:none;color:#e5e5e5;font-size:20px;cursor:pointer;">+</button>'
         + '</div></div>';
 
     // Layout: consolas a la izquierda, tiempo a la derecha
     const panelTiempo = _consolaSeleccionada
-        ? '<div style="flex:1;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:14px;padding:18px;">'
+        ? '<div style="flex:1;background:#0a0a0a;border:1px solid #262626;border-radius:14px;padding:18px;">'
           + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">'
           +   '<span style="font-size:18px;">' + iconoTipo(_consolaSeleccionada.tipo) + '</span>'
           +   '<div>'
-          +     '<div style="font-size:13px;font-weight:700;color:#90caf9;">' + nombre + '</div>'
-          +     '<div style="font-size:11px;color:#555;">' + precioHr + '</div>'
+          +     '<div style="font-size:13px;font-weight:700;color:#e5e5e5;">' + nombre + '</div>'
+          +     '<div style="font-size:11px;color:#8a8a8a;">' + precioHr + '</div>'
           +   '</div>'
           + '</div>'
           + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">'
@@ -2365,19 +2365,19 @@ function renderSelectorConsolas() {
           + ctrl('30 min', 'Q' + PRECIO_MEDIA_HORA + '/u', 'min30')
           + ctrl('Ctrl +', 'Q' + PRECIO_CONTROL_EXTRA + '/u', 'controles')
           + '</div>'
-          + '<div style="background:#111;border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">'
+          + '<div style="background:#0a0a0a;border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">'
           +   '<div>'
-          +     '<div style="font-size:10px;color:#555;margin-bottom:2px;">' + (totalMins > 0 ? totalMins + ' min de juego' : 'Sin tiempo seleccionado') + '</div>'
-          +     '<div style="font-size:22px;font-weight:800;color:' + (totalConsola > 0 ? '#fff' : '#333') + ';">Q' + totalConsola.toFixed(2) + '</div>'
+          +     '<div style="font-size:10px;color:#8a8a8a;margin-bottom:2px;">' + (totalMins > 0 ? totalMins + ' min de juego' : 'Sin tiempo seleccionado') + '</div>'
+          +     '<div style="font-size:22px;font-weight:800;color:' + (totalConsola > 0 ? '#fff' : '#8a8a8a') + ';">Q' + totalConsola.toFixed(2) + '</div>'
           +   '</div>'
           +   '<button onclick="agregarConsolaAlCarrito()" ' + (btnActivo ? '' : 'disabled')
           +   ' style="padding:12px 22px;border-radius:10px;border:none;cursor:' + (btnActivo ? 'pointer' : 'default') + ';font-size:13px;font-weight:700;'
-          +   'background:' + (btnActivo ? 'linear-gradient(135deg,#1565c0,#0d47a1)' : '#1a1a1a') + ';color:' + (btnActivo ? '#fff' : '#444') + ';white-space:nowrap;">'
+          +   'background:' + (btnActivo ? '#2e2e2e' : '#141414') + ';color:' + (btnActivo ? '#fff' : '#8a8a8a') + ';white-space:nowrap;">'
           +   '🛒 Agregar al carrito</button>'
           + '</div>'
           + '</div>'
-        : '<div style="flex:1;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:center;">'
-          + '<div style="text-align:center;color:#333;">'
+        : '<div style="flex:1;background:#0a0a0a;border:1px solid #262626;border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:center;">'
+          + '<div style="text-align:center;color:#8a8a8a;">'
           +   '<div style="font-size:36px;margin-bottom:8px;">🕹️</div>'
           +   '<div style="font-size:13px;">Selecciona una consola</div>'
           + '</div></div>';
@@ -2393,14 +2393,14 @@ function renderSelectorConsolas() {
                 + ' style="cursor:' + (libre ? 'pointer' : 'not-allowed') + ';opacity:' + (libre ? 1 : 0.4) + ';'
                 + 'border-radius:12px;padding:14px 10px;text-align:center;'
                 + 'background:' + (seleccion ? '#0d2137' : '#0a0a0a') + ';'
-                + 'border:2px solid ' + (seleccion ? '#1e88e5' : libre ? '#1e1e1e' : '#111') + ';'
+                + 'border:2px solid ' + (seleccion ? '#1e88e5' : libre ? '#262626' : '#111') + ';'
                 + 'transition:border .15s,background .15s;position:relative;">'
-                + (seleccion ? '<div style="position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#1e88e5;"></div>' : '')
+                + (seleccion ? '<div style="position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#2e2e2e;"></div>' : '')
                 + '<div style="font-size:24px;margin-bottom:6px;">' + iconoTipo(c.tipo) + '</div>'
-                + '<div style="font-size:12px;font-weight:700;color:' + (seleccion ? '#90caf9' : '#ccc') + ';margin-bottom:2px;">' + s(c.nombre) + '</div>'
-                + '<div style="font-size:10px;color:#555;margin-bottom:6px;">Q' + c.precio + '/hr</div>'
+                + '<div style="font-size:12px;font-weight:700;color:' + (seleccion ? '#e5e5e5' : '#d4d4d4') + ';margin-bottom:2px;">' + s(c.nombre) + '</div>'
+                + '<div style="font-size:10px;color:#8a8a8a;margin-bottom:6px;">Q' + c.precio + '/hr</div>'
                 + '<div style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;'
-                + 'background:' + (libre ? '#14532d' : '#7f1d1d') + ';color:' + (libre ? '#22c55e' : '#f87171') + ';">'
+                + 'background:' + (libre ? '#14532d' : '#450a0a') + ';color:' + (libre ? '#22c55e' : '#f87171') + ';">'
                 + (libre ? 'LIBRE' : 'OCUPADA') + '</div>'
                 + '</div>';
         }).join('')
@@ -2699,16 +2699,16 @@ function cargarTopClientes(){
         const mini = document.getElementById("miniTopClientes");
         if (mini) {
             if (!data || data.length === 0) {
-                mini.innerHTML = `<p style="color:#aaa; font-size:13px;">Sin clientes aún.</p>`;
+                mini.innerHTML = `<p style="color:#a3a3a3; font-size:13px;">Sin clientes aún.</p>`;
             } else {
                 mini.innerHTML = data.slice(0, 5).map((c, i) => {
                     const medal = `#${i+1}`;
-                    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1e1e1e;cursor:pointer;" onclick="verHistorialCliente(' + c.id + ',\'' + s(c.nombre) + '\')">'
+                    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #262626;cursor:pointer;" onclick="verHistorialCliente(' + c.id + ',\'' + s(c.nombre) + '\')">'
                         + '<span style="font-size:15px;min-width:24px;text-align:center;">' + medal + '</span>'
                         + '<span style="flex:1;font-size:13px;font-weight:600;">' + s(c.nombre) + '</span>'
                         + '<div style="text-align:right;">'
                         +   '<div style="font-size:12px;color:#f59e0b;font-weight:700;">' + Number(c.puntos||0).toFixed(0) + ' pts</div>'
-                        +   '<div style="font-size:10px;color:#555;">' + c.compras + ' compras · Q' + Number(c.total||0).toFixed(0) + '</div>'
+                        +   '<div style="font-size:10px;color:#8a8a8a;">' + c.compras + ' compras · Q' + Number(c.total||0).toFixed(0) + '</div>'
                         + '</div></div>';
                 }).join("");
             }
@@ -2735,7 +2735,7 @@ function cargarTopClientes(){
     .catch(error => {
         console.log(error);
         const mini = document.getElementById("miniTopClientes");
-        if (mini) mini.innerHTML = `<p style="color:#555; font-size:13px;">Sin datos aún.</p>`;
+        if (mini) mini.innerHTML = `<p style="color:#8a8a8a; font-size:13px;">Sin datos aún.</p>`;
     });
 }
 
@@ -2745,7 +2745,7 @@ let _clienteHistorialId = null;
 function verHistorialCliente(id, nombre) {
     _clienteHistorialId = id;
     document.getElementById("tituloHistorialCliente").textContent = `Historial de ${nombre}`;
-    document.getElementById("contenidoHistorialCliente").innerHTML = "<p style='color:#aaa;'>Cargando...</p>";
+    document.getElementById("contenidoHistorialCliente").innerHTML = "<p style='color:#a3a3a3;'>Cargando...</p>";
     abrirModal("modalHistorialCliente");
 
     Promise.all([
@@ -2772,95 +2772,95 @@ function verHistorialCliente(id, nombre) {
         // Tab puntos
         const tabPuntos =
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">'
-            + '<div style="background:linear-gradient(135deg,#0d47a1,#1565c0);border-radius:12px;padding:16px;text-align:center;">'
-            +   '<div style="font-size:10px;color:#90caf9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Pts Juego</div>'
+            + '<div style="background:#2e2e2e;border-radius:12px;padding:16px;text-align:center;">'
+            +   '<div style="font-size:10px;color:#e5e5e5;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Pts Juego</div>'
             +   '<div style="font-size:26px;font-weight:800;color:#fff;">' + ptsJuego + '</div>'
             +   '<div style="font-size:10px;color:#5c8de0;margin-top:4px;">consola + torneos</div>'
             + '</div>'
-            + '<div style="background:linear-gradient(135deg,#145214,#1b5e20);border-radius:12px;padding:16px;text-align:center;">'
-            +   '<div style="font-size:10px;color:#81c784;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Pts Consumo</div>'
+            + '<div style="background:#2e2e2e;border-radius:12px;padding:16px;text-align:center;">'
+            +   '<div style="font-size:10px;color:#4ade80;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Pts Consumo</div>'
             +   '<div style="font-size:26px;font-weight:800;color:#fff;">' + ptsConsumo + '</div>'
             +   '<div style="font-size:10px;color:#4c8f4c;margin-top:4px;">0.05 pts / Q1</div>'
             + '</div>'
-            + '<div style="background:linear-gradient(135deg,#4a148c,#6a1b9a);border-radius:12px;padding:16px;text-align:center;">'
-            +   '<div style="font-size:10px;color:#ce93d8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Total</div>'
+            + '<div style="background:#2e2e2e;border-radius:12px;padding:16px;text-align:center;">'
+            +   '<div style="font-size:10px;color:#e5e5e5;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Total</div>'
             +   '<div style="font-size:26px;font-weight:800;color:#fff;">' + ptsTotal + '</div>'
             +   '<div style="font-size:10px;color:#8e4db0;margin-top:4px;">puntos acumulados</div>'
             + '</div>'
             + '</div>'
             + (histPuntos.length
-                ? '<div style="border:1px solid #1e1e1e;border-radius:10px;overflow:hidden;">'
-                  + '<div style="background:#111;padding:10px 14px;font-size:11px;color:#546e7a;text-transform:uppercase;letter-spacing:.5px;">Movimientos de puntos</div>'
+                ? '<div style="border:1px solid #262626;border-radius:10px;overflow:hidden;">'
+                  + '<div style="background:#0a0a0a;padding:10px 14px;font-size:11px;color:#546e7a;text-transform:uppercase;letter-spacing:.5px;">Movimientos de puntos</div>'
                   + histPuntos.map(h =>
-                      '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid #1a1a1a;">'
-                      + '<span style="font-size:11px;color:#888;">' + (h.tipo === 'JUEGO' ? 'Juego' : 'Consumo') + '</span>'
-                      + '<span style="flex:1;font-size:13px;color:#ccc;">' + (motivoLabel[h.motivo] || h.motivo) + '</span>'
-                      + '<span style="font-size:11px;color:#444;">' + fmtFecha(h.fecha) + '</span>'
-                      + '<span style="font-size:13px;font-weight:700;color:' + (h.tipo === 'JUEGO' ? '#42a5f5' : '#66bb6a') + ';min-width:70px;text-align:right;">+' + Number(h.puntos).toFixed(2) + ' pts</span>'
+                      '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid #262626;">'
+                      + '<span style="font-size:11px;color:#a3a3a3;">' + (h.tipo === 'JUEGO' ? 'Juego' : 'Consumo') + '</span>'
+                      + '<span style="flex:1;font-size:13px;color:#d4d4d4;">' + (motivoLabel[h.motivo] || h.motivo) + '</span>'
+                      + '<span style="font-size:11px;color:#8a8a8a;">' + fmtFecha(h.fecha) + '</span>'
+                      + '<span style="font-size:13px;font-weight:700;color:' + (h.tipo === 'JUEGO' ? '#e5e5e5' : '#4ade80') + ';min-width:70px;text-align:right;">+' + Number(h.puntos).toFixed(2) + ' pts</span>'
                       + '</div>'
                     ).join('')
                   + '</div>'
-                : '<p style="color:#555;font-size:13px;text-align:center;padding:20px 0;">Sin movimientos de puntos.</p>'
+                : '<p style="color:#8a8a8a;font-size:13px;text-align:center;padding:20px 0;">Sin movimientos de puntos.</p>'
             );
 
         // Tab compras
         const tabCompras = compras.length
             ? '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
-              + '<span style="font-size:12px;color:#aaa;">' + compras.length + ' venta(s)</span>'
-              + '<span style="font-size:13px;font-weight:700;color:#66bb6a;">Total gastado: Q' + totalGastado.toFixed(2) + '</span>'
+              + '<span style="font-size:12px;color:#a3a3a3;">' + compras.length + ' venta(s)</span>'
+              + '<span style="font-size:13px;font-weight:700;color:#4ade80;">Total gastado: Q' + totalGastado.toFixed(2) + '</span>'
               + '</div>'
               + compras.map(v =>
-                  '<div style="border:1px solid #1e1e1e;border-radius:10px;margin-bottom:10px;overflow:hidden;">'
-                  + '<div style="background:#111;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">'
+                  '<div style="border:1px solid #262626;border-radius:10px;margin-bottom:10px;overflow:hidden;">'
+                  + '<div style="background:#0a0a0a;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">'
                   +   '<span style="font-size:13px;font-weight:600;">Venta #' + v.id_venta + '</span>'
-                  +   '<span style="font-size:11px;color:#555;">' + fmtFecha(v.fecha) + '</span>'
+                  +   '<span style="font-size:11px;color:#8a8a8a;">' + fmtFecha(v.fecha) + '</span>'
                   + '</div>'
                   + '<div style="padding:10px 14px;">'
                   + v.items.map(i =>
-                      '<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#ccc;">'
-                      + '<span>' + s(i.nombre) + ' <span style="color:#555;">×' + i.cantidad + '</span></span>'
-                      + '<span style="color:#aaa;">Q' + (i.precio * i.cantidad).toFixed(2) + '</span>'
+                      '<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#d4d4d4;">'
+                      + '<span>' + s(i.nombre) + ' <span style="color:#8a8a8a;">×' + i.cantidad + '</span></span>'
+                      + '<span style="color:#a3a3a3;">Q' + (i.precio * i.cantidad).toFixed(2) + '</span>'
                       + '</div>'
                     ).join('')
-                  + '<div style="border-top:1px solid #1e1e1e;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">'
-                  +   '<span style="font-size:11px;color:#555;">' + s(v.metodo_pago) + '</span>'
+                  + '<div style="border-top:1px solid #262626;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">'
+                  +   '<span style="font-size:11px;color:#8a8a8a;">' + s(v.metodo_pago) + '</span>'
                   +   '<span style="font-weight:700;color:#fff;">Q' + Number(v.total).toFixed(2) + '</span>'
                   + '</div>'
                   + '</div></div>'
                 ).join('')
-            : '<p style="color:#555;font-size:13px;text-align:center;padding:30px 0;">Sin compras registradas.</p>';
+            : '<p style="color:#8a8a8a;font-size:13px;text-align:center;padding:30px 0;">Sin compras registradas.</p>';
 
         const tabAjuste =
-            '<div style="background:#0a0a0a;border:1px solid #1e1e1e;border-radius:12px;padding:20px;">'
-            + '<div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Ajuste manual de puntos</div>'
+            '<div style="background:#0a0a0a;border:1px solid #262626;border-radius:12px;padding:20px;">'
+            + '<div style="font-size:12px;color:#8a8a8a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Ajuste manual de puntos</div>'
             + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">'
             +   '<div>'
-            +     '<label style="font-size:11px;color:#666;display:block;margin-bottom:5px;">Tipo</label>'
-            +     '<select id="ajusteTipo" style="width:100%;padding:9px 12px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#e2e2e2;font-size:13px;">'
+            +     '<label style="font-size:11px;color:#8a8a8a;display:block;margin-bottom:5px;">Tipo</label>'
+            +     '<select id="ajusteTipo" style="width:100%;padding:9px 12px;background:#0a0a0a;border:1px solid #262626;border-radius:8px;color:#e5e5e5;font-size:13px;">'
             +       '<option value="JUEGO">Juego</option>'
             +       '<option value="CONSUMO">Consumo</option>'
             +     '</select>'
             +   '</div>'
             +   '<div>'
-            +     '<label style="font-size:11px;color:#666;display:block;margin-bottom:5px;">Puntos (negativo para restar)</label>'
-            +     '<input id="ajustePuntos" type="number" step="0.5" placeholder="Ej: 5 o -3" style="width:100%;padding:9px 12px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#e2e2e2;font-size:13px;box-sizing:border-box;">'
+            +     '<label style="font-size:11px;color:#8a8a8a;display:block;margin-bottom:5px;">Puntos (negativo para restar)</label>'
+            +     '<input id="ajustePuntos" type="number" step="0.5" placeholder="Ej: 5 o -3" style="width:100%;padding:9px 12px;background:#0a0a0a;border:1px solid #262626;border-radius:8px;color:#e5e5e5;font-size:13px;box-sizing:border-box;">'
             +   '</div>'
             + '</div>'
             + '<div style="margin-bottom:14px;">'
-            +   '<label style="font-size:11px;color:#666;display:block;margin-bottom:5px;">Motivo (opcional)</label>'
-            +   '<input id="ajusteMotivo" type="text" placeholder="Ej: Corrección por error, premio especial..." style="width:100%;padding:9px 12px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#e2e2e2;font-size:13px;box-sizing:border-box;">'
+            +   '<label style="font-size:11px;color:#8a8a8a;display:block;margin-bottom:5px;">Motivo (opcional)</label>'
+            +   '<input id="ajusteMotivo" type="text" placeholder="Ej: Corrección por error, premio especial..." style="width:100%;padding:9px 12px;background:#0a0a0a;border:1px solid #262626;border-radius:8px;color:#e5e5e5;font-size:13px;box-sizing:border-box;">'
             + '</div>'
             + '<div style="display:flex;gap:8px;align-items:center;">'
-            +   '<button onclick="confirmarAjustePuntos()" style="padding:10px 20px;border-radius:9px;border:none;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Aplicar ajuste</button>'
-            +   '<span style="font-size:11px;color:#444;">El cambio aparecerá en el historial de movimientos</span>'
+            +   '<button onclick="confirmarAjustePuntos()" style="padding:10px 20px;border-radius:9px;border:none;background:#2e2e2e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Aplicar ajuste</button>'
+            +   '<span style="font-size:11px;color:#8a8a8a;">El cambio aparecerá en el historial de movimientos</span>'
             + '</div>'
             + '</div>';
 
         const html =
-            '<div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #1e1e1e;">'
-            + '<button id="tabBtnPuntos"  onclick="_switchTabHistorial(\'puntos\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#42a5f5;border-bottom:2px solid #42a5f5;margin-bottom:-2px;">Puntos</button>'
-            + '<button id="tabBtnCompras" onclick="_switchTabHistorial(\'compras\')" style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#555;border-bottom:2px solid transparent;margin-bottom:-2px;">Compras (' + compras.length + ')</button>'
-            + '<button id="tabBtnAjuste"  onclick="_switchTabHistorial(\'ajuste\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#555;border-bottom:2px solid transparent;margin-bottom:-2px;">Editar</button>'
+            '<div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #262626;">'
+            + '<button id="tabBtnPuntos"  onclick="_switchTabHistorial(\'puntos\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#e5e5e5;border-bottom:2px solid #ffffff;margin-bottom:-2px;">Puntos</button>'
+            + '<button id="tabBtnCompras" onclick="_switchTabHistorial(\'compras\')" style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#8a8a8a;border-bottom:2px solid transparent;margin-bottom:-2px;">Compras (' + compras.length + ')</button>'
+            + '<button id="tabBtnAjuste"  onclick="_switchTabHistorial(\'ajuste\')"  style="background:transparent;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;color:#8a8a8a;border-bottom:2px solid transparent;margin-bottom:-2px;">Editar</button>'
             + '</div>'
             + '<div id="tabPaneHistPuntos">' + tabPuntos + '</div>'
             + '<div id="tabPaneHistCompras" style="display:none;">' + tabCompras + '</div>'
@@ -2881,7 +2881,7 @@ function _switchTabHistorial(tab) {
         const btn  = document.getElementById(btns[k]);
         const active = k === tab;
         if (pane) pane.style.display = active ? '' : 'none';
-        if (btn)  { btn.style.color = active ? '#42a5f5' : '#555'; btn.style.borderBottomColor = active ? '#42a5f5' : 'transparent'; }
+        if (btn)  { btn.style.color = active ? '#e5e5e5' : '#8a8a8a'; btn.style.borderBottomColor = active ? '#ffffff' : 'transparent'; }
     });
 }
 
@@ -2931,17 +2931,17 @@ function cargarTopGamers(){
         const mini = document.getElementById("miniTopGamers");
         if (mini) {
             if (!data || data.length === 0) {
-                mini.innerHTML = '<p style="color:#555;font-size:13px;">Sin gamers aún.</p>';
+                mini.innerHTML = '<p style="color:#8a8a8a;font-size:13px;">Sin gamers aún.</p>';
             } else {
                 mini.innerHTML = data.slice(0, 5).map((g, i) => {
                     const medal = '#' + (i+1);
                     const apodoTxt = (g.apodo && typeof g.apodo === 'string') ? ' · ' + s(g.apodo) : '';
-                    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #1e1e1e;cursor:pointer;" onclick="_verGamerHistorial(' + g.id + ',\'' + s(g.nombre) + '\')">'
+                    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #262626;cursor:pointer;" onclick="_verGamerHistorial(' + g.id + ',\'' + s(g.nombre) + '\')">'
                         + '<span style="font-size:15px;min-width:24px;text-align:center;">' + medal + '</span>'
-                        + '<span style="flex:1;font-size:13px;font-weight:600;">' + s(g.nombre) + '<span style="color:#555;font-weight:400;">' + apodoTxt + '</span></span>'
+                        + '<span style="flex:1;font-size:13px;font-weight:600;">' + s(g.nombre) + '<span style="color:#8a8a8a;font-weight:400;">' + apodoTxt + '</span></span>'
                         + '<div style="text-align:right;">'
-                        +   '<div style="font-size:12px;color:#42a5f5;font-weight:700;">' + Number(g.puntos||0).toFixed(0) + ' pts</div>'
-                        +   '<div style="font-size:10px;color:#555;">Juego ' + Number(g.pts_juego||0).toFixed(0) + ' · Consumo ' + Number(g.pts_consumo||0).toFixed(0) + '</div>'
+                        +   '<div style="font-size:12px;color:#e5e5e5;font-weight:700;">' + Number(g.puntos||0).toFixed(0) + ' pts</div>'
+                        +   '<div style="font-size:10px;color:#8a8a8a;">Juego ' + Number(g.pts_juego||0).toFixed(0) + ' · Consumo ' + Number(g.pts_consumo||0).toFixed(0) + '</div>'
                         + '</div></div>';
                 }).join("");
             }
@@ -2952,7 +2952,7 @@ function cargarTopGamers(){
         if (!cont) return;
 
         if (!data || data.length === 0) {
-            cont.innerHTML = '<p style="color:#555;font-size:13px;text-align:center;padding:30px 0;">Sin gamers registrados aún.</p>';
+            cont.innerHTML = '<p style="color:#8a8a8a;font-size:13px;text-align:center;padding:30px 0;">Sin gamers registrados aún.</p>';
             return;
         }
 
@@ -2961,21 +2961,21 @@ function cargarTopGamers(){
             const ptsJuego   = Number(g.pts_juego   || 0).toFixed(0);
             const ptsConsumo = Number(g.pts_consumo || 0).toFixed(0);
             const ptsTotal   = Number(g.puntos      || 0).toFixed(0);
-            return '<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #1a1a1a;cursor:pointer;" onclick="_verGamerHistorial(' + g.id + ',\'' + s(g.nombre) + '\')">'
+            return '<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #262626;cursor:pointer;" onclick="_verGamerHistorial(' + g.id + ',\'' + s(g.nombre) + '\')">'
                 + '<div style="font-size:28px;min-width:40px;text-align:center;">' + medal + '</div>'
                 + '<div style="flex:1;">'
-                +   '<div style="font-size:14px;font-weight:700;">' + s(g.nombre) + (g.apodo && typeof g.apodo === 'string' && g.apodo.length ? ' <span style="color:#555;font-weight:400;font-size:12px;">@' + s(g.apodo) + '</span>' : '') + '</div>'
+                +   '<div style="font-size:14px;font-weight:700;">' + s(g.nombre) + (g.apodo && typeof g.apodo === 'string' && g.apodo.length ? ' <span style="color:#8a8a8a;font-weight:400;font-size:12px;">@' + s(g.apodo) + '</span>' : '') + '</div>'
                 +   '<div style="display:flex;gap:14px;margin-top:6px;">'
                 +     '<div style="text-align:center;">'
-                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">Juego</div>'
-                +       '<div style="font-size:15px;font-weight:700;color:#42a5f5;">' + ptsJuego + '</div>'
+                +       '<div style="font-size:10px;color:#8a8a8a;text-transform:uppercase;letter-spacing:.5px;">Juego</div>'
+                +       '<div style="font-size:15px;font-weight:700;color:#e5e5e5;">' + ptsJuego + '</div>'
                 +     '</div>'
                 +     '<div style="text-align:center;">'
-                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">Consumo</div>'
-                +       '<div style="font-size:15px;font-weight:700;color:#66bb6a;">' + ptsConsumo + '</div>'
+                +       '<div style="font-size:10px;color:#8a8a8a;text-transform:uppercase;letter-spacing:.5px;">Consumo</div>'
+                +       '<div style="font-size:15px;font-weight:700;color:#4ade80;">' + ptsConsumo + '</div>'
                 +     '</div>'
                 +     '<div style="text-align:center;">'
-                +       '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;">Total</div>'
+                +       '<div style="font-size:10px;color:#8a8a8a;text-transform:uppercase;letter-spacing:.5px;">Total</div>'
                 +       '<div style="font-size:15px;font-weight:700;color:#f59e0b;">' + ptsTotal + '</div>'
                 +     '</div>'
                 +   '</div>'
@@ -2985,7 +2985,7 @@ function cargarTopGamers(){
     })
     .catch(() => {
         const mini = document.getElementById("miniTopGamers");
-        if (mini) mini.innerHTML = '<p style="color:#555;font-size:13px;">Sin datos aún.</p>';
+        if (mini) mini.innerHTML = '<p style="color:#8a8a8a;font-size:13px;">Sin datos aún.</p>';
     });
 }
 
@@ -3048,9 +3048,9 @@ function tabInventario(tab) {
     const esProductos = tab === 'productos';
     document.getElementById("vistaProductosInv").style.display = esProductos ? "" : "none";
     document.getElementById("vistaHistorialInv").style.display = esProductos ? "none" : "";
-    document.getElementById("tabProductos").style.background = esProductos ? "" : "#333";
+    document.getElementById("tabProductos").style.background = esProductos ? "#2e2e2e" : "#0a0a0a";
     document.getElementById("tabProductos").style.color = esProductos ? "" : "var(--text)";
-    document.getElementById("tabHistorial").style.background = esProductos ? "#333" : "";
+    document.getElementById("tabHistorial").style.background = esProductos ? "#0a0a0a" : "#2e2e2e";
     document.getElementById("tabHistorial").style.color = esProductos ? "var(--text)" : "";
 
     if (esProductos) {
@@ -3067,12 +3067,12 @@ function cargarProductosInventario() {
     .then(data => {
         const contables = data.filter(p => (p.controla_stock == 1 || p.controla_stock === true) && !p.es_ingrediente);
         if (!contables.length) {
-            document.getElementById("listaProductosInv").innerHTML = "<p style='color:#aaa;'>No hay productos contables.</p>";
+            document.getElementById("listaProductosInv").innerHTML = "<p style='color:#a3a3a3;'>No hay productos contables.</p>";
             return;
         }
         const html = `<table style="width:100%; border-collapse:collapse; font-size:14px;">
             <thead>
-                <tr style="border-bottom:1px solid #333; color:#aaa; text-align:left;">
+                <tr style="border-bottom:1px solid #262626; color:#a3a3a3; text-align:left;">
                     <th style="padding:10px 12px;">Producto</th>
                     <th style="padding:10px 12px; text-align:center;">Stock</th>
                     <th style="padding:10px 12px; text-align:center;">Estado</th>
@@ -3087,7 +3087,7 @@ function cargarProductosInventario() {
                         : "";
                     const estadoTxt = agotado ? "Agotado" : bajo ? "Por terminar" : "OK";
                     const estadoColor = agotado ? "#ef4444" : bajo ? "#f59e0b" : "#22c55e";
-                    return `<tr style="border-bottom:1px solid #1a1a2e;">
+                    return `<tr style="border-bottom:1px solid #262626;">
                         <td style="padding:10px 12px; font-weight:600;">${punto}${p.nombre}</td>
                         <td style="padding:10px 12px; text-align:center; font-size:18px; font-weight:bold; color:${estadoColor};">${p.stock}</td>
                         <td style="padding:10px 12px; text-align:center; color:${estadoColor}; font-size:12px; font-weight:bold;">${estadoTxt}</td>
@@ -3159,7 +3159,7 @@ function cargarHistorial() {
         if (!cont) return;
 
         if (!data || !data.length) {
-            cont.innerHTML = '<p style="color:#555; padding:20px 0;">Sin movimientos registrados.</p>';
+            cont.innerHTML = '<p style="color:#8a8a8a; padding:20px 0;">Sin movimientos registrados.</p>';
             return;
         }
 
@@ -3179,8 +3179,8 @@ function cargarHistorial() {
             html += `
             <div style="margin-bottom:20px;">
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
-                    <span style="font-size:12px; font-weight:700; color:#90caf9; text-transform:uppercase; letter-spacing:.5px;">${dia}</span>
-                    <span style="font-size:11px; color:#555; margin-left:auto;">
+                    <span style="font-size:12px; font-weight:700; color:#e5e5e5; text-transform:uppercase; letter-spacing:.5px;">${dia}</span>
+                    <span style="font-size:11px; color:#8a8a8a; margin-left:auto;">
                         ${entradas ? `<span style="color:#22c55e;">+${entradas} entradas</span>` : ''}
                         ${entradas && salidas ? ' · ' : ''}
                         ${salidas  ? `<span style="color:#ef4444;">-${salidas} salidas</span>` : ''}
@@ -3206,7 +3206,7 @@ function cargarHistorial() {
                           <td style="text-align:center;">
                             <span style="
                               display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;
-                              background:${esEntrada ? '#14532d' : '#7f1d1d'};
+                              background:${esEntrada ? '#14532d' : '#450a0a'};
                               color:${esEntrada ? '#22c55e' : '#f87171'};">
                               ${esEntrada ? '↑ ENTRADA' : '↓ SALIDA'}
                             </span>
@@ -3214,8 +3214,8 @@ function cargarHistorial() {
                           <td style="text-align:center; font-weight:700; color:${esEntrada ? '#22c55e' : '#f87171'};">
                             ${esEntrada ? '+' : '-'}${m.cantidad}
                           </td>
-                          <td style="color:#aaa; font-size:13px;">${s(m.observacion || '—')}</td>
-                          <td style="text-align:right; color:#555; font-size:12px;">${hora}</td>
+                          <td style="color:#a3a3a3; font-size:13px;">${s(m.observacion || '—')}</td>
+                          <td style="text-align:right; color:#8a8a8a; font-size:12px;">${hora}</td>
                         </tr>`;
                       }).join('')}
                     </tbody>
@@ -3475,7 +3475,7 @@ function cargarCategoriasCatalogo() {
     authFetch(`${API}/productos/categorias`).then(r => r.json()).then(cats => {
         const el = document.getElementById('listaCategorias');
         if (!el) return;
-        if (!cats.length) { el.innerHTML = '<p style="color:#555;">Sin categorías.</p>'; return; }
+        if (!cats.length) { el.innerHTML = '<p style="color:#8a8a8a;">Sin categorías.</p>'; return; }
         const ocultarAcciones = esCajero();
         el.innerHTML = `
         <div class="cli-tabla-wrap">
@@ -3484,7 +3484,7 @@ function cargarCategoriasCatalogo() {
             <tbody>${cats.map(c => `
               <tr>
                 <td><strong>${s(c.nombre)}</strong></td>
-                ${ocultarAcciones ? '' : `<td style="text-align:center;"><button class="cli-btn" style="background:#7f1d1d;" onclick="eliminarCategoria(${c.id},'${s(c.nombre)}')">Eliminar</button></td>`}
+                ${ocultarAcciones ? '' : `<td style="text-align:center;"><button class="cli-btn" style="background:#450a0a;" onclick="eliminarCategoria(${c.id},'${s(c.nombre)}')">Eliminar</button></td>`}
               </tr>`).join('')}
             </tbody>
           </table>
@@ -3541,7 +3541,7 @@ function cargarSubcategoriasCatalogo() {
     fetch$.then(subs => {
         const el = document.getElementById('listaSubcategorias');
         if (!el) return;
-        if (!subs.length) { el.innerHTML = '<p style="color:#555;">Sin subcategorías.</p>'; return; }
+        if (!subs.length) { el.innerHTML = '<p style="color:#8a8a8a;">Sin subcategorías.</p>'; return; }
         const ocultarAccSub = esCajero();
         el.innerHTML = `
         <div class="cli-tabla-wrap">
@@ -3550,8 +3550,8 @@ function cargarSubcategoriasCatalogo() {
             <tbody>${subs.map(sb => `
               <tr>
                 <td><strong>${s(sb.nombre)}</strong></td>
-                ${filtro ? '' : `<td style="color:#aaa;font-size:12px;">${s(sb.cat||'')}</td>`}
-                ${ocultarAccSub ? '' : `<td style="text-align:center;"><button class="cli-btn" style="background:#7f1d1d;" onclick="eliminarSubcategoria(${sb.id_subcategoria},'${s(sb.nombre)}')">Eliminar</button></td>`}
+                ${filtro ? '' : `<td style="color:#a3a3a3;font-size:12px;">${s(sb.cat||'')}</td>`}
+                ${ocultarAccSub ? '' : `<td style="text-align:center;"><button class="cli-btn" style="background:#450a0a;" onclick="eliminarSubcategoria(${sb.id_subcategoria},'${s(sb.nombre)}')">Eliminar</button></td>`}
               </tr>`).join('')}
             </tbody>
           </table>
@@ -3633,7 +3633,7 @@ function cargarProductosCatalogo() {
 
         const el = document.getElementById('productosLista');
         if (!el) return;
-        if (!productos.length) { el.innerHTML = '<p style="color:#555;">Sin productos.</p>'; return; }
+        if (!productos.length) { el.innerHTML = '<p style="color:#8a8a8a;">Sin productos.</p>'; return; }
 
         const tabla = `
         <div class="cli-tabla-wrap">
@@ -3650,13 +3650,13 @@ function cargarProductosCatalogo() {
                 return `
                   <tr>
                     <td>${s(p.nombre)}</td>
-                    <td style="text-align:right; color:#aaa;">${tieneCompra ? 'Q' + parseFloat(p.precio_compra).toFixed(2) : '<span style="color:#444;">—</span>'}</td>
-                    <td style="text-align:right; color:#66bb6a; font-weight:600;">Q${parseFloat(p.precio_venta||0).toFixed(2)}</td>
-                    <td style="text-align:center; color:${p.stock==0?'#ef4444':p.stock<=5?'#f59e0b':'#aaa'};">${p.controla_stock ? p.stock : '∞'}</td>
+                    <td style="text-align:right; color:#a3a3a3;">${tieneCompra ? 'Q' + parseFloat(p.precio_compra).toFixed(2) : '<span style="color:#8a8a8a;">—</span>'}</td>
+                    <td style="text-align:right; color:#4ade80; font-weight:600;">Q${parseFloat(p.precio_venta||0).toFixed(2)}</td>
+                    <td style="text-align:center; color:${p.stock==0?'#ef4444':p.stock<=5?'#f59e0b':'#a3a3a3'};">${p.controla_stock ? p.stock : '∞'}</td>
                     <td style="text-align:center; display:flex; gap:4px; justify-content:center;">
                       <button class="cli-btn" onclick="abrirEntradaStock(${p.id},'${s(p.nombre)}',${parseFloat(p.precio_compra||0)},false)">+ Stock</button>
-                      <button class="cli-btn" style="background:#1e40af;" onclick="abrirEditarPrecios(${p.id},'${s(p.nombre)}',${parseFloat(p.precio_compra||0)},${parseFloat(p.precio_venta||0)})">Editar</button>
-                      <button class="cli-btn" style="background:#7f1d1d;" onclick="eliminarProducto(${p.id})">Eliminar</button>
+                      <button class="cli-btn" style="background:#2e2e2e;" onclick="abrirEditarPrecios(${p.id},'${s(p.nombre)}',${parseFloat(p.precio_compra||0)},${parseFloat(p.precio_venta||0)})">Editar</button>
+                      <button class="cli-btn" style="background:#450a0a;" onclick="eliminarProducto(${p.id})">Eliminar</button>
                     </td>
                   </tr>`;
             }).join('')}
@@ -3714,20 +3714,20 @@ function abrirEditarPrecios(id, nombre, precioCompra, precioVenta) {
     modal.id = 'modalEditarPrecios';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;min-width:300px;max-width:360px;width:90%;">
+      <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:24px;min-width:300px;max-width:360px;width:90%;">
         <h3 style="margin:0 0 4px;color:#fff;">Editar precios</h3>
-        <p style="margin:0 0 16px;color:#aaa;font-size:13px;">${nombre}</p>
-        <label style="color:#ccc;font-size:13px;">P. Compra (Q)</label>
+        <p style="margin:0 0 16px;color:#a3a3a3;font-size:13px;">${nombre}</p>
+        <label style="color:#d4d4d4;font-size:13px;">P. Compra (Q)</label>
         <input id="epCompra" type="number" step="0.01" min="0" value="${precioCompra || ''}" placeholder="Opcional"
-          style="width:100%;margin:4px 0 12px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
-        <label style="color:#ccc;font-size:13px;">P. Venta (Q) *</label>
+          style="width:100%;margin:4px 0 12px;padding:8px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;box-sizing:border-box;">
+        <label style="color:#d4d4d4;font-size:13px;">P. Venta (Q) *</label>
         <input id="epVenta" type="number" step="0.01" min="0" value="${precioVenta || ''}"
-          style="width:100%;margin:4px 0 16px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
+          style="width:100%;margin:4px 0 16px;padding:8px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;box-sizing:border-box;">
         <div style="display:flex;gap:8px;justify-content:flex-end;">
           <button onclick="document.getElementById('modalEditarPrecios').remove()"
-            style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            style="padding:8px 16px;background:#141414;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
           <button onclick="guardarEditarPrecios(${id})"
-            style="padding:8px 16px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
+            style="padding:8px 16px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -3766,7 +3766,7 @@ function filtrarOrdenes(estado) {
     _ordenesEstadoActual = estado;
     ['PENDIENTE','TODAS'].forEach(e => {
         const btn = document.getElementById(`filtroOrden${e === 'PENDIENTE' ? 'Pendiente' : 'Todas'}`);
-        if (btn) btn.style.background = e === estado ? '#1e40af' : '#333';
+        if (btn) btn.style.background = e === estado ? '#2e2e2e' : '#141414';
     });
     cargarOrdenes();
 }
@@ -3784,7 +3784,7 @@ function cargarOrdenes() {
 function renderOrdenes(data) {
     const el = document.getElementById('ordenesLista');
     if (!el) return;
-    if (!data.length) { el.innerHTML = '<p style="color:#555;grid-column:1/-1;">Sin órdenes.</p>'; return; }
+    if (!data.length) { el.innerHTML = '<p style="color:#8a8a8a;grid-column:1/-1;">Sin órdenes.</p>'; return; }
 
     el.innerHTML = data.map(o => {
         const pagado    = o.estado === 'PAGADO';
@@ -3795,41 +3795,41 @@ function renderOrdenes(data) {
             const pEnt = p.entregado || entregado;
             const chk = cancelado ? '' : pEnt
                 ? `<button disabled style="background:#4ade80;border:1px solid #4ade80;border-radius:4px;width:18px;height:18px;cursor:default;color:#000;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;">✓</button>`
-                : `<button onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:1px solid #555;border-radius:4px;width:18px;height:18px;cursor:pointer;color:#555;font-size:11px;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="Marcar entregado">○</button>`;
+                : `<button onclick="entregarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:1px solid #555;border-radius:4px;width:18px;height:18px;cursor:pointer;color:#8a8a8a;font-size:11px;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;" title="Marcar entregado">○</button>`;
             const del = cancelado ? '' : `<button onclick="eliminarProductoOrden(${o.id_venta},${p.id_detalle})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;" title="Eliminar">✕</button>`;
             return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;">
-                <span style="display:flex;align-items:center;gap:6px;">${chk}<span style="${pEnt?'text-decoration:line-through;color:#555;':''}">${s(p.nombre)} x${p.cantidad}</span></span>
-                <span style="display:flex;align-items:center;gap:6px;"><span style="color:#aaa;">Q${parseFloat(p.subtotal).toFixed(2)}</span>${del}</span>
+                <span style="display:flex;align-items:center;gap:6px;">${chk}<span style="${pEnt?'text-decoration:line-through;color:#8a8a8a;':''}">${s(p.nombre)} x${p.cantidad}</span></span>
+                <span style="display:flex;align-items:center;gap:6px;"><span style="color:#a3a3a3;">Q${parseFloat(p.subtotal).toFixed(2)}</span>${del}</span>
             </div>`;
         }).join('');
 
-        const badgePago     = `<span style="background:${pagado?'#4ade80':'#f59e0b'};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${pagado?'PAGADO':'SIN COBRAR'}</span>`;
-        const badgeEntrega  = `<span style="background:${entregado?'#4ade80':'#f59e0b'};color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${entregado?'ENTREGADO':'POR ENTREGAR'}</span>`;
-        const badgeCancelado= `<span style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CANCELADO</span>`;
+        const badgePago     = `<span style="background:${pagado?'#052e16':'#451a03'};color:${pagado?'#4ade80':'#f59e0b'};font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${pagado?'PAGADO':'SIN COBRAR'}</span>`;
+        const badgeEntrega  = `<span style="background:${entregado?'#052e16':'#451a03'};color:${entregado?'#4ade80':'#f59e0b'};font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">${entregado?'ENTREGADO':'POR ENTREGAR'}</span>`;
+        const badgeCancelado= `<span style="background:#450a0a;color:#f87171;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CANCELADO</span>`;
 
         const botones = cancelado ? '' : `
-            ${!pagado    ? `<button class="cli-btn" style="background:#15803d;" onclick="abrirCobrarOrden(${o.id_venta})">Cobrar</button>` : ''}
-            ${!entregado ? `<button class="cli-btn" style="background:#7c3aed;" onclick="entregarOrden(${o.id_venta})">Entregar</button>` : ''}
-            <button class="cli-btn" style="background:#0f766e;" onclick="abrirAsignarClienteOrden(${o.id_venta})">Cliente</button>
-            <button class="cli-btn" style="background:#1e40af;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
-            <button class="cli-btn" style="background:#7f1d1d;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>`;
+            ${!pagado    ? `<button class="cli-btn" style="background:#2e2e2e;" onclick="abrirCobrarOrden(${o.id_venta})">Cobrar</button>` : ''}
+            ${!entregado ? `<button class="cli-btn" style="background:#2e2e2e;" onclick="entregarOrden(${o.id_venta})">Entregar</button>` : ''}
+            <button class="cli-btn" style="background:#2e2e2e;" onclick="abrirAsignarClienteOrden(${o.id_venta})">Cliente</button>
+            <button class="cli-btn" style="background:#2e2e2e;" onclick="abrirAgregarOrden(${o.id_venta})">+ Agregar</button>
+            <button class="cli-btn" style="background:#450a0a;" onclick="cancelarOrden(${o.id_venta})">Cancelar</button>`;
 
         return `
-        <div style="background:#1a1a2e;border:1px solid ${cancelado?'#4a1a1a':'#2a2a4a'};border-radius:10px;padding:16px;">
+        <div style="background:#0a0a0a;border:1px solid ${cancelado?'#4a1a1a':'#262626'};border-radius:10px;padding:16px;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;">
                 <div>
                     <span style="font-weight:700;font-size:15px;">${o.mesa ? s(o.mesa) : 'Orden #' + (o.numero_orden || o.id_venta)}</span>
-                    <span style="font-size:11px;color:#666;margin-left:6px;">${fecha}</span>
+                    <span style="font-size:11px;color:#8a8a8a;margin-left:6px;">${fecha}</span>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
                     ${cancelado ? badgeCancelado : badgePago}
                     ${!cancelado ? badgeEntrega : ''}
                 </div>
             </div>
-            <div style="color:#aaa;font-size:12px;margin-bottom:8px;">${o.nombre_orden && o.nombre_orden !== 'POS' && o.nombre_orden !== 'ORDEN POS' ? s(o.nombre_orden) : s(o.cliente)}</div>
-            <div style="border-top:1px solid #222;padding-top:8px;margin-bottom:8px;">${items || '<span style="color:#555;font-size:12px;">Sin productos</span>'}</div>
+            <div style="color:#a3a3a3;font-size:12px;margin-bottom:8px;">${o.nombre_orden && o.nombre_orden !== 'POS' && o.nombre_orden !== 'ORDEN POS' ? s(o.nombre_orden) : s(o.cliente)}</div>
+            <div style="border-top:1px solid #262626;padding-top:8px;margin-bottom:8px;">${items || '<span style="color:#8a8a8a;font-size:12px;">Sin productos</span>'}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <span style="color:#aaa;font-size:12px;">Total</span>
+                <span style="color:#a3a3a3;font-size:12px;">Total</span>
                 <span style="font-weight:700;font-size:16px;color:#4ade80;">Q${parseFloat(o.total).toFixed(2)}</span>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">${botones}</div>
@@ -3846,31 +3846,31 @@ function abrirNuevaOrden() {
     modal.id = 'modalNuevaOrden';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;">
+      <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;">
         <h3 style="margin:0 0 16px;color:#fff;">Nueva Orden</h3>
-        <input id="noNombreOrden" placeholder="Nombre de la orden (ej: Mesa 1, Juan)" style="width:100%;margin-bottom:10px;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
-        <div id="noProductosList" style="max-height:250px;overflow-y:auto;border:1px solid #222;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
+        <input id="noNombreOrden" placeholder="Nombre de la orden (ej: Mesa 1, Juan)" style="width:100%;margin-bottom:10px;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;box-sizing:border-box;">
+        <div id="noProductosList" style="max-height:250px;overflow-y:auto;border:1px solid #262626;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
         <div style="position:relative;margin-bottom:10px;">
             <div style="display:flex;gap:6px;">
                 <div style="flex:1;position:relative;">
                     <input id="noBuscarProd" placeholder="Buscar producto..." autocomplete="off"
                         oninput="noBuscarProducto(this.value)"
-                        style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
-                    <div id="noSugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e3a;border:1px solid #333;border-radius:6px;z-index:10000;max-height:180px;overflow-y:auto;"></div>
+                        style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;box-sizing:border-box;">
+                    <div id="noSugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e3a;border:1px solid #262626;border-radius:6px;z-index:10000;max-height:180px;overflow-y:auto;"></div>
                 </div>
-                <input id="noSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
-                <button onclick="noAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+                <input id="noSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;text-align:center;">
+                <button onclick="noAgregarProducto()" style="padding:8px 12px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
             </div>
             <input type="hidden" id="noSelectProd" data-precio="">
         </div>
-        <div style="font-size:13px;color:#aaa;margin-bottom:12px;">Total: <strong id="noTotal" style="color:#4ade80;">Q0.00</strong></div>
-        <div style="border-top:1px solid #222;padding-top:12px;margin-bottom:14px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#ccc;font-size:13px;margin-bottom:10px;">
+        <div style="font-size:13px;color:#a3a3a3;margin-bottom:12px;">Total: <strong id="noTotal" style="color:#4ade80;">Q0.00</strong></div>
+        <div style="border-top:1px solid #262626;padding-top:12px;margin-bottom:14px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#d4d4d4;font-size:13px;margin-bottom:10px;">
                 <input type="checkbox" id="noCobrarAhora" onchange="noToggleCobro()" style="width:16px;height:16px;">
                 Cobrar ahora
             </label>
             <div id="noCobrarOpciones" style="display:none;">
-                <select id="noMetodoPago" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
+                <select id="noMetodoPago" style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;">
                     <option value="EFECTIVO">Efectivo</option>
                     <option value="TARJETA">Tarjeta</option>
                     <option value="TRANSFERENCIA">Transferencia</option>
@@ -3878,8 +3878,8 @@ function abrirNuevaOrden() {
             </div>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-            <button onclick="document.getElementById('modalNuevaOrden').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
-            <button onclick="confirmarNuevaOrden()" style="padding:8px 16px;background:#15803d;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Crear Orden</button>
+            <button onclick="document.getElementById('modalNuevaOrden').remove()" style="padding:8px 16px;background:#141414;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarNuevaOrden()" style="padding:8px 16px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Crear Orden</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -3903,8 +3903,8 @@ function noBuscarProducto(q) {
     sugs.style.display = 'block';
     sugs.innerHTML = matches.map(p => `
         <div onclick="noSeleccionarProducto(${p.id},'${p.nombre.replace(/'/g,"\\'")}',${p.precio_venta})"
-            style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #222;display:flex;justify-content:space-between;"
-            onmouseover="this.style.background='#2a2a4a'" onmouseout="this.style.background=''">
+            style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #262626;display:flex;justify-content:space-between;"
+            onmouseover="this.style.background='#1f1f1f'" onmouseout="this.style.background=''">
             <span>${s(p.nombre)}</span><span style="color:#4ade80;">Q${parseFloat(p.precio_venta).toFixed(2)}</span>
         </div>`).join('');
 }
@@ -3937,13 +3937,13 @@ function _noRenderItems() {
     const el = document.getElementById('noProductosList');
     const totalEl = document.getElementById('noTotal');
     if (!el) return;
-    if (!_noItems.length) { el.innerHTML = '<p style="color:#555;font-size:12px;text-align:center;">Sin productos</p>'; if(totalEl) totalEl.textContent = 'Q0.00'; return; }
+    if (!_noItems.length) { el.innerHTML = '<p style="color:#8a8a8a;font-size:12px;text-align:center;">Sin productos</p>'; if(totalEl) totalEl.textContent = 'Q0.00'; return; }
     el.innerHTML = _noItems.map((p, i) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #222;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #262626;">
             <span style="font-size:13px;">${s(p.nombre)}</span>
             <div style="display:flex;align-items:center;gap:6px;">
-                <span style="color:#aaa;font-size:12px;">x${p.cantidad} · Q${(p.precio*p.cantidad).toFixed(2)}</span>
-                <button onclick="_noQuitarItem(${i})" style="background:#7f1d1d;border:none;border-radius:4px;color:#fff;cursor:pointer;padding:2px 7px;font-size:12px;">✕</button>
+                <span style="color:#a3a3a3;font-size:12px;">x${p.cantidad} · Q${(p.precio*p.cantidad).toFixed(2)}</span>
+                <button onclick="_noQuitarItem(${i})" style="background:#450a0a;border:none;border-radius:4px;color:#fff;cursor:pointer;padding:2px 7px;font-size:12px;">✕</button>
             </div>
         </div>`).join('');
     const total = _noItems.reduce((s,p) => s + p.precio*p.cantidad, 0);
@@ -4006,26 +4006,26 @@ function abrirAgregarOrden(idVenta) {
     modal.id = 'modalAgregarOrden';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;">
+      <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:24px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;">
         <h3 style="margin:0 0 16px;color:#fff;">Agregar a Orden #${idVenta}</h3>
-        <div id="agProductosList" style="max-height:200px;overflow-y:auto;border:1px solid #222;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
+        <div id="agProductosList" style="max-height:200px;overflow-y:auto;border:1px solid #262626;border-radius:6px;padding:8px;margin-bottom:10px;"></div>
         <div style="position:relative;margin-bottom:10px;">
             <div style="display:flex;gap:6px;">
                 <div style="flex:1;position:relative;">
                     <input id="agBuscarProd" placeholder="Buscar producto..." autocomplete="off"
                         oninput="agBuscarProducto(this.value)"
-                        style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;box-sizing:border-box;">
-                    <div id="agSugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e3a;border:1px solid #333;border-radius:6px;z-index:10000;max-height:180px;overflow-y:auto;"></div>
+                        style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;box-sizing:border-box;">
+                    <div id="agSugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1e1e3a;border:1px solid #262626;border-radius:6px;z-index:10000;max-height:180px;overflow-y:auto;"></div>
                 </div>
-                <input id="agSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;text-align:center;">
-                <button onclick="agAgregarProducto()" style="padding:8px 12px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
+                <input id="agSelectCant" type="number" min="1" value="1" style="width:60px;padding:8px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;text-align:center;">
+                <button onclick="agAgregarProducto()" style="padding:8px 12px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">+</button>
             </div>
             <input type="hidden" id="agSelectProd" data-precio="" data-nombre="">
         </div>
-        <div style="font-size:13px;color:#aaa;margin-bottom:14px;">A agregar: <strong id="agTotal" style="color:#4ade80;">Q0.00</strong></div>
+        <div style="font-size:13px;color:#a3a3a3;margin-bottom:14px;">A agregar: <strong id="agTotal" style="color:#4ade80;">Q0.00</strong></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-            <button onclick="document.getElementById('modalAgregarOrden').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
-            <button onclick="confirmarAgregarOrden(${idVenta})" style="padding:8px 16px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Agregar</button>
+            <button onclick="document.getElementById('modalAgregarOrden').remove()" style="padding:8px 16px;background:#141414;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarAgregarOrden(${idVenta})" style="padding:8px 16px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Agregar</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -4049,8 +4049,8 @@ function agBuscarProducto(q) {
     sugs.style.display = 'block';
     sugs.innerHTML = matches.map(p => `
         <div onclick="agSeleccionarProducto(${p.id},'${p.nombre.replace(/'/g,"\\'")}',${p.precio_venta})"
-            style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #222;display:flex;justify-content:space-between;"
-            onmouseover="this.style.background='#2a2a4a'" onmouseout="this.style.background=''">
+            style="padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #262626;display:flex;justify-content:space-between;"
+            onmouseover="this.style.background='#1f1f1f'" onmouseout="this.style.background=''">
             <span>${s(p.nombre)}</span><span style="color:#4ade80;">Q${parseFloat(p.precio_venta).toFixed(2)}</span>
         </div>`).join('');
 }
@@ -4083,13 +4083,13 @@ function _agRenderItems() {
     const el = document.getElementById('agProductosList');
     const totalEl = document.getElementById('agTotal');
     if (!el) return;
-    if (!_agItems.length) { el.innerHTML = '<p style="color:#555;font-size:12px;text-align:center;">Sin productos</p>'; if(totalEl) totalEl.textContent = 'Q0.00'; return; }
+    if (!_agItems.length) { el.innerHTML = '<p style="color:#8a8a8a;font-size:12px;text-align:center;">Sin productos</p>'; if(totalEl) totalEl.textContent = 'Q0.00'; return; }
     el.innerHTML = _agItems.map((p, i) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #222;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #262626;">
             <span style="font-size:13px;">${s(p.nombre)}</span>
             <div style="display:flex;align-items:center;gap:6px;">
-                <span style="color:#aaa;font-size:12px;">x${p.cantidad} · Q${(p.precio*p.cantidad).toFixed(2)}</span>
-                <button onclick="_agQuitarItem(${i})" style="background:#7f1d1d;border:none;border-radius:4px;color:#fff;cursor:pointer;padding:2px 7px;font-size:12px;">✕</button>
+                <span style="color:#a3a3a3;font-size:12px;">x${p.cantidad} · Q${(p.precio*p.cantidad).toFixed(2)}</span>
+                <button onclick="_agQuitarItem(${i})" style="background:#450a0a;border:none;border-radius:4px;color:#fff;cursor:pointer;padding:2px 7px;font-size:12px;">✕</button>
             </div>
         </div>`).join('');
     const total = _agItems.reduce((s,p) => s + p.precio*p.cantidad, 0);
@@ -4122,26 +4122,26 @@ function abrirCobrarOrden(idVenta) {
     const pendientes = orden ? (orden.productos || []).filter(p => !p.cobrado) : [];
     const total = pendientes.reduce((s, p) => s + parseFloat(p.subtotal), 0);
     const listaHtml = pendientes.length > 0
-        ? pendientes.map(p => `<div style="display:flex;justify-content:space-between;font-size:13px;color:#ccc;padding:2px 0;"><span>${s(p.nombre)} x${p.cantidad}</span><span>Q${parseFloat(p.subtotal).toFixed(2)}</span></div>`).join('')
-        : '<p style="color:#aaa;font-size:12px;">Sin productos pendientes de cobro</p>';
+        ? pendientes.map(p => `<div style="display:flex;justify-content:space-between;font-size:13px;color:#d4d4d4;padding:2px 0;"><span>${s(p.nombre)} x${p.cantidad}</span><span>Q${parseFloat(p.subtotal).toFixed(2)}</span></div>`).join('')
+        : '<p style="color:#a3a3a3;font-size:12px;">Sin productos pendientes de cobro</p>';
 
     const modal = document.createElement('div');
     modal.id = 'modalCobrarOrden';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:340px;">
+      <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:24px;width:100%;max-width:340px;">
         <h3 style="margin:0 0 12px;color:#fff;">Cobrar Orden #${idVenta}</h3>
-        <div style="border:1px solid #222;border-radius:6px;padding:10px;margin-bottom:12px;">${listaHtml}</div>
+        <div style="border:1px solid #262626;border-radius:6px;padding:10px;margin-bottom:12px;">${listaHtml}</div>
         <p style="color:#4ade80;font-size:22px;font-weight:700;margin:0 0 16px;">Total: Q${total.toFixed(2)}</p>
-        <label style="color:#ccc;font-size:13px;">Método de pago</label>
-        <select id="cobrarMetodo" style="width:100%;margin:6px 0 16px;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;">
+        <label style="color:#d4d4d4;font-size:13px;">Método de pago</label>
+        <select id="cobrarMetodo" style="width:100%;margin:6px 0 16px;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;">
             <option value="EFECTIVO">Efectivo</option>
             <option value="TARJETA">Tarjeta</option>
             <option value="TRANSFERENCIA">Transferencia</option>
         </select>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-            <button onclick="document.getElementById('modalCobrarOrden').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
-            <button onclick="confirmarCobrarOrden(${idVenta})" style="padding:8px 16px;background:#15803d;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Confirmar</button>
+            <button onclick="document.getElementById('modalCobrarOrden').remove()" style="padding:8px 16px;background:#141414;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarCobrarOrden(${idVenta})" style="padding:8px 16px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Confirmar</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -4191,31 +4191,31 @@ function abrirAsignarClienteOrden(idVenta) {
     modal.id = 'modalAsignarCliente';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:340px;">
+      <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:24px;width:100%;max-width:340px;">
         <h3 style="margin:0 0 14px;color:#fff;">Asignar cliente</h3>
-        <div style="display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid #333;">
+        <div style="display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid #262626;">
           <button id="tabBuscarCliente" onclick="switchTabCliente('buscar')"
-            style="flex:1;padding:8px;border:none;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Buscar</button>
+            style="flex:1;padding:8px;border:none;background:#2e2e2e;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Buscar</button>
           <button id="tabNuevoCliente" onclick="switchTabCliente('nuevo')"
-            style="flex:1;padding:8px;border:none;background:#333;color:#aaa;cursor:pointer;font-size:13px;">Nuevo</button>
+            style="flex:1;padding:8px;border:none;background:#141414;color:#a3a3a3;cursor:pointer;font-size:13px;">Nuevo</button>
         </div>
         <div id="panelBuscarCliente">
           <input id="buscarClienteOrden" type="text" placeholder="Buscar por nombre o teléfono..."
-            style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;"
+            style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;"
             oninput="buscarClienteParaOrden()">
           <div id="resultadosClienteOrden" style="max-height:200px;overflow-y:auto;margin-bottom:8px;"></div>
         </div>
         <div id="panelNuevoCliente" style="display:none;">
           <input id="nuevoClienteNombre" type="text" placeholder="Nombre *"
-            style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;">
+            style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;">
           <input id="nuevoClienteTelefono" type="text" placeholder="Teléfono *"
-            style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:12px;box-sizing:border-box;">
+            style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;margin-bottom:12px;box-sizing:border-box;">
           <button onclick="registrarYAsignarCliente()"
-            style="width:100%;padding:9px;background:#0f766e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;margin-bottom:8px;">
+            style="width:100%;padding:9px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;margin-bottom:8px;">
             Registrar y asignar</button>
         </div>
         <button onclick="document.getElementById('modalAsignarCliente').remove()"
-          style="width:100%;padding:8px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+          style="width:100%;padding:8px;background:#141414;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
       </div>`;
     modal.dataset.idVenta = idVenta;
     document.body.appendChild(modal);
@@ -4229,12 +4229,12 @@ function switchTabCliente(tab) {
     const btnN   = document.getElementById('tabNuevoCliente');
     if (tab === 'buscar') {
         buscar.style.display = ''; nuevo.style.display = 'none';
-        btnB.style.background = '#1e40af'; btnB.style.color = '#fff';
-        btnN.style.background = '#333';    btnN.style.color = '#aaa';
+        btnB.style.background = '#2e2e2e'; btnB.style.color = '#fff';
+        btnN.style.background = '#141414';    btnN.style.color = '#a3a3a3';
     } else {
         buscar.style.display = 'none'; nuevo.style.display = '';
-        btnN.style.background = '#0f766e'; btnN.style.color = '#fff';
-        btnB.style.background = '#333';    btnB.style.color = '#aaa';
+        btnN.style.background = '#2e2e2e'; btnN.style.color = '#fff';
+        btnB.style.background = '#141414';    btnB.style.color = '#a3a3a3';
     }
 }
 
@@ -4270,11 +4270,11 @@ function buscarClienteParaOrden() {
     if (!q || q.length < 2) { res.innerHTML = ''; return; }
     authFetch(`${API}/clientes/buscar?texto=${encodeURIComponent(q)}`)
     .then(r => r.json()).then(data => {
-        if (!data.length) { res.innerHTML = '<p style="color:#666;font-size:13px;padding:8px;">Sin resultados</p>'; return; }
+        if (!data.length) { res.innerHTML = '<p style="color:#8a8a8a;font-size:13px;padding:8px;">Sin resultados</p>'; return; }
         res.innerHTML = data.map(c => `
           <div onclick="seleccionarClienteParaOrden(${c.id_cliente},'${s(c.nombre)}')"
-            style="padding:10px;border-radius:6px;cursor:pointer;border-bottom:1px solid #222;color:#fff;font-size:13px;"
-            onmouseover="this.style.background='#2a2a4a'" onmouseout="this.style.background=''">
+            style="padding:10px;border-radius:6px;cursor:pointer;border-bottom:1px solid #262626;color:#fff;font-size:13px;"
+            onmouseover="this.style.background='#1f1f1f'" onmouseout="this.style.background=''">
             ${s(c.nombre)} ${c.telefono ? '· ' + s(c.telefono) : ''}
           </div>`).join('');
     }).catch(() => {});
@@ -4347,18 +4347,18 @@ function cargarTorneosPorTipo(tipo) {
     .then(data => {
         const cont = document.getElementById(listaId);
         if (!cont) return;
-        if (!data.length) { cont.innerHTML = `<p style="color:#555;font-size:13px;">Sin torneos ${tipo === "MICROWIN" ? "Microwin" : "Flash"} registrados.</p>`; return; }
+        if (!data.length) { cont.innerHTML = `<p style="color:#8a8a8a;font-size:13px;">Sin torneos ${tipo === "MICROWIN" ? "Microwin" : "Flash"} registrados.</p>`; return; }
         const colorEstado = e => e === "FINALIZADO" ? "#555" : e === "EN_CURSO" ? "#f59e0b" : "#4ade80";
         cont.innerHTML = data.map(t => `
             <div class="card" style="min-width:220px;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                     <h3 style="margin:0 0 6px;">${s(t.nombre)}</h3>
-                    <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#1a1a1a;color:${colorEstado(t.estado)};">${t.estado||"ABIERTO"}</span>
+                    <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#141414;color:${colorEstado(t.estado)};">${t.estado||"ABIERTO"}</span>
                 </div>
-                <p style="color:#aaa;font-size:13px;margin:2px 0;">${s(t.juego)}</p>
+                <p style="color:#a3a3a3;font-size:13px;margin:2px 0;">${s(t.juego)}</p>
                 <p style="font-size:13px;margin:2px 0;">Premio: <strong>Q${parseFloat(t.premio).toFixed(2)}</strong></p>
-                <p style="color:#aaa;font-size:12px;margin:2px 0;">Inscripción: Q${parseFloat(t.inscripcion).toFixed(2)} · Cupos: ${t.cupos}</p>
-                <hr style="border-color:#222;margin:10px 0;">
+                <p style="color:#a3a3a3;font-size:12px;margin:2px 0;">Inscripción: Q${parseFloat(t.inscripcion).toFixed(2)} · Cupos: ${t.cupos}</p>
+                <hr style="border-color:#262626;margin:10px 0;">
                 <button class="btn" onclick="verDetalleTorneo(${t.id_torneo})" style="font-size:12px;padding:4px 12px;">
                     ${t.estado === "FINALIZADO" ? "Ver resultados" : "Gestionar"}
                 </button>
@@ -4370,7 +4370,7 @@ function cargarTorneosPorTipo(tipo) {
 function verDetalleTorneo(id) {
     document.getElementById("modalTorneo").style.display = "block";
     const cont = document.getElementById("modalTorneoContenido");
-    cont.innerHTML = `<p style="color:#aaa;">Cargando...</p>`;
+    cont.innerHTML = `<p style="color:#a3a3a3;">Cargando...</p>`;
 
     Promise.all([
         authFetch(`${API}/torneos`).then(r => r.json()),
@@ -4384,11 +4384,11 @@ function verDetalleTorneo(id) {
 
         const listaParticipantes = participantes.length
             ? participantes.map(p => `
-                <tr style="border-bottom:1px solid #1a1a1a;">
-                    <td style="padding:7px 6px;">${s(p.nombre)}${p.apodo ? ` <span style="color:#555;font-size:11px;">(${s(p.apodo)})</span>` : ""}</td>
-                    <td style="padding:7px 6px;color:#aaa;">${p.posicion > 0 ? posNombre(p.posicion) : "—"}</td>
+                <tr style="border-bottom:1px solid #262626;">
+                    <td style="padding:7px 6px;">${s(p.nombre)}${p.apodo ? ` <span style="color:#8a8a8a;font-size:11px;">(${s(p.apodo)})</span>` : ""}</td>
+                    <td style="padding:7px 6px;color:#a3a3a3;">${p.posicion > 0 ? posNombre(p.posicion) : "—"}</td>
                     ${!finalizado ? `<td style="padding:7px 6px;">
-                        <select id="pos_${p.id_cliente}" style="background:#1a1a1a;color:#ccc;border:1px solid #333;border-radius:4px;padding:3px 6px;font-size:12px;">
+                        <select id="pos_${p.id_cliente}" style="background:#141414;color:#d4d4d4;border:1px solid #262626;border-radius:4px;padding:3px 6px;font-size:12px;">
                             <option value="0">Sin posición</option>
                             <option value="1" ${p.posicion==1?"selected":""}>Campeón (10 pts)</option>
                             <option value="2" ${p.posicion==2?"selected":""}>Finalista (5 pts)</option>
@@ -4396,22 +4396,22 @@ function verDetalleTorneo(id) {
                         </select>
                     </td>` : ""}
                 </tr>`).join("")
-            : `<tr><td colspan="3" style="padding:12px;color:#555;text-align:center;">Sin participantes inscritos aún.</td></tr>`;
+            : `<tr><td colspan="3" style="padding:12px;color:#8a8a8a;text-align:center;">Sin participantes inscritos aún.</td></tr>`;
 
         const fechaTorneo = t.fecha ? fmtFecha(t.fecha) : '—';
         cont.innerHTML = `
-            <h3 style="margin:0 0 4px;">${s(t.nombre)} <span style="font-size:13px;color:#aaa;">(${t.tipo})</span></h3>
-            <p style="color:#aaa;font-size:13px;margin:0 0 4px;">${s(t.juego)} · Premio: Q${parseFloat(t.premio).toFixed(2)} · Cupos: ${t.cupos}</p>
-            <p style="color:#555;font-size:12px;margin-bottom:16px;">${fechaTorneo}</p>
+            <h3 style="margin:0 0 4px;">${s(t.nombre)} <span style="font-size:13px;color:#a3a3a3;">(${t.tipo})</span></h3>
+            <p style="color:#a3a3a3;font-size:13px;margin:0 0 4px;">${s(t.juego)} · Premio: Q${parseFloat(t.premio).toFixed(2)} · Cupos: ${t.cupos}</p>
+            <p style="color:#8a8a8a;font-size:12px;margin-bottom:16px;">${fechaTorneo}</p>
 
             ${!finalizado ? `
             <div style="display:flex;gap:8px;margin-bottom:8px;">
                 <input id="buscarClienteTorneo" placeholder="Buscar jugador para inscribir..." style="flex:1;font-size:13px;" oninput="buscarParaTorneo(${id})">
-                <button class="btn" onclick="toggleNuevoJugadorTorneo(${id})" style="font-size:12px;padding:4px 10px;background:#333;white-space:nowrap;">Nuevo jugador</button>
+                <button class="btn" onclick="toggleNuevoJugadorTorneo(${id})" style="font-size:12px;padding:4px 10px;background:#141414;white-space:nowrap;">Nuevo jugador</button>
             </div>
             <div id="resultadosBusquedaTorneo" style="margin-bottom:8px;"></div>
-            <div id="formNuevoJugadorTorneo" style="display:none;background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:16px;">
-                <p style="font-size:12px;color:#aaa;margin-bottom:8px;">Crear nuevo jugador e inscribir directamente</p>
+            <div id="formNuevoJugadorTorneo" style="display:none;background:#0a0a0a;border:1px solid #262626;border-radius:8px;padding:12px;margin-bottom:16px;">
+                <p style="font-size:12px;color:#a3a3a3;margin-bottom:8px;">Crear nuevo jugador e inscribir directamente</p>
                 <input id="njNombre" placeholder="Nombre *" style="margin-bottom:6px;">
                 <input id="njApodo"  placeholder="Apodo (opcional)" style="margin-bottom:6px;">
                 <input id="njTel"    placeholder="Teléfono (opcional)" style="margin-bottom:10px;">
@@ -4420,7 +4420,7 @@ function verDetalleTorneo(id) {
 
             <h4 style="margin:0 0 8px;">Participantes (${participantes.length})</h4>
             <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;">
-                <thead><tr style="color:#aaa;border-bottom:1px solid #333;">
+                <thead><tr style="color:#a3a3a3;border-bottom:1px solid #262626;">
                     <th style="padding:7px 6px;text-align:left;">Jugador</th>
                     <th style="padding:7px 6px;text-align:left;">Posición</th>
                     ${!finalizado ? `<th style="padding:7px 6px;">Asignar</th>` : ""}
@@ -4429,10 +4429,10 @@ function verDetalleTorneo(id) {
             </table>
 
             ${!finalizado && participantes.length > 0 ? `
-            <button class="btn" onclick="finalizarTorneo(${id},[${participantes.map(p=>`${p.id_cliente}`).join(",")}])" style="background:#f59e0b;width:100%;">
+            <button class="btn" onclick="finalizarTorneo(${id},[${participantes.map(p=>`${p.id_cliente}`).join(",")}])" style="width:100%;">
                 Finalizar torneo y asignar puntos
             </button>` : ""}
-            ${finalizado ? `<p style="color:#555;text-align:center;font-size:13px;">Torneo finalizado</p>` : ""}
+            ${finalizado ? `<p style="color:#8a8a8a;text-align:center;font-size:13px;">Torneo finalizado</p>` : ""}
         `;
     }).catch(() => { cont.innerHTML = `<p style="color:#ef4444;">Error cargando detalle.</p>`; });
 }
@@ -4479,11 +4479,11 @@ function buscarParaTorneo(idTorneo) {
     authFetch(`${API}/clientes/buscar?texto=${encodeURIComponent(q)}`)
     .then(r => r.json())
     .then(data => {
-        if (!data.length) { res.innerHTML = `<p style="color:#555;font-size:12px;">Sin resultados</p>`; return; }
+        if (!data.length) { res.innerHTML = `<p style="color:#8a8a8a;font-size:12px;">Sin resultados</p>`; return; }
         res.innerHTML = data.slice(0,5).map(c =>
             `<div onclick="inscribirEnTorneo(${idTorneo},${c.id},'${c.nombre.replace(/'/g,"\\'")}')"
-                  style="padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px;background:#1a1a1a;margin-top:3px;"
-                  onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#1a1a1a'">
+                  style="padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px;background:#141414;margin-top:3px;"
+                  onmouseover="this.style.background='#1f1f1f'" onmouseout="this.style.background='#141414'">
                 <strong>${s(c.nombre)}</strong>${c.apodo ? ` · ${s(c.apodo)}` : ""}
             </div>`
         ).join("");
@@ -4550,13 +4550,13 @@ function cargarCierre(){
         const cont = document.getElementById("metodosDesglose");
         if(cont && data.por_metodo && data.por_metodo.length > 0){
             cont.innerHTML = data.por_metodo.map(m => `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e293b;border-radius:6px;margin-bottom:6px;">
-                    <span style="font-size:13px;color:#94a3b8;">${m.metodo || 'Sin método'}</span>
-                    <span style="font-size:14px;font-weight:bold;color:#38bdf8;">Q${Number(m.total).toFixed(2)}</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#0a0a0a;border-radius:6px;margin-bottom:6px;">
+                    <span style="font-size:13px;color:#a3a3a3;">${m.metodo || 'Sin método'}</span>
+                    <span style="font-size:14px;font-weight:bold;color:#e5e5e5;">Q${Number(m.total).toFixed(2)}</span>
                 </div>
             `).join('');
         } else if(cont) {
-            cont.innerHTML = '<p style="color:#555;font-size:12px;">Sin ventas en este período.</p>';
+            cont.innerHTML = '<p style="color:#8a8a8a;font-size:12px;">Sin ventas en este período.</p>';
         }
     })
 
@@ -4745,17 +4745,17 @@ function cargarFinanzas() {
         const lista = document.getElementById("listaIngresosExtra");
         if (!lista) return;
         if (!data.length) {
-            lista.innerHTML = '<p style="color:#555;font-size:13px;padding:16px 18px;">Sin ingresos extra este mes.</p>';
+            lista.innerHTML = '<p style="color:#8a8a8a;font-size:13px;padding:16px 18px;">Sin ingresos extra este mes.</p>';
             return;
         }
         lista.innerHTML = data.map(g =>
             '<div style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #131313;">'
             + '<div style="flex:1;min-width:0;">'
-            +   '<div style="font-size:13px;font-weight:600;color:#e2e2e2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s(g.descripcion) + '</div>'
-            +   '<div style="font-size:11px;color:#444;margin-top:2px;">' + fmtFecha(g.fecha) + '</div>'
+            +   '<div style="font-size:13px;font-weight:600;color:#e5e5e5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s(g.descripcion) + '</div>'
+            +   '<div style="font-size:11px;color:#8a8a8a;margin-top:2px;">' + fmtFecha(g.fecha) + '</div>'
             + '</div>'
-            + '<div style="font-size:14px;font-weight:700;color:#60a5fa;white-space:nowrap;">+Q' + parseFloat(g.monto).toFixed(2) + '</div>'
-            + '<button onclick="eliminarIngresoExtra(' + g.id + ')" style="background:transparent;border:none;color:#333;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1;" title="Eliminar">✕</button>'
+            + '<div style="font-size:14px;font-weight:700;color:#e5e5e5;white-space:nowrap;">+Q' + parseFloat(g.monto).toFixed(2) + '</div>'
+            + '<button onclick="eliminarIngresoExtra(' + g.id + ')" style="background:transparent;border:none;color:#8a8a8a;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1;" title="Eliminar">✕</button>'
             + '</div>'
         ).join('');
     })
@@ -4768,17 +4768,17 @@ function cargarFinanzas() {
         const lista = document.getElementById("listaGastos");
         if (!lista) return;
         if (!data.length) {
-            lista.innerHTML = '<p style="color:#555;font-size:13px;padding:16px 18px;">Sin gastos este mes.</p>';
+            lista.innerHTML = '<p style="color:#8a8a8a;font-size:13px;padding:16px 18px;">Sin gastos este mes.</p>';
             return;
         }
         lista.innerHTML = data.map(g =>
             '<div style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #131313;">'
             + '<div style="flex:1;min-width:0;">'
-            +   '<div style="font-size:13px;font-weight:600;color:#e2e2e2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s(g.descripcion) + '</div>'
-            +   '<div style="font-size:11px;color:#444;margin-top:2px;">' + fmtFecha(g.fecha) + '</div>'
+            +   '<div style="font-size:13px;font-weight:600;color:#e5e5e5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + s(g.descripcion) + '</div>'
+            +   '<div style="font-size:11px;color:#8a8a8a;margin-top:2px;">' + fmtFecha(g.fecha) + '</div>'
             + '</div>'
             + '<div style="font-size:14px;font-weight:700;color:#f87171;white-space:nowrap;">-Q' + parseFloat(g.monto).toFixed(2) + '</div>'
-            + (esCajero() ? '' : '<button onclick="eliminarGasto(' + g.id + ')" style="background:transparent;border:none;color:#333;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1;" title="Eliminar">✕</button>')
+            + (esCajero() ? '' : '<button onclick="eliminarGasto(' + g.id + ')" style="background:transparent;border:none;color:#8a8a8a;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1;" title="Eliminar">✕</button>')
             + '</div>'
         ).join('');
     })
@@ -4791,15 +4791,15 @@ function cargarFinanzas() {
         const lista = document.getElementById("listaIngresosDia");
         if (!lista) return;
         if (!data.length) {
-            lista.innerHTML = '<p style="color:#555;font-size:13px;padding:16px 18px;">Sin ventas este mes.</p>';
+            lista.innerHTML = '<p style="color:#8a8a8a;font-size:13px;padding:16px 18px;">Sin ventas este mes.</p>';
             return;
         }
         lista.innerHTML = data.map(d => {
             const diaStr = typeof d.dia === 'string' ? d.dia.split('T')[0] : d.dia;
             return '<div onclick="verVentasDia(\'' + diaStr + '\')" style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #131313;cursor:pointer;transition:background .15s;" onmouseover="this.style.background=\'#0f172a\'" onmouseout="this.style.background=\'\'">'
             + '<div style="flex:1;">'
-            +   '<div style="font-size:13px;font-weight:600;color:#e2e2e2;">' + fmtSoloFecha(diaStr) + '</div>'
-            +   '<div style="font-size:11px;color:#555;margin-top:2px;">' + d.ventas + ' venta' + (d.ventas !== 1 ? 's' : '') + ' · click para ver detalle</div>'
+            +   '<div style="font-size:13px;font-weight:600;color:#e5e5e5;">' + fmtSoloFecha(diaStr) + '</div>'
+            +   '<div style="font-size:11px;color:#8a8a8a;margin-top:2px;">' + d.ventas + ' venta' + (d.ventas !== 1 ? 's' : '') + ' · click para ver detalle</div>'
             + '</div>'
             + '<div style="font-size:14px;font-weight:700;color:#4ade80;white-space:nowrap;">+Q' + parseFloat(d.total).toFixed(2) + '</div>'
             + '</div>';
@@ -5024,16 +5024,16 @@ function cargarUsuarios() {
         const el = document.getElementById('usuariosLista');
         if (!el) return;
         el.innerHTML = data.map(u => `
-        <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
             <div>
                 <div style="font-weight:700;font-size:15px;color:#fff;">${s(u.nombre)}</div>
-                <div style="font-size:12px;color:#aaa;">@${s(u.usuario)} · <span style="color:#a78bfa;">${s(u.rol)}</span></div>
+                <div style="font-size:12px;color:#a3a3a3;">@${s(u.usuario)} · <span style="color:#a78bfa;">${s(u.rol)}</span></div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${u.activo?'#4ade80':'#ef4444'};color:#000;">${u.activo?'ACTIVO':'INACTIVO'}</span>
-                <button onclick="toggleUsuario(${u.id})" style="padding:6px 12px;border:none;border-radius:6px;background:${u.activo?'#7f1d1d':'#14532d'};color:#fff;cursor:pointer;font-size:12px;">${u.activo?'Desactivar':'Activar'}</button>
-                <button onclick="abrirEditarUsuario(${u.id},'${s(u.nombre)}','${s(u.usuario)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#0f766e;color:#fff;cursor:pointer;font-size:12px;">Editar</button>
-                <button onclick="abrirCambiarPassword(${u.id},'${s(u.nombre)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-size:12px;">Contraseña</button>
+                <button onclick="toggleUsuario(${u.id})" style="padding:6px 12px;border:none;border-radius:6px;background:${u.activo?'#450a0a':'#14532d'};color:#fff;cursor:pointer;font-size:12px;">${u.activo?'Desactivar':'Activar'}</button>
+                <button onclick="abrirEditarUsuario(${u.id},'${s(u.nombre)}','${s(u.usuario)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#2e2e2e;color:#fff;cursor:pointer;font-size:12px;">Editar</button>
+                <button onclick="abrirCambiarPassword(${u.id},'${s(u.nombre)}')" style="padding:6px 12px;border:none;border-radius:6px;background:#2e2e2e;color:#fff;cursor:pointer;font-size:12px;">Contraseña</button>
             </div>
         </div>`).join('');
     }).catch(() => mostrarMensaje('❌ Error al cargar usuarios'));
@@ -5055,15 +5055,15 @@ function abrirEditarUsuario(id, nombre, usuario) {
     modal.id = 'modalEditarUsuario';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
+      <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:24px;width:100%;max-width:320px;">
         <h3 style="margin:0 0 16px;color:#fff;">Editar usuario</h3>
-        <label style="color:#aaa;font-size:12px;">Nombre</label>
-        <input id="editNombre" type="text" value="${s(nombre)}" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:12px;box-sizing:border-box;">
-        <label style="color:#aaa;font-size:12px;">Usuario (login)</label>
-        <input id="editUsuario" type="text" value="${s(usuario)}" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:16px;box-sizing:border-box;">
+        <label style="color:#a3a3a3;font-size:12px;">Nombre</label>
+        <input id="editNombre" type="text" value="${s(nombre)}" style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;margin-bottom:12px;box-sizing:border-box;">
+        <label style="color:#a3a3a3;font-size:12px;">Usuario (login)</label>
+        <input id="editUsuario" type="text" value="${s(usuario)}" style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;margin-bottom:16px;box-sizing:border-box;">
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-            <button onclick="document.getElementById('modalEditarUsuario').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
-            <button onclick="confirmarEditarUsuario(${id})" style="padding:8px 16px;background:#0f766e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
+            <button onclick="document.getElementById('modalEditarUsuario').remove()" style="padding:8px 16px;background:#141414;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarEditarUsuario(${id})" style="padding:8px 16px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -5090,14 +5090,14 @@ function abrirCambiarPassword(id, nombre) {
     modal.id = 'modalPassword';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
     modal.innerHTML = `
-      <div style="background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:24px;width:100%;max-width:320px;">
+      <div style="background:#0a0a0a;border:1px solid #262626;border-radius:10px;padding:24px;width:100%;max-width:320px;">
         <h3 style="margin:0 0 16px;color:#fff;">Cambiar contraseña</h3>
-        <p style="color:#aaa;font-size:13px;margin:0 0 12px;">${s(nombre)}</p>
-        <input id="pwNueva" type="password" placeholder="Nueva contraseña (mín. 6 caracteres)" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;">
-        <input id="pwConfirm" type="password" placeholder="Confirmar contraseña" style="width:100%;padding:9px;background:#111;border:1px solid #333;border-radius:6px;color:#fff;margin-bottom:16px;box-sizing:border-box;">
+        <p style="color:#a3a3a3;font-size:13px;margin:0 0 12px;">${s(nombre)}</p>
+        <input id="pwNueva" type="password" placeholder="Nueva contraseña (mín. 6 caracteres)" style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;margin-bottom:8px;box-sizing:border-box;">
+        <input id="pwConfirm" type="password" placeholder="Confirmar contraseña" style="width:100%;padding:9px;background:#0a0a0a;border:1px solid #262626;border-radius:6px;color:#fff;margin-bottom:16px;box-sizing:border-box;">
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-            <button onclick="document.getElementById('modalPassword').remove()" style="padding:8px 16px;background:#333;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
-            <button onclick="confirmarCambiarPassword(${id})" style="padding:8px 16px;background:#1e40af;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
+            <button onclick="document.getElementById('modalPassword').remove()" style="padding:8px 16px;background:#141414;border:none;border-radius:6px;color:#fff;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarCambiarPassword(${id})" style="padding:8px 16px;background:#2e2e2e;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Guardar</button>
         </div>
       </div>`;
     document.body.appendChild(modal);

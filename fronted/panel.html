@@ -7,7 +7,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -52,7 +52,7 @@
         <div id="dashboard" class="seccion">
             <h2>Principal</h2>
 
-            <div id="notificacionesDash" style="display:none; background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:18px 20px; margin-bottom:16px;"></div>
+            <div id="notificacionesDash" style="display:none; background:#0a0a0a; border:1px solid #262626; border-radius:14px; padding:18px 20px; margin-bottom:16px;"></div>
 
             <div id="dashboardData" class="dashboard-cards"></div>
 
@@ -89,12 +89,12 @@
             <div class="dashboard-cards">
                 <div class="card">
                     <h4>Clientes frecuentes</h4>
-                    <div id="miniTopClientes"><p style="color:#555; font-size:13px;">Sin datos aún.</p></div>
+                    <div id="miniTopClientes"><p style="color:#8a8a8a; font-size:13px;">Sin datos aún.</p></div>
                 </div>
 
                 <div class="card">
                     <h4>Top gamers</h4>
-                    <div id="miniTopGamers"><p style="color:#555; font-size:13px;">Sin datos aún.</p></div>
+                    <div id="miniTopGamers"><p style="color:#8a8a8a; font-size:13px;">Sin datos aún.</p></div>
                 </div>
             </div>
         </div>
@@ -106,17 +106,17 @@
             <!-- Selector modo -->
             <div style="display:flex; gap:14px; margin-bottom:24px;">
                 <button id="modoConsolasBtn" onclick="seleccionarModoPOS('consolas')" style="
-                    flex:1; padding:20px 16px; border-radius:14px; border:2px solid rgba(41,121,255,0.5);
-                    background:linear-gradient(135deg,rgba(21,101,192,0.25),rgba(41,121,255,0.12));
+                    flex:1; padding:20px 16px; border-radius:14px; border:2px solid rgba(255,255,255,0.12);
+                    background:#141414;
                     color:var(--text); cursor:pointer; transition:0.25s ease; text-align:left;
                     display:flex; align-items:center; gap:14px; font-family:var(--font-head);">
-                    <span style="font-size:38px; line-height:1; filter:drop-shadow(0 4px 8px rgba(41,121,255,0.6));">🎮</span>
+                    <span style="font-size:38px; line-height:1; ">🎮</span>
                     <div>
                         <div style="font-size:17px; font-weight:700; letter-spacing:0.5px;">Consolas</div>
                         <div style="font-size:12px; color:var(--text-dim); margin-top:2px;">Tiempo de juego · Controles</div>
                     </div>
                     <span style="margin-left:auto; font-size:11px; padding:4px 10px; border-radius:20px;
-                        background:rgba(41,121,255,0.2); color:#90caf9; letter-spacing:1px;">JUEGO</span>
+                        background:rgba(255,255,255,0.12); color:#e5e5e5; letter-spacing:1px;">JUEGO</span>
                 </button>
 
                 <button id="modoProductosBtn" onclick="seleccionarModoPOS('productos')" style="
@@ -124,7 +124,7 @@
                     background:rgba(255,255,255,0.03);
                     color:var(--text-dim); cursor:pointer; transition:0.25s ease; text-align:left;
                     display:flex; align-items:center; gap:14px; font-family:var(--font-head);">
-                    <span style="font-size:38px; line-height:1; filter:drop-shadow(0 4px 8px rgba(255,111,0,0.4));">🍔</span>
+                    <span style="font-size:38px; line-height:1; ">🍔</span>
                     <div>
                         <div style="font-size:17px; font-weight:700; letter-spacing:0.5px;">Productos</div>
                         <div style="font-size:12px; color:var(--text-dim); margin-top:2px;">Comida · Bebidas · Otros</div>
@@ -191,7 +191,7 @@
         <div id="clientes" class="seccion" style="display:none;">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
                 <h2 style="margin:0;">Clientes</h2>
-                <button class="btn" style="background:#7c3aed;" onclick="mostrarQRGeneral()">QR Consulta de Puntos</button>
+                <button class="btn" style="background:#2e2e2e;" onclick="mostrarQRGeneral()">QR Consulta de Puntos</button>
             </div>
 
             <div class="card">
@@ -208,7 +208,7 @@
                 <h3>Buscar</h3>
                 <input id="buscar" placeholder="Nombre, teléfono o apodo">
                 <button class="btn" onclick="buscarClientes()">Buscar</button>
-                <button class="btn" style="background:#1a3a5c; margin-left:8px;" onclick="recalcularPuntos()">Recalcular puntos históricos</button>
+                <button class="btn" style="background:#141414; margin-left:8px;" onclick="recalcularPuntos()">Recalcular puntos históricos</button>
             </div>
 
             <div id="lista" class="dashboard-cards"></div>
@@ -221,7 +221,7 @@
             <!-- Tabs -->
             <div style="display:flex; gap:8px; margin-bottom:16px;">
                 <button class="btn" id="tabProductos" onclick="tabInventario('productos')">Productos</button>
-                <button class="btn" id="tabHistorial" onclick="tabInventario('historial')" style="background:#333; color:var(--text);">Historial</button>
+                <button class="btn" id="tabHistorial" onclick="tabInventario('historial')" style="background:#141414; color:var(--text);">Historial</button>
             </div>
 
             <!-- Vista: Productos contables -->
@@ -240,7 +240,7 @@
                         <option value="SALIDA">Solo salidas</option>
                     </select>
                     <input type="month" id="filtroHistMes" onchange="cargarHistorial()" style="width:auto;">
-                    <button onclick="exportarInventarioExcel()" style="padding:9px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel</button>
+                    <button onclick="exportarInventarioExcel()" style="padding:9px 16px;border-radius:8px;border:none;background:#2e2e2e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel</button>
                 </div>
                 <div id="historial"></div>
             </div>
@@ -251,7 +251,7 @@
             <h2>Gestión de Catálogo</h2>
 
             <!-- Pestañas -->
-            <div style="display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid #222; padding-bottom:0;">
+            <div style="display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid #262626; padding-bottom:0;">
                 <button id="tabCat" class="tab-btn tab-active" onclick="tabCatalogo('categorias')">Categorías</button>
                 <button id="tabSub" class="tab-btn" onclick="tabCatalogo('subcategorias')">Subcategorías</button>
                 <button id="tabProd" class="tab-btn" onclick="tabCatalogo('productos')">Productos</button>
@@ -280,7 +280,7 @@
                     </div>
                 </div>
                 <div style="margin-bottom:10px; display:flex; align-items:center; gap:8px;">
-                    <label style="color:#aaa; font-size:13px;">Filtrar por categoría:</label>
+                    <label style="color:#a3a3a3; font-size:13px;">Filtrar por categoría:</label>
                     <select id="filtroSubcatCategoria" onchange="cargarSubcategoriasCatalogo()" style="width:auto;"></select>
                 </div>
                 <div id="listaSubcategorias"></div>
@@ -291,11 +291,11 @@
                 <div class="card" style="margin-bottom:14px;">
                     <h3>Nuevo producto</h3>
                     <div style="display:flex; gap:16px; margin-bottom:12px; flex-wrap:wrap;">
-                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#90caf9;text-transform:none;letter-spacing:0;" title="Bebidas, snacks — descuenta de finanzas al registrar compra">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#e5e5e5;text-transform:none;letter-spacing:0;" title="Bebidas, snacks — descuenta de finanzas al registrar compra">
                             <input type="checkbox" id="registraCosto" style="width:auto;margin:0;" onchange="toggleFormProducto()">
                             Registra precio de compra
                         </label>
-                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#aaa;text-transform:none;letter-spacing:0;" title="Desactívalo para comida preparada al momento">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#a3a3a3;text-transform:none;letter-spacing:0;" title="Desactívalo para comida preparada al momento">
                             <input type="checkbox" id="controlaStockProducto" checked style="width:auto;margin:0;" onchange="toggleFormProducto()">
                             Controla stock
                         </label>
@@ -312,7 +312,7 @@
                 </div>
 
                 <div style="margin-bottom:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <label style="color:#aaa; font-size:13px;">Filtrar:</label>
+                    <label style="color:#a3a3a3; font-size:13px;">Filtrar:</label>
                     <select id="filtroProdCategoria" onchange="cargarSubcatsFiltro();cargarProductosCatalogo()" style="width:auto;"></select>
                     <select id="filtroProdSubcat" onchange="cargarProductosCatalogo()" style="width:auto;"></select>
                     <input id="filtroProdNombre" placeholder="Buscar por nombre..." style="width:180px;" oninput="cargarProductosCatalogo()">
@@ -326,16 +326,16 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
                 <div>
                     <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">Reportes</h2>
-                    <p style="margin:4px 0 0; color:#555; font-size:13px;">Estadísticas y ventas por mes</p>
+                    <p style="margin:4px 0 0; color:#8a8a8a; font-size:13px;">Estadísticas y ventas por mes</p>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <input type="month" id="mesReporte" style="padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarReportes()">
-                    <button onclick="cargarReportes()" style="padding:9px 16px;border-radius:9px;border:none;background:#1e1e1e;color:#e2e2e2;font-size:13px;font-weight:600;cursor:pointer;">Buscar</button>
+                    <input type="month" id="mesReporte" style="padding:9px 14px; border-radius:9px; background:#0a0a0a; color:#e5e5e5; border:1px solid #262626; font-size:13px;" onchange="cargarReportes()">
+                    <button onclick="cargarReportes()" style="padding:9px 16px;border-radius:9px;border:none;background:#141414;color:#e5e5e5;font-size:13px;font-weight:600;cursor:pointer;">Buscar</button>
                 </div>
             </div>
 
             <!-- TABS -->
-            <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #222;">
+            <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #262626;">
                 <button id="tabRep-stats" class="tab-btn tab-active" onclick="tabReporte('stats')">Estadísticas</button>
                 <button id="tabRep-facturas" class="tab-btn" onclick="tabReporte('facturas')">Facturas SAT</button>
                 <button id="tabRep-ventas" class="tab-btn" onclick="tabReporte('ventas')">Ventas</button>
@@ -348,25 +348,25 @@
                     <!-- Top productos -->
                     <div class="card">
                         <h3>Top 5 productos del mes</h3>
-                        <div id="repTopProductos"><p style="color:#555; font-size:13px;">Sin ventas este mes.</p></div>
+                        <div id="repTopProductos"><p style="color:#8a8a8a; font-size:13px;">Sin ventas este mes.</p></div>
                     </div>
 
                     <!-- Métodos de pago -->
                     <div class="card">
                         <h3>Ingresos por método de pago</h3>
-                        <div id="repMetodosPago"><p style="color:#555; font-size:13px;">Sin ventas este mes.</p></div>
+                        <div id="repMetodosPago"><p style="color:#8a8a8a; font-size:13px;">Sin ventas este mes.</p></div>
                     </div>
 
                     <!-- Cancelaciones -->
                     <div class="card">
                         <h3>Cancelaciones del mes</h3>
-                        <div id="repCancelaciones"><p style="color:#555; font-size:13px;">Sin cancelaciones este mes.</p></div>
+                        <div id="repCancelaciones"><p style="color:#8a8a8a; font-size:13px;">Sin cancelaciones este mes.</p></div>
                     </div>
 
                     <!-- Margen por producto -->
                     <div class="card">
                         <h3>Margen de ganancia por producto</h3>
-                        <div id="repMargenes"><p style="color:#555; font-size:13px;">Sin productos.</p></div>
+                        <div id="repMargenes"><p style="color:#8a8a8a; font-size:13px;">Sin productos.</p></div>
                     </div>
 
                 </div>
@@ -385,8 +385,8 @@
             <!-- HISTORIAL VENTAS -->
             <div id="repVentas" style="display:none;">
                 <div style="display:flex; gap:10px; margin-bottom:16px; align-items:center;">
-                    <button onclick="exportarExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel mes</button>
-                    <button onclick="exportarExcelTodo()" style="padding:9px 18px;border-radius:9px;border:1px solid #2a2a2a;background:#111;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Excel todo</button>
+                    <button onclick="exportarExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:#2e2e2e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel mes</button>
+                    <button onclick="exportarExcelTodo()" style="padding:9px 18px;border-radius:9px;border:1px solid #262626;background:#0a0a0a;color:#a3a3a3;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Excel todo</button>
                 </div>
                 <div id="listaVentasReporte"></div>
             </div>
@@ -400,8 +400,8 @@
 
             <!-- Filtro estado -->
             <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-                <button class="btn" id="filtroOrdenPendiente" onclick="filtrarOrdenes('PENDIENTE')" style="background:#1e40af;">Pendientes</button>
-                <button class="btn" id="filtroOrdenTodas"    onclick="filtrarOrdenes('TODAS')"    style="background:#333;">Todas</button>
+                <button class="btn" id="filtroOrdenPendiente" onclick="filtrarOrdenes('PENDIENTE')" style="background:#2e2e2e;">Pendientes</button>
+                <button class="btn" id="filtroOrdenTodas"    onclick="filtrarOrdenes('TODAS')"    style="background:#141414;">Todas</button>
             </div>
 
             <div id="ordenesLista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>
@@ -412,7 +412,7 @@
             <h2>Torneos</h2>
 
             <!-- TABS tipo -->
-            <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #222;">
+            <div style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid #262626;">
                 <button id="tabTorneo-microwin" class="tab-btn tab-active" onclick="tabTorneo('microwin')">Microwin</button>
                 <button id="tabTorneo-flash"    class="tab-btn"            onclick="tabTorneo('flash')">Flash</button>
             </div>
@@ -422,7 +422,7 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-bottom:24px;">
                     <div class="card">
                         <h3>Nuevo Microwin</h3>
-                        <p style="color:#aaa;font-size:12px;margin-bottom:10px;">Se anuncia con anticipación a los clientes.</p>
+                        <p style="color:#a3a3a3;font-size:12px;margin-bottom:10px;">Se anuncia con anticipación a los clientes.</p>
                         <input id="mwNombre"      placeholder="Nombre del torneo">
                         <input id="mwJuego"       placeholder="Juego" style="margin-top:8px;">
                         <input id="mwPremio"      type="number" placeholder="Premio (Q)" style="margin-top:8px;">
@@ -432,12 +432,12 @@
                     </div>
                     <div class="card">
                         <h3>Puntos por posición</h3>
-                        <p style="font-size:13px;color:#aaa;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
+                        <p style="font-size:13px;color:#a3a3a3;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
                         <table style="width:100%;font-size:13px;border-collapse:collapse;">
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
-                            <tr><td style="padding:6px;">Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
+                            <tr style="border-bottom:1px solid #262626;"><td style="padding:6px;">Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
+                            <tr style="border-bottom:1px solid #262626;"><td style="padding:6px;">Finalista</td><td style="padding:6px;color:#a3a3a3;">5 pts</td></tr>
+                            <tr style="border-bottom:1px solid #262626;"><td style="padding:6px;">Semifinalista</td><td style="padding:6px;color:#a3a3a3;">3 pts</td></tr>
+                            <tr><td style="padding:6px;">Por participar</td><td style="padding:6px;color:#8a8a8a;">2 pts</td></tr>
                         </table>
                     </div>
                 </div>
@@ -450,7 +450,7 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; margin-bottom:24px;">
                     <div class="card">
                         <h3>Nuevo torneo Flash</h3>
-                        <p style="color:#aaa;font-size:12px;margin-bottom:10px;">Se organiza el mismo día, sin anuncio previo.</p>
+                        <p style="color:#a3a3a3;font-size:12px;margin-bottom:10px;">Se organiza el mismo día, sin anuncio previo.</p>
                         <input id="flNombre"      placeholder="Nombre del torneo">
                         <input id="flJuego"       placeholder="Juego" style="margin-top:8px;">
                         <input id="flPremio"      type="number" placeholder="Premio (Q)" style="margin-top:8px;">
@@ -460,12 +460,12 @@
                     </div>
                     <div class="card">
                         <h3>Puntos por posición</h3>
-                        <p style="font-size:13px;color:#aaa;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
+                        <p style="font-size:13px;color:#a3a3a3;margin-bottom:8px;">Aplica a ambos tipos de torneo.</p>
                         <table style="width:100%;font-size:13px;border-collapse:collapse;">
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Finalista</td><td style="padding:6px;color:#aaa;">5 pts</td></tr>
-                            <tr style="border-bottom:1px solid #222;"><td style="padding:6px;">Semifinalista</td><td style="padding:6px;color:#cd7f32;">3 pts</td></tr>
-                            <tr><td style="padding:6px;">Por participar</td><td style="padding:6px;color:#555;">2 pts</td></tr>
+                            <tr style="border-bottom:1px solid #262626;"><td style="padding:6px;">Campeón</td><td style="padding:6px;color:#f59e0b;font-weight:bold;">10 pts</td></tr>
+                            <tr style="border-bottom:1px solid #262626;"><td style="padding:6px;">Finalista</td><td style="padding:6px;color:#a3a3a3;">5 pts</td></tr>
+                            <tr style="border-bottom:1px solid #262626;"><td style="padding:6px;">Semifinalista</td><td style="padding:6px;color:#a3a3a3;">3 pts</td></tr>
+                            <tr><td style="padding:6px;">Por participar</td><td style="padding:6px;color:#8a8a8a;">2 pts</td></tr>
                         </table>
                     </div>
                 </div>
@@ -476,7 +476,7 @@
             <!-- MODAL detalle torneo -->
             <div id="modalTorneo" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; overflow-y:auto;">
                 <div class="card" style="max-width:600px; margin:40px auto; position:relative;">
-                    <button onclick="cerrarModalTorneo()" style="position:absolute;top:10px;right:10px;background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer;">✕</button>
+                    <button onclick="cerrarModalTorneo()" style="position:absolute;top:10px;right:10px;background:transparent;border:none;color:#a3a3a3;font-size:18px;cursor:pointer;">✕</button>
                     <div id="modalTorneoContenido"></div>
                 </div>
             </div>
@@ -489,11 +489,11 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:24px;">
                 <div>
                     <h2 style="margin:0; font-size:20px; letter-spacing:.3px;">Control Financiero</h2>
-                    <p style="margin:4px 0 0; color:#555; font-size:13px;">Resumen de ingresos, gastos y balance mensual</p>
+                    <p style="margin:4px 0 0; color:#8a8a8a; font-size:13px;">Resumen de ingresos, gastos y balance mensual</p>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;">
-                    <input type="month" id="mesFinanzas" style="padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarFinanzas()">
-                    <button id="btnExcelFinanzas" onclick="exportarFinanzasExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#1a6b2a,#15803d);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel</button>
+                    <input type="month" id="mesFinanzas" style="padding:9px 14px; border-radius:9px; background:#0a0a0a; color:#e5e5e5; border:1px solid #262626; font-size:13px;" onchange="cargarFinanzas()">
+                    <button id="btnExcelFinanzas" onclick="exportarFinanzasExcel()" style="padding:9px 18px;border-radius:9px;border:none;background:#2e2e2e;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Excel</button>
                 </div>
             </div>
 
@@ -502,79 +502,79 @@
                 <div style="background:#0d1f0d; border:1px solid #1a3a1a; border-radius:14px; padding:18px 20px;">
                     <div style="font-size:11px; color:#4ade80; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ventas del mes</div>
                     <div id="finIngresos" style="font-size:24px; font-weight:800; color:#4ade80;">Q0.00</div>
-                    <div style="font-size:11px; color:#2d5a2d; margin-top:4px;">Cobros completados</div>
+                    <div style="font-size:11px; color:#8a8a8a; margin-top:4px;">Cobros completados</div>
                 </div>
-                <div style="background:#0d1827; border:1px solid #1a304a; border-radius:14px; padding:18px 20px;">
-                    <div style="font-size:11px; color:#60a5fa; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ingresos extra</div>
-                    <div id="finIngresosExtra" style="font-size:24px; font-weight:800; color:#60a5fa;">Q0.00</div>
-                    <div style="font-size:11px; color:#1d3a5a; margin-top:4px;">Torneos, membresías…</div>
+                <div style="background:#0a0a0a; border:1px solid #262626; border-radius:14px; padding:18px 20px;">
+                    <div style="font-size:11px; color:#e5e5e5; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ingresos extra</div>
+                    <div id="finIngresosExtra" style="font-size:24px; font-weight:800; color:#e5e5e5;">Q0.00</div>
+                    <div style="font-size:11px; color:#8a8a8a; margin-top:4px;">Torneos, membresías…</div>
                 </div>
                 <div style="background:#1f0d0d; border:1px solid #3a1a1a; border-radius:14px; padding:18px 20px;">
                     <div style="font-size:11px; color:#f87171; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Gastos del mes</div>
                     <div id="finGastos" style="font-size:24px; font-weight:800; color:#f87171;">Q0.00</div>
-                    <div style="font-size:11px; color:#5a1d1d; margin-top:4px;">Compras y egresos</div>
+                    <div style="font-size:11px; color:#8a8a8a; margin-top:4px;">Compras y egresos</div>
                 </div>
-                <div style="background:#111; border:1px solid #252525; border-radius:14px; padding:18px 20px;">
-                    <div style="font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ganancia neta</div>
-                    <div id="finGanancia" style="font-size:24px; font-weight:800; color:#e2e2e2;">Q0.00</div>
-                    <div style="font-size:11px; color:#444; margin-top:4px;">Ventas + extra − gastos</div>
+                <div style="background:#0a0a0a; border:1px solid #262626; border-radius:14px; padding:18px 20px;">
+                    <div style="font-size:11px; color:#a3a3a3; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Ganancia neta</div>
+                    <div id="finGanancia" style="font-size:24px; font-weight:800; color:#e5e5e5;">Q0.00</div>
+                    <div style="font-size:11px; color:#8a8a8a; margin-top:4px;">Ventas + extra − gastos</div>
                 </div>
             </div>
 
             <!-- FORMULARIOS LADO A LADO -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px;">
                 <!-- Form Gasto -->
-                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:20px;">
+                <div style="background:#0a0a0a; border:1px solid #262626; border-radius:14px; padding:20px;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
                         <span style="width:10px;height:10px;border-radius:50%;background:#f87171;"></span>
                         <span style="font-size:14px; font-weight:700; color:#f87171;">Registrar gasto</span>
                     </div>
                     <input id="gastoDesc" placeholder="Descripción (ej: Compra de gas, papas...)" style="margin-bottom:10px;">
                     <input id="gastoMonto" type="number" min="0" step="0.01" placeholder="Monto (Q)">
-                    <button onclick="registrarGasto()" style="margin-top:12px; width:100%; padding:10px; border-radius:9px; border:none; background:linear-gradient(135deg,#991b1b,#7f1d1d); color:#fff; font-size:13px; font-weight:700; cursor:pointer;">Registrar gasto</button>
+                    <button onclick="registrarGasto()" style="margin-top:12px; width:100%; padding:10px; border-radius:9px; border:none; background:#450a0a; color:#fff; font-size:13px; font-weight:700; cursor:pointer;">Registrar gasto</button>
                 </div>
                 <!-- Form Ingreso Extra -->
-                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; padding:20px;">
+                <div style="background:#0a0a0a; border:1px solid #262626; border-radius:14px; padding:20px;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
                         <span style="width:10px;height:10px;border-radius:50%;background:#60a5fa;"></span>
-                        <span style="font-size:14px; font-weight:700; color:#60a5fa;">Registrar ingreso extra</span>
+                        <span style="font-size:14px; font-weight:700; color:#e5e5e5;">Registrar ingreso extra</span>
                     </div>
                     <input id="ingresoDesc" placeholder="Descripción (ej: Premio torneo, Membresía...)" style="margin-bottom:10px;">
                     <input id="ingresoMonto" type="number" min="0" step="0.01" placeholder="Monto (Q)">
-                    <button onclick="registrarIngresoExtra()" style="margin-top:12px; width:100%; padding:10px; border-radius:9px; border:none; background:linear-gradient(135deg,#1565c0,#0d47a1); color:#fff; font-size:13px; font-weight:700; cursor:pointer;">Registrar ingreso</button>
+                    <button onclick="registrarIngresoExtra()" style="margin-top:12px; width:100%; padding:10px; border-radius:9px; border:none; background:#2e2e2e; color:#fff; font-size:13px; font-weight:700; cursor:pointer;">Registrar ingreso</button>
                 </div>
             </div>
 
             <!-- LISTAS -->
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:start;">
                 <!-- Gastos -->
-                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden;">
-                    <div style="padding:14px 18px; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:8px;">
+                <div style="background:#0a0a0a; border:1px solid #262626; border-radius:14px; overflow:hidden;">
+                    <div style="padding:14px 18px; border-bottom:1px solid #262626; display:flex; align-items:center; gap:8px;">
                         <span style="width:8px;height:8px;border-radius:50%;background:#f87171;display:inline-block;"></span>
-                        <span style="font-size:13px; font-weight:700; color:#e2e2e2;">Gastos registrados</span>
+                        <span style="font-size:13px; font-weight:700; color:#e5e5e5;">Gastos registrados</span>
                     </div>
                     <div id="listaGastos" style="padding:8px 0; max-height:380px; overflow-y:auto;">
-                        <p style="color:#555; font-size:13px; padding:16px 18px;">Sin gastos este mes.</p>
+                        <p style="color:#8a8a8a; font-size:13px; padding:16px 18px;">Sin gastos este mes.</p>
                     </div>
                 </div>
                 <!-- Ingresos Extra -->
-                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden;">
-                    <div style="padding:14px 18px; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:8px;">
+                <div style="background:#0a0a0a; border:1px solid #262626; border-radius:14px; overflow:hidden;">
+                    <div style="padding:14px 18px; border-bottom:1px solid #262626; display:flex; align-items:center; gap:8px;">
                         <span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;display:inline-block;"></span>
-                        <span style="font-size:13px; font-weight:700; color:#e2e2e2;">Ingresos extra</span>
+                        <span style="font-size:13px; font-weight:700; color:#e5e5e5;">Ingresos extra</span>
                     </div>
                     <div id="listaIngresosExtra" style="padding:8px 0; max-height:380px; overflow-y:auto;">
-                        <p style="color:#555; font-size:13px; padding:16px 18px;">Sin ingresos extra este mes.</p>
+                        <p style="color:#8a8a8a; font-size:13px; padding:16px 18px;">Sin ingresos extra este mes.</p>
                     </div>
                 </div>
                 <!-- Ventas por día -->
-                <div style="background:#0a0a0a; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden;">
-                    <div style="padding:14px 18px; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:8px;">
+                <div style="background:#0a0a0a; border:1px solid #262626; border-radius:14px; overflow:hidden;">
+                    <div style="padding:14px 18px; border-bottom:1px solid #262626; display:flex; align-items:center; gap:8px;">
                         <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;"></span>
-                        <span style="font-size:13px; font-weight:700; color:#e2e2e2;">Ventas por día</span>
+                        <span style="font-size:13px; font-weight:700; color:#e5e5e5;">Ventas por día</span>
                     </div>
                     <div id="listaIngresosDia" style="padding:8px 0; max-height:380px; overflow-y:auto;">
-                        <p style="color:#555; font-size:13px; padding:16px 18px;">Sin ventas este mes.</p>
+                        <p style="color:#8a8a8a; font-size:13px; padding:16px 18px;">Sin ventas este mes.</p>
                     </div>
                 </div>
             </div>
@@ -589,7 +589,7 @@
                 <div class="card" onclick="verDetalleVentasCierre()" style="cursor:pointer;" title="Ver detalle de ventas">
                     <h3>Ventas del día</h3>
                     <h1 id="ventasDia">Q0</h1>
-                    <div style="font-size:11px;color:#555;margin-top:4px;">Click para ver detalle</div>
+                    <div style="font-size:11px;color:#8a8a8a;margin-top:4px;">Click para ver detalle</div>
                 </div>
 
                 <div class="card">
@@ -606,7 +606,7 @@
             <div class="card" style="margin-top:16px;">
                 <h3 style="margin-bottom:10px;">Ventas por método de pago</h3>
                 <div id="metodosDesglose">
-                    <p style="color:#555;font-size:12px;">Cargando...</p>
+                    <p style="color:#8a8a8a;font-size:12px;">Cargando...</p>
                 </div>
             </div>
 
@@ -622,7 +622,7 @@
 
             <div id="historialCierresHeader" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <h3>Historial</h3>
-                <input type="month" id="mesCierres" style="width:auto; padding:9px 14px; border-radius:9px; background:#111; color:#e2e2e2; border:1px solid #2a2a2a; font-size:13px;" onchange="cargarHistorialCierres()">
+                <input type="month" id="mesCierres" style="width:auto; padding:9px 14px; border-radius:9px; background:#0a0a0a; color:#e5e5e5; border:1px solid #262626; font-size:13px;" onchange="cargarHistorialCierres()">
             </div>
             <div id="historialCierres" class="dashboard-cards"></div>
         </div>
@@ -765,7 +765,7 @@
     <div id="modalBebidas" class="modal" style="display:none;">
         <div class="modal-content">
             <h2>🥤 Elige las bebidas</h2>
-            <p id="modalBebidasInstruccion" style="color:#aaa; margin-bottom:12px;"></p>
+            <p id="modalBebidasInstruccion" style="color:#a3a3a3; margin-bottom:12px;"></p>
             <div id="listaBebidas" class="dashboard-cards"></div>
             <hr>
             <p>Seleccionadas: <strong id="bebidasSeleccionadas">0</strong> / <strong id="bebidasRequeridas">0</strong></p>
@@ -776,14 +776,14 @@
 
     <!-- MODAL QR CLIENTE -->
     <div id="modalQR" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; display:none; align-items:center; justify-content:center;">
-        <div style="background:#111; border:1px solid #222; border-radius:16px; padding:28px; max-width:320px; width:90%; text-align:center; position:relative;">
-            <button onclick="cerrarModalQR()" style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:#aaa;font-size:20px;cursor:pointer;">✕</button>
-            <p style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:4px;">LOBBY ZONE</p>
+        <div style="background:#0a0a0a; border:1px solid #262626; border-radius:16px; padding:28px; max-width:320px; width:90%; text-align:center; position:relative;">
+            <button onclick="cerrarModalQR()" style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:#a3a3a3;font-size:20px;cursor:pointer;">✕</button>
+            <p style="font-size:11px;color:#8a8a8a;letter-spacing:2px;margin-bottom:4px;">LOBBY ZONE</p>
             <h3 id="qrNombreCliente" style="margin-bottom:4px;font-size:18px;"></h3>
-            <p id="qrCodigoCliente" style="font-size:11px;color:#555;margin-bottom:20px;"></p>
+            <p id="qrCodigoCliente" style="font-size:11px;color:#8a8a8a;margin-bottom:20px;"></p>
             <div id="qrCanvas" style="display:flex;justify-content:center;margin-bottom:16px;"></div>
             <div id="qrPuntosCliente" style="min-height:36px;margin-bottom:12px;"></div>
-            <p style="font-size:11px;color:#555;margin-bottom:16px;">Escanea para ver tus puntos</p>
+            <p style="font-size:11px;color:#8a8a8a;margin-bottom:16px;">Escanea para ver tus puntos</p>
             <button class="btn" onclick="descargarQR()" style="width:100%;font-size:13px;">Descargar QR</button>
         </div>
     </div>
@@ -797,12 +797,12 @@
 
     <!-- MODAL CONFIRMACIÓN CUSTOM -->
     <div id="modalConfirm" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
-        <div style="background:#111;border:1px solid #222;border-radius:18px;padding:28px 28px 22px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:fadeInScale .15s ease;">
+        <div style="background:#0a0a0a;border:1px solid #262626;border-radius:18px;padding:28px 28px 22px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:fadeInScale .15s ease;">
             <div id="modalConfirmIcon" style="font-size:36px;text-align:center;margin-bottom:12px;"></div>
             <div id="modalConfirmTitle" style="font-size:16px;font-weight:700;text-align:center;color:#fff;margin-bottom:8px;"></div>
-            <div id="modalConfirmMsg" style="font-size:13px;color:#888;text-align:center;line-height:1.5;margin-bottom:22px;"></div>
+            <div id="modalConfirmMsg" style="font-size:13px;color:#a3a3a3;text-align:center;line-height:1.5;margin-bottom:22px;"></div>
             <div style="display:flex;gap:10px;">
-                <button id="modalConfirmCancel" style="flex:1;padding:11px;border-radius:10px;border:1px solid #2a2a2a;background:transparent;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+                <button id="modalConfirmCancel" style="flex:1;padding:11px;border-radius:10px;border:1px solid #262626;background:transparent;color:#a3a3a3;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
                 <button id="modalConfirmOk" style="flex:1;padding:11px;border-radius:10px;border:none;font-size:13px;font-weight:700;cursor:pointer;"></button>
             </div>
         </div>

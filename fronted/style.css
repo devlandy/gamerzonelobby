@@ -1,42 +1,44 @@
 /* =====================================================
-   EL LOBBY ZONE — Tema Oscuro Premium
+   EL LOBBY ZONE — Tema negro minimalista
    ===================================================== */
 
 /* =========================
    TOKENS
    ========================= */
 :root {
-    /* Superficies */
-    --bg:            #050508;
-    --bg-2:          #08080f;
-    --surface:       rgba(12, 14, 28, 0.80);
-    --surface-solid: #0c0e1c;
-    --surface-2:     #090b18;
-    --border:        rgba(41, 121, 255, 0.14);
-    --border-strong: rgba(41, 121, 255, 0.28);
+    color-scheme: dark;
 
-    /* Colores principales — azul del logo + dorado */
-    --neon-cyan:     #2979ff;
-    --neon-magenta:  #ff2d9b;
-    --neon-violet:   #5c6bc0;
-    --neon-green:    #00e676;
-    --neon-amber:    #ffd600;
-    --neon-red:      #ff3b6b;
-    --gold:          #ffd600;
+    /* Superficies */
+    --bg:            #000000;
+    --bg-2:          #000000;
+    --surface:       #000000;
+    --surface-solid: #0a0a0a;
+    --surface-2:     #000000;
+    --border:        #262626;
+    --border-strong: #333333;
+
+    /* Colores: neutros, y color solo para estados */
+    --neon-cyan:     #ffffff;
+    --neon-magenta:  #ffffff;
+    --neon-violet:   #a3a3a3;
+    --neon-green:    #4ade80;
+    --neon-amber:    #f59e0b;
+    --neon-red:      #f87171;
+    --gold:          #ffffff;
 
     /* Texto */
-    --text:          #eef0ff;
-    --text-dim:      #8890bb;
-    --text-faint:    #4a5080;
+    --text:          #ffffff;
+    --text-dim:      #a3a3a3;
+    --text-faint:    #8a8a8a;
 
-    /* Glow */
-    --glow-cyan:     0 0 18px rgba(41, 121, 255, 0.40);
-    --glow-gold:     0 0 18px rgba(255, 214, 0, 0.35);
-    --glow-magenta:  0 0 18px rgba(255, 45, 155, 0.45);
+    /* Sin brillos */
+    --glow-cyan:     0 0 0 transparent;
+    --glow-gold:     0 0 0 transparent;
+    --glow-magenta:  0 0 0 transparent;
 
     /* Fuentes */
-    --font-display:  'Orbitron', system-ui, sans-serif;
-    --font-head:     'Chakra Petch', system-ui, sans-serif;
+    --font-display:  'Inter', system-ui, sans-serif;
+    --font-head:     'Inter', system-ui, sans-serif;
     --font-body:     'Inter', system-ui, sans-serif;
 
     --radius:        14px;
@@ -57,22 +59,6 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Fondo ambiental */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-        radial-gradient(ellipse 800px 500px at 10% -5%, rgba(41, 121, 255, 0.09), transparent 65%),
-        radial-gradient(ellipse 700px 600px at 95% 105%, rgba(92, 107, 192, 0.08), transparent 65%),
-        radial-gradient(ellipse 400px 300px at 50% 50%, rgba(255, 214, 0, 0.03), transparent 70%),
-        linear-gradient(rgba(41, 121, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(41, 121, 255, 0.04) 1px, transparent 1px),
-        var(--bg);
-    background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-}
 
 h1, h2, h3, h4 {
     font-family: var(--font-head);
@@ -83,7 +69,7 @@ h1, h2, h3, h4 {
 hr {
     border: none;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+    background: var(--border);
     margin: 28px 0;
 }
 
@@ -103,7 +89,7 @@ body, button, input, select, textarea {
     display: flex;
     align-items: center;
     gap: 14px;
-    background: linear-gradient(180deg, #080810, transparent);
+    background: var(--bg);
     padding: 12px 28px;
     color: var(--text);
     border-bottom: 1px solid var(--border);
@@ -113,14 +99,14 @@ body, button, input, select, textarea {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-violet));
+    background: #141414;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 20px;
     box-shadow: var(--glow-cyan);
     flex-shrink: 0;
-    border: 2px solid rgba(41, 121, 255, 0.4);
+    border: 1px solid var(--border-strong);
 }
 
 #usuarioNombre {
@@ -134,8 +120,7 @@ body, button, input, select, textarea {
     color: var(--gold);
     font-family: var(--font-head);
     font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    letter-spacing: 0;
 }
 
 /* =========================
@@ -146,7 +131,7 @@ body, button, input, select, textarea {
     top: 0;
     z-index: 50;
     width: 100%;
-    background: rgba(5, 5, 10, 0.90);
+    background: var(--bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     padding: 10px 28px;
@@ -155,20 +140,15 @@ body, button, input, select, textarea {
     gap: 4px;
     flex-wrap: wrap;
     border-bottom: 1px solid var(--border);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 
 .sidebar h2 {
     font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 18px;
+    font-weight: 700;
+    font-size: 16px;
     margin: 0 22px 0 0;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, #fff 30%, var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 8px rgba(255, 214, 0, 0.3));
+    letter-spacing: 0;
+    color: var(--text);
 }
 
 .sidebar button {
@@ -180,15 +160,13 @@ body, button, input, select, textarea {
     cursor: pointer;
     transition: 0.2s ease;
     font-family: var(--font-head);
-    font-weight: 600;
+    font-weight: 500;
     font-size: 13px;
-    letter-spacing: 0.2px;
 }
 
 .sidebar button:hover {
     color: var(--text);
-    border-color: var(--border-strong);
-    background: rgba(41, 121, 255, 0.08);
+    background: #141414;
 }
 
 /* =========================
@@ -213,21 +191,8 @@ body, button, input, select, textarea {
 .seccion > h2 {
     font-size: 24px;
     margin: 0 0 22px;
-    padding-bottom: 12px;
-    position: relative;
 }
 
-.seccion > h2::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 56px;
-    height: 3px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--gold));
-    box-shadow: var(--glow-cyan);
-}
 
 .seccion h3 { font-size: 17px; }
 
@@ -245,10 +210,8 @@ body, button, input, select, textarea {
 
 .dashboard-header h3 {
     margin: 0;
-    font-size: 14px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-dim);
+    font-size: 16px;
+    color: var(--text);
 }
 
 /* =========================
@@ -276,7 +239,7 @@ body, button, input, select, textarea {
     font-size: 14px;
 }
 .cli-tabla thead tr {
-    background: rgba(41,121,255,0.08);
+    background: rgba(255,255,255,0.08);
     border-bottom: 1px solid var(--border);
 }
 .cli-tabla thead th {
@@ -295,7 +258,7 @@ body, button, input, select, textarea {
 }
 .cli-fila:hover,
 .cli-fila-activa {
-    background: rgba(41,121,255,0.07);
+    background: rgba(255,255,255,0.07);
 }
 .cli-fila td {
     padding: 13px 16px;
@@ -308,7 +271,7 @@ body, button, input, select, textarea {
     padding: 20px 24px;
     background: rgba(0,0,0,0.25);
     border-bottom: 1px solid var(--border);
-    border-top: 1px solid rgba(41,121,255,0.2);
+    border-top: 1px solid rgba(255,255,255,0.12);
 }
 .cli-codigo {
     font-size: 12px;
@@ -322,7 +285,7 @@ body, button, input, select, textarea {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1565c0, #2979ff);
+    background: #1f1f1f;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -333,11 +296,11 @@ body, button, input, select, textarea {
 }
 .cli-nombre {
     font-weight: 600;
-    color: #2979ff;
+    color: var(--text);
 }
 .cli-btn {
-    background: rgba(41,121,255,0.12);
-    border: 1px solid rgba(41,121,255,0.3);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.12);
     color: var(--text);
     border-radius: 6px;
     padding: 5px 12px;
@@ -346,7 +309,7 @@ body, button, input, select, textarea {
     font-weight: 600;
     transition: background .15s;
 }
-.cli-btn:hover  { background: rgba(41,121,255,0.25); }
+.cli-btn:hover  { background: rgba(255,255,255,0.12); }
 .cli-btn-pos    { background: rgba(76,222,128,0.1); border-color: rgba(76,222,128,0.3); }
 .cli-btn-pos:hover { background: rgba(76,222,128,0.22); }
 .cli-btn-hist   { background: rgba(255,255,255,0.05); border-color: #333; }
@@ -368,10 +331,8 @@ body, button, input, select, textarea {
 }
 .cli-pts-label {
     font-size: 11px;
-    color: #555;
+    color: var(--text-faint);
     margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 /* ── PRODUCTOS POS COMPACTOS ───────────────────────── */
@@ -392,8 +353,8 @@ body, button, input, select, textarea {
     gap: 10px;
 }
 .pos-producto-card:hover {
-    border-color: rgba(41,121,255,0.4);
-    background: rgba(41,121,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
 }
 .pos-prod-info {
     display: flex;
@@ -418,7 +379,7 @@ body, button, input, select, textarea {
 }
 .pos-prod-stock {
     font-size: 11px;
-    color: #444;
+    color: var(--text-faint);
     flex-shrink: 0;
 }
 .pos-prod-ctrl {
@@ -445,8 +406,8 @@ body, button, input, select, textarea {
     justify-content: center;
     transition: background .12s;
 }
-.pos-ctrl-btn:hover { background: rgba(41,121,255,0.18); }
-.pos-ctrl-btn:active { background: rgba(41,121,255,0.35); }
+.pos-ctrl-btn:hover { background: rgba(255,255,255,0.12); }
+.pos-ctrl-btn:active { background: rgba(255,255,255,0.12); }
 .pos-ctrl-num {
     font-size: 13px;
     font-weight: 700;
@@ -465,15 +426,11 @@ body, button, input, select, textarea {
     border-radius: var(--radius);
     padding: 20px;
     color: var(--text);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(41, 121, 255, 0.45);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(41, 121, 255, 0.15);
+    border-color: #404040;
 }
 
 .card h2, .card h3, .card h4 { margin: 0 0 10px; }
@@ -485,12 +442,13 @@ body, button, input, select, textarea {
 /* Números grandes */
 #ventasDia, #gastosDia, #balanceDia {
     font-family: var(--font-display);
-    font-size: 32px;
+    font-size: 28px;
+    font-weight: 700;
     margin: 6px 0 0;
 }
-#ventasDia  { color: var(--neon-green);  text-shadow: 0 0 20px rgba(0, 230, 118, 0.4); }
-#gastosDia  { color: var(--neon-red);    text-shadow: 0 0 20px rgba(255, 59, 107, 0.4); }
-#balanceDia { color: var(--gold);        text-shadow: var(--glow-gold); }
+#ventasDia  { color: var(--neon-green); }
+#gastosDia  { color: var(--neon-red); }
+#balanceDia { color: var(--text); }
 
 /* =========================
    INPUTS / SELECT / TEXTAREA
@@ -504,7 +462,7 @@ textarea {
     margin: 6px 0 10px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong);
-    background: rgba(4, 5, 14, 0.7);
+    background: #0a0a0a;
     color: var(--text);
     font-family: var(--font-body);
     font-size: 14px;
@@ -519,7 +477,7 @@ input:focus,
 select:focus,
 textarea:focus {
     border-color: var(--neon-cyan);
-    box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.18);
+    box-shadow: none;
 }
 
 textarea {
@@ -532,9 +490,7 @@ select option { background: var(--surface-solid); color: var(--text); }
 label {
     display: block;
     font-family: var(--font-head);
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    font-size: 12px;
     color: var(--text-dim);
     margin-top: 6px;
     margin-bottom: 2px;
@@ -544,35 +500,29 @@ label {
    BOTONES
    ========================= */
 .btn {
-    background: linear-gradient(135deg, #1565c0, #2979ff);
+    background: #1f1f1f;
     color: #ffffff;
-    border: none;
+    border: 1px solid var(--border-strong);
     padding: 10px 18px;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: 0.2s ease;
     font-family: var(--font-head);
-    font-weight: 700;
+    font-weight: 600;
     font-size: 13px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    box-shadow: 0 2px 8px rgba(41, 121, 255, 0.25);
 }
 
 .btn:hover {
-    box-shadow: var(--glow-cyan);
-    transform: translateY(-1px);
-    filter: brightness(1.1);
+    background: #2e2e2e;
 }
 
-.btn:active { transform: translateY(0); }
 
 .cancelar {
-    background: linear-gradient(135deg, #b71c1c, #ff3b6b);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(255, 59, 107, 0.25);
+    background: #450a0a;
+    color: #f87171;
+    border-color: #7f1d1d;
 }
-.cancelar:hover { box-shadow: 0 0 18px rgba(255, 59, 107, 0.5); }
+.cancelar:hover { background: #5a1212; }
 
 /* =========================
    POS — VENTAS
@@ -609,13 +559,13 @@ label {
 .filtros-pos .btn {
     text-transform: none;
     letter-spacing: 0.2px;
-    background: rgba(41, 121, 255, 0.10);
+    background: rgba(255,255,255,0.1);
     color: var(--text);
     border: 1px solid var(--border-strong);
     box-shadow: none;
 }
 .filtros-pos .btn:hover {
-    background: rgba(41, 121, 255, 0.20);
+    background: rgba(255,255,255,0.12);
     box-shadow: none;
 }
 
@@ -638,9 +588,7 @@ label {
     inset: 0;
     width: 100%;
     height: 100%;
-    background: rgba(2, 3, 10, 0.80);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.80);
     justify-content: center;
     align-items: center;
     z-index: 9999;
@@ -654,7 +602,7 @@ label {
     padding: 28px;
     border-radius: var(--radius);
     border: 1px solid var(--border-strong);
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), var(--glow-cyan);
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -673,9 +621,7 @@ label {
     inset: 0;
     width: 100%;
     height: 100%;
-    background: rgba(2, 3, 10, 0.80);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.80);
     justify-content: center;
     align-items: flex-start;
     z-index: 1000;
@@ -690,7 +636,6 @@ label {
     border: 1px solid var(--border-strong);
     width: 100%;
     max-width: 640px;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
 }
 
 .modal-header {
@@ -732,12 +677,9 @@ label {
     max-width: 400px;
     padding: 44px 36px 36px;
     text-align: center;
-    background: rgba(8, 10, 22, 0.92);
-    border: 1px solid rgba(41, 121, 255, 0.25);
-    border-radius: 20px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(41, 121, 255, 0.10), var(--glow-cyan);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
 }
 
 .login-logo {
@@ -747,29 +689,21 @@ label {
     border-radius: 0;
     background: transparent;
     margin-bottom: 0;
-    filter: drop-shadow(0 0 24px rgba(41, 121, 255, 0.5));
 }
 
 .login-brand {
     font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 22px;
-    letter-spacing: 3px;
+    font-weight: 700;
+    font-size: 20px;
     margin: 0 0 4px;
-    background: linear-gradient(90deg, #ffffff 20%, var(--gold) 80%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 10px rgba(255, 214, 0, 0.3));
+    color: var(--text);
 }
 
 .login-tagline {
     margin: 0 0 28px;
     font-family: var(--font-head);
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--text-faint);
+    font-size: 13px;
+    color: var(--text-dim);
 }
 
 .login-card input {
@@ -782,13 +716,13 @@ label {
     margin-top: 6px;
     padding: 13px;
     font-size: 14px;
-    letter-spacing: 2px;
-    background: linear-gradient(135deg, #1a237e, #2979ff);
-    box-shadow: 0 4px 20px rgba(41, 121, 255, 0.4);
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
 }
 
 .login-card .btn:hover {
-    box-shadow: 0 6px 28px rgba(41, 121, 255, 0.6);
+    background: #e5e5e5;
 }
 
 /* =========================
