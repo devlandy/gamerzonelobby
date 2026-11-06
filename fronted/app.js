@@ -2244,19 +2244,22 @@ function mostrarMensaje(texto) {
     toast.innerHTML =
         '<span style="font-size:14px;font-weight:700;color:' + color + ';">' + icon + '</span>'
         + '<span style="flex:1;">' + texto.replace(/^[\p{Extended_Pictographic}️\s]+/u, '') + '</span>'
-        + (isError ? '<button onclick="this.parentNode.remove();abrirReporteProblema()" style="background:transparent;border:1px solid #404040;border-radius:6px;color:#e5e5e5;cursor:pointer;font-size:12px;padding:3px 8px;white-space:nowrap;">Reportar</button>' : '')
+        + (isError && localStorage.getItem("token") ? '<button onclick="this.parentNode.remove();abrirReporteProblema()" style="background:transparent;border:1px solid #404040;border-radius:6px;color:#e5e5e5;cursor:pointer;font-size:12px;padding:3px 8px;white-space:nowrap;">Reportar</button>' : '')
         + '<button onclick="this.parentNode.remove()" style="background:transparent;border:none;color:#444;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;">✕</button>';
 
-    const container = document.getElementById('toastContainer');
-    if (container) {
-        container.appendChild(toast);
-        setTimeout(() => {
-            toast.style.animation = 'toastOut .3s ease forwards';
-            setTimeout(() => toast.remove(), 300);
-        }, isError ? 8000 : 3500);
-    } else {
-        mostrarMensaje(texto);
+    // Páginas sin contenedor de avisos (como el inicio de sesión): crearlo aquí
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;';
+        document.body.appendChild(container);
     }
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut .3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, isError ? 8000 : 3500);
 }
 
 function confirmarDialog(titulo, mensaje, tipo) {
