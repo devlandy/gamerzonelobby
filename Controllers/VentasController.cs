@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MySql.Data.MySqlClient;
+using System.Text.RegularExpressions;
 using GamerZoneAPI.Data;
 using GamerZoneAPI.Models;
 
@@ -264,8 +265,13 @@ namespace GamerZoneAPI.Controllers
         }
 
         [HttpGet("ordenes")]
-        public IActionResult ListarOrdenes([FromQuery] string estado = "TODAS")
+        public IActionResult ListarOrdenes([FromQuery] string estado = "TODAS", [FromQuery] string? mes = null)
         {
+            // Con mes ("YYYY-MM") se muestran todas las órdenes de ese mes; sin mes, las últimas 100
+            string mesFiltrado = Regex.IsMatch(mes ?? "", @"^\d{4}-\d{2}$") ? mes! : "";
+            string filtroMes = mesFiltrado != "" ? " AND DATE_FORMAT(v.fecha, '%Y-%m') = @mes" : "";
+            string limite    = mesFiltrado != "" ? "" : "LIMIT 100";
+
             // Solo mostrar órdenes que tienen al menos un producto físico (no solo consola)
             // id_producto > 0 identifica productos del catálogo (comida, bebidas, etc.)
             string where = estado == "TODAS"
@@ -281,10 +287,10 @@ namespace GamerZoneAPI.Controllers
                        v.metodo_pago, v.fecha, v.entregado, v.mesa, IFNULL(c.nombre,'Sin cliente') AS cliente
                 FROM ventas v
                 LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
-                {where}
+                {where}{filtroMes}
                 ORDER BY v.fecha DESC
-                LIMIT 100",
-                estado != "TODAS" ? new MySqlParameter[] { new MySqlParameter("@estado", estado) } : new MySqlParameter[0]);
+                {limite}",
+                new MySqlParameter("@mes", mesFiltrado));
 
             var ids = rows.Select(r => Convert.ToInt32(r["id_venta"])).ToList();
             var detalles = ids.Count > 0 ? _db.ExecuteQuery($@"

@@ -402,6 +402,7 @@
             <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
                 <button class="btn" id="filtroOrdenPendiente" onclick="filtrarOrdenes('PENDIENTE')" style="background:#2e2e2e;">Pendientes</button>
                 <button class="btn" id="filtroOrdenTodas"    onclick="filtrarOrdenes('TODAS')"    style="background:#141414;">Todas</button>
+                <input type="month" id="mesOrdenes" style="display:none; width:auto; margin:0 0 0 auto; padding:9px 14px;" onchange="cargarOrdenes()" title="Mes de las órdenes">
             </div>
 
             <div id="ordenesLista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>

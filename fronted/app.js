@@ -3774,12 +3774,23 @@ function filtrarOrdenes(estado) {
         const btn = document.getElementById(`filtroOrden${e === 'PENDIENTE' ? 'Pendiente' : 'Todas'}`);
         if (btn) btn.style.background = e === estado ? '#2e2e2e' : '#141414';
     });
+
+    // El filtro por mes aplica a "Todas"; las pendientes se muestran siempre completas
+    const inputMes = document.getElementById('mesOrdenes');
+    if (inputMes) {
+        inputMes.style.display = estado === 'TODAS' ? '' : 'none';
+        if (estado === 'TODAS' && !inputMes.value) {
+            const hoy = new Date();
+            inputMes.value = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
+        }
+    }
     cargarOrdenes();
 }
 
 function cargarOrdenes() {
     const qs = _ordenesEstadoActual === 'TODAS' ? 'TODAS' : 'PENDIENTE';
-    authFetch(`${API}/ventas/ordenes?estado=${qs}`)
+    const mes = _ordenesEstadoActual === 'TODAS' ? (document.getElementById('mesOrdenes')?.value || '') : '';
+    authFetch(`${API}/ventas/ordenes?estado=${qs}${mes ? `&mes=${encodeURIComponent(mes)}` : ''}`)
     .then(r => r.json())
     .then(data => {
         _ordenesData = data;
