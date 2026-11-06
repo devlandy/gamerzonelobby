@@ -68,6 +68,7 @@ function authFetch(url, options = {}) {
             ...(options.headers || {})
         }
     };
+    const ruta = `${opts.method || 'GET'} ${String(url).replace(API, '/api')}`;
     return fetch(url, opts).then(r => {
         if (r.status === 401) {
             localStorage.removeItem("token");
@@ -75,7 +76,86 @@ function authFetch(url, options = {}) {
             window.location.href = "login.html";
             throw new Error("Sesión expirada");
         }
+        // Guardar la última respuesta con error para adjuntarla al reporte de problemas
+        if (!r.ok) {
+            r.clone().text()
+                .then(t => { _ultimoErrorApi = `${ruta} → ${r.status}: ${t.slice(0, 400)}`; })
+                .catch(() => {});
+        }
         return r;
+    }, err => {
+        _ultimoErrorApi = `${ruta} → sin conexión (${err.message})`;
+        throw err;
+    });
+}
+
+// ===========================
+// REPORTAR PROBLEMA
+// ===========================
+let _ultimoErrorApi     = "";
+let _ultimoMensajeError = "";
+let _seccionActual      = "dashboard";
+
+function _nombreSeccionActual() {
+    const btn = [...document.querySelectorAll(".sidebar button")]
+        .find(b => (b.getAttribute("onclick") || "").includes(`'${_seccionActual}'`));
+    return btn ? btn.textContent.trim() : _seccionActual;
+}
+
+function abrirReporteProblema() {
+    document.getElementById("modalReporteProblema")?.remove();
+
+    const errores = [_ultimoMensajeError, _ultimoErrorApi].filter(Boolean);
+    const modal = document.createElement("div");
+    modal.id = "modalReporteProblema";
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+        <div style="background:#0a0a0a;border:1px solid #262626;border-radius:14px;padding:22px;width:min(440px,100%);">
+            <h3 style="margin:0 0 6px;color:#fff;">Reportar un problema</h3>
+            <p style="margin:0 0 14px;color:#a3a3a3;font-size:13px;">Cuenta qué intentabas hacer y qué pasó. El reporte le llega directo a soporte.</p>
+            <textarea id="reporteDescripcion" maxlength="1000" placeholder="Ej: quise asignar un cliente a la orden #370 y salió un error" style="min-height:100px;"></textarea>
+            <div style="background:#141414;border:1px solid #262626;border-radius:8px;padding:10px 12px;font-size:12px;color:#a3a3a3;margin-bottom:14px;">
+                <div><span style="color:#8a8a8a;">Pantalla:</span> ${s(_nombreSeccionActual())}</div>
+                <div style="margin-top:4px;word-break:break-word;"><span style="color:#8a8a8a;">Último error:</span> ${errores.length ? s(errores.join(' | ')) : 'ninguno registrado'}</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn" style="flex:1;background:#0a0a0a;" onclick="document.getElementById('modalReporteProblema').remove()">Cancelar</button>
+                <button class="btn" id="btnEnviarReporte" style="flex:1;background:#fff;color:#000;border-color:#fff;" onclick="enviarReporteProblema()">Enviar reporte</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+    document.getElementById("reporteDescripcion").focus();
+}
+
+function enviarReporteProblema() {
+    const descripcion = document.getElementById("reporteDescripcion")?.value.trim();
+    if (!descripcion) { mostrarMensaje("⚠️ Describe qué pasó antes de enviar"); return; }
+
+    const btn = document.getElementById("btnEnviarReporte");
+    if (btn) { btn.disabled = true; btn.textContent = "Enviando..."; }
+
+    authFetch(`${API}/reportes-problema`, {
+        method: "POST",
+        body: JSON.stringify({
+            descripcion,
+            pantalla: _nombreSeccionActual(),
+            error: [_ultimoMensajeError, _ultimoErrorApi].filter(Boolean).join(' | '),
+            hora: new Date().toLocaleString("es-GT", { timeZone: "America/Guatemala" })
+        })
+    })
+    .then(r => r.json().then(d => ({ ok: r.ok, d })))
+    .then(({ ok, d }) => {
+        if (!ok) throw new Error(d.error || "No se pudo enviar");
+        document.getElementById("modalReporteProblema")?.remove();
+        _ultimoErrorApi = "";
+        _ultimoMensajeError = "";
+        mostrarMensaje(d.whatsapp
+            ? `✅ Reporte #${d.id} enviado a soporte`
+            : `✅ Reporte #${d.id} guardado (no se pudo avisar por WhatsApp)`);
+    })
+    .catch(err => {
+        if (btn) { btn.disabled = false; btn.textContent = "Enviar reporte"; }
+        mostrarMensaje("❌ Error al enviar el reporte: " + err.message);
     });
 }
 
@@ -83,6 +163,8 @@ function authFetch(url, options = {}) {
 // 🔄 CAMBIAR SECCIONES
 // ===========================
 function mostrar(seccion) {
+
+    _seccionActual = seccion;
 
     document.querySelectorAll(".seccion")
     .forEach(div => {
@@ -2144,6 +2226,8 @@ function mostrarMensaje(texto) {
     const border = isError ? '#7f1d1d' : isWarning ? '#78350f' : '#14532d';
     const icon   = isError ? '✕' : isWarning ? '⚠' : '✓';
 
+    if (isError) _ultimoMensajeError = texto.replace(/^[\p{Extended_Pictographic}️\s]+/u, '');
+
     const toast = document.createElement('div');
     toast.style.cssText = [
         'pointer-events:auto',
@@ -2160,6 +2244,7 @@ function mostrarMensaje(texto) {
     toast.innerHTML =
         '<span style="font-size:14px;font-weight:700;color:' + color + ';">' + icon + '</span>'
         + '<span style="flex:1;">' + texto.replace(/^[\p{Extended_Pictographic}️\s]+/u, '') + '</span>'
+        + (isError ? '<button onclick="this.parentNode.remove();abrirReporteProblema()" style="background:transparent;border:1px solid #404040;border-radius:6px;color:#e5e5e5;cursor:pointer;font-size:12px;padding:3px 8px;white-space:nowrap;">Reportar</button>' : '')
         + '<button onclick="this.parentNode.remove()" style="background:transparent;border:none;color:#444;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;">✕</button>';
 
     const container = document.getElementById('toastContainer');
@@ -2168,7 +2253,7 @@ function mostrarMensaje(texto) {
         setTimeout(() => {
             toast.style.animation = 'toastOut .3s ease forwards';
             setTimeout(() => toast.remove(), 300);
-        }, 3500);
+        }, isError ? 8000 : 3500);
     } else {
         mostrarMensaje(texto);
     }

@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<GamerZoneAPI.Data.DbManager>();
+builder.Services.AddHttpClient();
 
 // CORS
 builder.Services.AddCors(options =>
@@ -98,6 +99,16 @@ using (var scope = app.Services.CreateScope())
     try { db.ExecuteNonQuery("ALTER TABLE detalle_ventas ADD COLUMN entregado TINYINT(1) NOT NULL DEFAULT 0"); } catch { }
     try { db.ExecuteNonQuery("ALTER TABLE usuarios ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1"); } catch { }
     try { db.ExecuteNonQuery("ALTER TABLE detalle_ventas ADD COLUMN cobrado TINYINT(1) NOT NULL DEFAULT 0"); } catch { }
+    // Reportes de problemas enviados desde el panel
+    try { db.ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS reportes_problema (
+        id_reporte INT AUTO_INCREMENT PRIMARY KEY,
+        fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        usuario VARCHAR(100) NULL,
+        rol VARCHAR(30) NULL,
+        pantalla VARCHAR(60) NULL,
+        descripcion TEXT NOT NULL,
+        detalle_error TEXT NULL,
+        enviado_whatsapp TINYINT(1) NOT NULL DEFAULT 0)"); } catch { }
     // Sincronizar productos de órdenes ya entregadas
     try { db.ExecuteNonQuery("UPDATE detalle_ventas SET entregado=1 WHERE id_venta IN (SELECT id_venta FROM ventas WHERE entregado=1)"); } catch { }
     // Sincronizar productos de órdenes ya pagadas
