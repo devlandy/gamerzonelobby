@@ -1812,14 +1812,14 @@ function cargarSubcategoria(id){
                     : `<span class="pos-badge pos-badge-disponible">Disponible</span>`;
 
             html += `
-            <div class="pos-prod-fila${agotado ? ' pos-prod-agotado' : ''}">
+            <div class="pos-prod-fila">
                 <div style="min-width:0;">
                     <div class="pos-prod-fila-nombre">${s(p.nombre || 'Sin nombre')}</div>
                     <div class="pos-prod-fila-precio">Q${parseFloat(p.precio_venta || 0).toFixed(2)}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
                     ${badge}
-                    <button class="pos-prod-agregar" ${agotado ? 'disabled title="Producto agotado"' : 'title="Agregar a la orden"'} onclick="agregarProductoPOS(${p.id_producto})">
+                    <button class="pos-prod-agregar" title="Agregar a la orden" onclick="agregarProductoPOS(${p.id_producto})">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
                     </button>
                 </div>
@@ -1849,10 +1849,7 @@ let _productosPOS = {};
 function agregarProductoPOS(id){
     const p = _productosPOS[id];
     if (!p) return;
-    if (Number(p.controla_stock) === 1 && Number(p.stock || 0) <= 0) {
-        mostrarMensaje("❌ " + p.nombre + " está agotado");
-        return;
-    }
+    // Los agotados también se pueden vender: la etiqueta es solo informativa
     agregarCarrito(p.id_producto, p.nombre, Number(p.precio_venta));
 }
 
