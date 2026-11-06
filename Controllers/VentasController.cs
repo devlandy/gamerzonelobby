@@ -257,6 +257,11 @@ namespace GamerZoneAPI.Controllers
             if (venta[0]["estado"].ToString() == "CANCELADO")
                 return BadRequest(new { error = "La orden está cancelada" });
 
+            var cliente = _db.ExecuteScalar("SELECT COUNT(*) FROM clientes WHERE id_cliente=@cliente",
+                new MySqlParameter("@cliente", request.id_cliente));
+            if (Convert.ToInt32(cliente) == 0)
+                return BadRequest(new { error = "Cliente no encontrado" });
+
             _db.ExecuteNonQuery("UPDATE ventas SET id_cliente=@cliente WHERE id_venta=@id",
                 new MySqlParameter("@cliente", request.id_cliente),
                 new MySqlParameter("@id", id));

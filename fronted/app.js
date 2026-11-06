@@ -4289,7 +4289,7 @@ function buscarClienteParaOrden() {
     .then(r => r.json()).then(data => {
         if (!data.length) { res.innerHTML = '<p style="color:#8a8a8a;font-size:13px;padding:8px;">Sin resultados</p>'; return; }
         res.innerHTML = data.map(c => `
-          <div onclick="seleccionarClienteParaOrden(${c.id_cliente},'${s(c.nombre)}')"
+          <div data-nombre="${s(c.nombre)}" onclick="seleccionarClienteParaOrden(${c.id}, this.dataset.nombre)"
             style="padding:10px;border-radius:6px;cursor:pointer;border-bottom:1px solid #262626;color:#fff;font-size:13px;"
             onmouseover="this.style.background='#1f1f1f'" onmouseout="this.style.background=''">
             ${s(c.nombre)} ${c.telefono ? '· ' + s(c.telefono) : ''}
