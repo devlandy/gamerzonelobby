@@ -28,8 +28,8 @@ namespace GamerZoneAPI.Controllers
         public IActionResult Login([FromBody] LoginRequest request)
         {
             var rows = _db.ExecuteQuery(
-                "SELECT * FROM usuarios WHERE usuario = @usuario",
-                new MySqlParameter("@usuario", request.usuario));
+                "SELECT * FROM usuarios WHERE TRIM(usuario) = @usuario",
+                new MySqlParameter("@usuario", (request.usuario ?? "").Trim()));
 
             if (rows.Count == 0)
                 return Unauthorized(new { mensaje = "Credenciales incorrectas" });

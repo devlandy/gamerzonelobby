@@ -1531,7 +1531,8 @@ function editarProducto(id){
 // ======================
 function login(){
 
-    let usuario = document.getElementById("usuario").value;
+    // Quitar espacios que agregan los teclados del celular o el autocompletado
+    let usuario = document.getElementById("usuario").value.trim();
     let password = document.getElementById("password").value;
 
     fetch(`${API}/usuarios/login`, {
