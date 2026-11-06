@@ -197,6 +197,7 @@ function mostrar(seccion) {
         cargarTopClientes();
         cargarTopGamers();
         cargarSelectProductosRapido();
+        cargarMovimientosRecientes();
     }
 
     // PRODUCTOS
@@ -289,6 +290,64 @@ function cargarDashboard() {
         container.dataset.balance = balance;
     })
     .catch(err => console.error(err));
+}
+
+// Últimos movimientos de inventario (el cajero no ve el historial, como en Inventario)
+function cargarMovimientosRecientes() {
+    const cont = document.getElementById("movimientosRecientes");
+    const btn  = document.getElementById("btnHistorialCompleto");
+    if (!cont) return;
+
+    if (esCajero()) {
+        cont.innerHTML = '<p style="color:#a3a3a3;font-size:13px;">Revisa existencias en Inventario.</p>';
+        if (btn) btn.textContent = "Ver inventario →";
+        return;
+    }
+
+    authFetch(`${API}/inventario/historial?limite=3`)
+    .then(r => r.json())
+    .then(data => {
+        if (!Array.isArray(data) || !data.length) {
+            cont.innerHTML = '<p style="color:#8a8a8a;font-size:13px;">Sin movimientos registrados.</p>';
+            return;
+        }
+
+        const diaGT = d => d.toLocaleDateString("es-GT", { timeZone: "America/Guatemala" });
+        const hoy   = new Date();
+        const ayer  = new Date(hoy.getTime() - 86400000);
+        const cuando = f => {
+            const d = new Date(f);
+            const hora = d.toLocaleTimeString("es-GT", { timeZone: "America/Guatemala", hour: "2-digit", minute: "2-digit", hour12: true });
+            if (diaGT(d) === diaGT(hoy))  return "Hoy, " + hora;
+            if (diaGT(d) === diaGT(ayer)) return "Ayer, " + hora;
+            return fmtFecha(f);
+        };
+
+        const flecha = entrada => entrada
+            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>'
+            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>';
+
+        cont.innerHTML = data.map((m, i) => {
+            const entrada = m.tipo === "ENTRADA";
+            const cant    = Math.abs(Number(m.cantidad || 0));
+            return `
+            <div style="padding:10px 0;${i < data.length - 1 ? 'border-bottom:1px solid #262626;' : ''}">
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#fff;">
+                    ${flecha(entrada)} ${entrada ? 'Entrada de stock' : 'Salida de stock'}
+                </div>
+                <div style="font-size:13px;color:#d4d4d4;margin-top:3px;">${s(m.producto)} · ${entrada ? '+' : '-'}${cant} ${cant === 1 ? 'unidad' : 'unidades'}</div>
+                <div style="font-size:12px;color:#8a8a8a;margin-top:2px;">${cuando(m.fecha)}</div>
+            </div>`;
+        }).join("");
+    })
+    .catch(() => {
+        cont.innerHTML = '<p style="color:#8a8a8a;font-size:13px;">No se pudieron cargar los movimientos.</p>';
+    });
+}
+
+function verHistorialCompleto() {
+    mostrar("inventario");
+    if (!esCajero()) tabInventario("historial");
 }
 
 // Recordatorio de productos agotados y por agotarse (solo para los dueños)
@@ -2328,6 +2387,7 @@ window.onload = function(){
         cargarCategoriasPOS();
         cargarPendientes();
         cargarSelectProductosRapido();
+        cargarMovimientosRecientes();
     }
 };
 
@@ -3122,6 +3182,7 @@ function agregarStockRapido(){
         document.getElementById("cantidadRapida").value = "";
         document.getElementById("obsRapida").value = "";
         cargarSelectProductosRapido();
+        cargarMovimientosRecientes();
         listarProductos();
     })
 

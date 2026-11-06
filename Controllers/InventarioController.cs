@@ -28,8 +28,9 @@ namespace GamerZoneAPI.Controllers
         }
 
         [HttpGet("historial")]
-        public IActionResult Historial([FromQuery] string? producto, [FromQuery] string? tipo, [FromQuery] string? mes)
+        public IActionResult Historial([FromQuery] string? producto, [FromQuery] string? tipo, [FromQuery] string? mes, [FromQuery] int? limite)
         {
+            int maxFilas = limite is > 0 and < 300 ? limite.Value : 300;
             var where = new List<string>();
             var p = new List<MySql.Data.MySqlClient.MySqlParameter>();
 
@@ -61,7 +62,7 @@ namespace GamerZoneAPI.Controllers
                 JOIN productos p ON h.id_producto = p.id_producto
                 {filtro}
                 ORDER BY h.fecha DESC
-                LIMIT 300",
+                LIMIT {maxFilas}",
                 p.ToArray());
 
             return Ok(rows.Select(r => new

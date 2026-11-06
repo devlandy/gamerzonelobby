@@ -73,10 +73,10 @@
                     <button class="btn" onclick="agregarStockRapido()" style="margin-top:8px;">Agregar</button>
                 </div>
 
-                <div class="card">
-                    <h4>Inventario</h4>
-                    <p>Revisa existencias y movimientos.</p>
-                    <button class="btn" onclick="mostrar('inventario')">Ver inventario</button>
+                <div class="card" style="display:flex; flex-direction:column;">
+                    <h4>Movimientos recientes</h4>
+                    <div id="movimientosRecientes" style="flex:1;"><p style="color:#8a8a8a; font-size:13px;">Cargando...</p></div>
+                    <button class="btn" id="btnHistorialCompleto" onclick="verHistorialCompleto()" style="margin-top:12px; width:100%;">Ver historial completo →</button>
                 </div>
             </div>
 
