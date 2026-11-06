@@ -149,9 +149,9 @@ function enviarReporteProblema() {
         document.getElementById("modalReporteProblema")?.remove();
         _ultimoErrorApi = "";
         _ultimoMensajeError = "";
-        mostrarMensaje(d.whatsapp
+        mostrarMensaje(d.notificado
             ? `✅ Reporte #${d.id} enviado a soporte`
-            : `✅ Reporte #${d.id} guardado (no se pudo avisar por WhatsApp)`);
+            : `✅ Reporte #${d.id} guardado (no se pudo avisar por Telegram)`);
     })
     .catch(err => {
         if (btn) { btn.disabled = false; btn.textContent = "Enviar reporte"; }

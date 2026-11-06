@@ -53,12 +53,13 @@ namespace GamerZoneAPI.Controllers
                 $"Qué pasó: {descripcion}\n\n" +
                 $"Último error: {(error == "" ? "ninguno registrado" : error)}";
 
-            bool enviado = await EnviarWhatsApp(mensaje);
+            bool enviado = await EnviarTelegram(mensaje);
+            // La columna conserva su nombre original; ahora marca si se avisó por Telegram
             if (enviado)
                 _db.ExecuteNonQuery("UPDATE reportes_problema SET enviado_whatsapp = 1 WHERE id_reporte = @id",
                     new MySqlParameter("@id", id));
 
-            return Ok(new { mensaje = "Reporte enviado", id, whatsapp = enviado });
+            return Ok(new { mensaje = "Reporte enviado", id, notificado = enviado });
         }
 
         [Authorize(Roles = "ADMIN")]
@@ -75,27 +76,29 @@ namespace GamerZoneAPI.Controllers
                 pantalla = r["pantalla"]?.ToString(),
                 descripcion = r["descripcion"]?.ToString(),
                 detalle_error = r["detalle_error"]?.ToString(),
-                whatsapp = Convert.ToInt32(r["enviado_whatsapp"]) == 1
+                notificado = Convert.ToInt32(r["enviado_whatsapp"]) == 1
             }));
         }
 
-        // Envía el aviso con CallMeBot. Si no está configurado o falla, el reporte queda guardado igual.
-        private async Task<bool> EnviarWhatsApp(string texto)
+        // Envía el aviso con el bot de Telegram. Si no está configurado o falla, el reporte queda guardado igual.
+        private async Task<bool> EnviarTelegram(string texto)
         {
-            string? telefono = _config["CallMeBot:Phone"];
-            string? apiKey   = _config["CallMeBot:ApiKey"];
-            if (string.IsNullOrWhiteSpace(telefono) || string.IsNullOrWhiteSpace(apiKey))
+            string? token  = _config["Telegram:BotToken"];
+            string? chatId = _config["Telegram:ChatId"];
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(chatId))
                 return false;
 
             try
             {
                 var cliente = _http.CreateClient();
                 cliente.Timeout = TimeSpan.FromSeconds(15);
-                string url = "https://api.callmebot.com/whatsapp.php"
-                    + "?phone=" + Uri.EscapeDataString(telefono)
-                    + "&text=" + Uri.EscapeDataString(texto)
-                    + "&apikey=" + Uri.EscapeDataString(apiKey);
-                var resp = await cliente.GetAsync(url);
+                var resp = await cliente.PostAsync(
+                    $"https://api.telegram.org/bot{token.Trim()}/sendMessage",
+                    new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        ["chat_id"] = chatId.Trim(),
+                        ["text"]    = texto
+                    }));
                 return resp.IsSuccessStatusCode;
             }
             catch
