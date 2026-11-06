@@ -242,7 +242,8 @@ namespace GamerZoneAPI.Controllers
                 id_producto = r["id_producto"],
                 nombre = r["nombre"],
                 precio_venta = r["precio_venta"],
-                stock = r["stock"]
+                stock = r["stock"],
+                controla_stock = Convert.ToInt32(r["controla_stock"])
             }));
         }
 

@@ -1447,7 +1447,7 @@ function cargarCategoriasPOS(){
                 ? `cargarCombos()`
                 : `cargarProductosCategoria(${c.id})`;
 
-            html += `<button class="btn" onclick="${accion}">${c.nombre}</button>`;
+            html += `<button class="btn" data-cat="${c.id}" onclick="_marcarCategoriaPOS(this);${accion}">${c.nombre}</button>`;
         });
 
         document.getElementById("categoriasPOS").innerHTML = html;
@@ -1604,6 +1604,25 @@ function _finalizarAgregarCombo(combo, ingredientes){
 // ======================
 // SUBCATEGORIAS
 // ======================
+// Emoji de cada subcategoría según su nombre (solo en Ventas)
+function _emojiSubcategoria(nombre){
+    const n = (nombre || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const mapa = [
+        ["hamburg", "🍔"], ["pizza", "🍕"], ["hot dog", "🌭"], ["hotdog", "🌭"], ["snack", "🍟"],
+        ["papa", "🍟"], ["alita", "🍗"], ["pollo", "🍗"], ["sandwich", "🥪"], ["postre", "🍰"],
+        ["pastel", "🍰"], ["dulce", "🍩"], ["salad", "🌮"], ["frappe", "🧋"], ["licuado", "🥤"],
+        ["gaseosa", "🥤"], ["soda", "🥤"], ["bebida", "🥤"], ["comida", "🍔"], ["caliente", "☕"], ["cafe", "☕"], ["granita", "🍧"],
+        ["helado", "🍦"], ["agua", "💧"], ["jugo", "🧃"], ["nacho", "🧀"], ["taco", "🌮"]
+    ];
+    const hit = mapa.find(([clave]) => n.includes(clave));
+    return hit ? hit[1] : "🍽️";
+}
+
+function _marcarCategoriaPOS(btn){
+    document.querySelectorAll("#categoriasPOS .btn").forEach(b => b.classList.toggle("pos-cat-activa", b === btn));
+    document.getElementById("productosPOS").innerHTML = "";
+}
+
 function cargarProductosCategoria(id){
 
     authFetch(`${API}/productos/subcategorias/${id}`)
@@ -1612,27 +1631,24 @@ function cargarProductosCategoria(id){
 
     .then(data => {
 
-        console.log(
-        "SUBCATEGORIAS:",
-        data
-        );
+        const btnCat = document.querySelector(`#categoriasPOS .btn[data-cat="${id}"]`);
+        const titulo = btnCat ? btnCat.textContent.trim() : "";
 
-        let html = "";
+        let html = `<div class="pos-subcat-titulo">${_emojiSubcategoria(titulo)} ${s(titulo).toUpperCase()}</div>`;
 
-        data.forEach(s => {
+        if(!data.length){
+            html += `<p style="color:var(--text-dim);font-size:13px;">Esta categoría no tiene subcategorías.</p>`;
+        }
 
+        html += `<div class="pos-subcat-grid">`;
+        data.forEach(sc => {
             html += `
-
-            <button
-            class="btn"
-            onclick="cargarSubcategoria(${s.id_subcategoria})">
-
-                ${s.nombre}
-
-            </button>
-
-            `;
+            <button class="pos-subcat-tile" data-sub="${sc.id_subcategoria}" onclick="cargarSubcategoria(${sc.id_subcategoria})">
+                <span class="pos-subcat-emoji">${_emojiSubcategoria(sc.nombre)}</span>
+                <span>${s(sc.nombre)}</span>
+            </button>`;
         });
+        html += `</div>`;
 
         document.getElementById(
         "subcategoriasPOS"
@@ -1671,17 +1687,11 @@ function cargarSubcategoria(id){
 
     .then(data => {
 
-        console.log(
-        "PRODUCTOS:",
-        data
-        );
-
         let html = "";
 
-        // LIMPIAR
-        document.getElementById(
-        "productosPOS"
-        ).innerHTML = "";
+        // Marcar la subcategoría seleccionada
+        document.querySelectorAll(".pos-subcat-tile").forEach(t =>
+            t.classList.toggle("pos-subcat-activa", t.dataset.sub == id));
 
         // VALIDAR ARRAY
         if(!Array.isArray(data)){
@@ -1694,61 +1704,44 @@ function cargarSubcategoria(id){
         // SI NO HAY PRODUCTOS
         if(data.length === 0){
 
-            html = `
-
-            <div class="card">
-
-                No hay productos
-
-            </div>
-
-            `;
-
             document.getElementById(
             "productosPOS"
-            ).innerHTML = html;
+            ).innerHTML = `<p style="color:var(--text-dim);font-size:13px;">No hay productos en esta subcategoría.</p>`;
 
             return;
         }
 
+        _productosPOS = {};
+
         // RECORRER PRODUCTOS
         data.forEach(p => {
 
-            console.log(p);
+            _productosPOS[p.id_producto] = p;
+
+            const stock    = Number(p.stock || 0);
+            const controla = Number(p.controla_stock) === 1;
+            const agotado  = controla && stock <= 0;
+            const pocos    = controla && stock > 0 && stock <= 5;
+
+            const badge = agotado
+                ? `<span class="pos-badge pos-badge-agotado">Agotado</span>`
+                : pocos
+                    ? `<span class="pos-badge pos-badge-pocos">Quedan ${stock}</span>`
+                    : `<span class="pos-badge pos-badge-disponible">Disponible</span>`;
 
             html += `
-
-            <div class="card">
-
-                <h3>
-                    ${p.nombre || 'Sin nombre'}
-                </h3>
-
-                <p>
-                    Precio:
-                    Q${p.precio_venta || 0}
-                </p>
-
-                <p>
-                    Stock:
-                    ${p.stock || 0}
-                </p>
-
-                <button
-                class="btn"
-                onclick="agregarCarrito(
-                    ${p.id_producto},
-                    '${p.nombre}',
-                    ${p.precio_venta}
-                )">
-
-                    Agregar
-
-                </button>
-
-            </div>
-
-            `;
+            <div class="pos-prod-fila${agotado ? ' pos-prod-agotado' : ''}">
+                <div style="min-width:0;">
+                    <div class="pos-prod-fila-nombre">${s(p.nombre || 'Sin nombre')}</div>
+                    <div class="pos-prod-fila-precio">Q${parseFloat(p.precio_venta || 0).toFixed(2)}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                    ${badge}
+                    <button class="pos-prod-agregar" ${agotado ? 'disabled title="Producto agotado"' : 'title="Agregar a la orden"'} onclick="agregarProductoPOS(${p.id_producto})">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                    </button>
+                </div>
+            </div>`;
         });
 
         document.getElementById(
@@ -1768,6 +1761,19 @@ function cargarSubcategoria(id){
         );
     });
 }
+// Productos de la subcategoría mostrada, por id (evita pasar nombres dentro del onclick)
+let _productosPOS = {};
+
+function agregarProductoPOS(id){
+    const p = _productosPOS[id];
+    if (!p) return;
+    if (Number(p.controla_stock) === 1 && Number(p.stock || 0) <= 0) {
+        mostrarMensaje("❌ " + p.nombre + " está agotado");
+        return;
+    }
+    agregarCarrito(p.id_producto, p.nombre, Number(p.precio_venta));
+}
+
 // ======================
 // AGREGAR CARRITO
 // ======================
